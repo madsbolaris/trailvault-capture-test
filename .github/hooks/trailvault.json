@@ -1,0 +1,54 @@
+{
+  "hooks": {
+    "agentStop": [
+      {
+        "bash": "'/Users/mabolan/repos/github/madsbolaris/trailvault/target/debug/trailvault' hooks copilot-cli agent-stop",
+        "comment": "Trailvault CLI",
+        "type": "command"
+      }
+    ],
+    "errorOccurred": [
+      {
+        "bash": "'/Users/mabolan/repos/github/madsbolaris/trailvault/target/debug/trailvault' hooks copilot-cli error-occurred",
+        "comment": "Trailvault CLI",
+        "type": "command"
+      }
+    ],
+    "postToolUse": [
+      {
+        "bash": "'/Users/mabolan/repos/github/madsbolaris/trailvault/target/debug/trailvault' hooks copilot-cli post-tool-use",
+        "comment": "Trailvault CLI",
+        "type": "command"
+      }
+    ],
+    "preToolUse": [
+      {
+        "bash": "'/Users/mabolan/repos/github/madsbolaris/trailvault/target/debug/trailvault' hooks copilot-cli pre-tool-use",
+        "comment": "Trailvault CLI",
+        "type": "command"
+      }
+    ],
+    "sessionEnd": [
+      {
+        "bash": "'/Users/mabolan/repos/github/madsbolaris/trailvault/target/debug/trailvault' hooks copilot-cli session-end",
+        "comment": "Trailvault CLI",
+        "type": "command"
+      }
+    ],
+    "sessionStart": [
+      {
+        "bash": "'/Users/mabolan/repos/github/madsbolaris/trailvault/target/debug/trailvault' hooks copilot-cli session-start",
+        "comment": "Trailvault CLI",
+        "type": "command"
+      }
+    ],
+    "userPromptSubmitted": [
+      {
+        "bash": "'/Users/mabolan/repos/github/madsbolaris/trailvault/target/debug/trailvault' hooks copilot-cli user-prompt-submitted",
+        "comment": "Trailvault CLI",
+        "type": "command"
+      }
+    ]
+  },
+  "version": 1
+}
