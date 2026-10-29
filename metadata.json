@@ -1,0 +1,19 @@
+{
+  "branch": "trailvault-rust-live-1793292037934",
+  "checkpoint_id": "01M648J6YKRYCD95MZNR6EY444",
+  "checkpoints_count": 1,
+  "cli_version": "0.2.0",
+  "files_touched": [
+    "agent-result.txt"
+  ],
+  "sessions": [
+    {
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "metadata": "/0/metadata.json",
+      "prompt": "/0/prompt.txt",
+      "transcript": "/0/full.jsonl"
+    }
+  ],
+  "strategy": "manual-commit"
+}

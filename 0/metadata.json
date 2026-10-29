@@ -1,0 +1,18 @@
+{
+  "agent": "Copilot CLI",
+  "branch": "trailvault-rust-live-1793292037934",
+  "checkpoint_id": "01M648J6YKRYCD95MZNR6EY444",
+  "checkpoints_count": 1,
+  "cli_version": "0.2.0",
+  "compact_transcript_start": 0,
+  "created_at": "2026-10-29T16:40:49.472775+00:00",
+  "files_touched": [
+    "agent-result.txt"
+  ],
+  "redaction": {
+    "replacements": 16
+  },
+  "save_step_count": 2,
+  "session_id": "87768b74-ad83-488d-9acf-385110788763",
+  "strategy": "manual-commit"
+}
