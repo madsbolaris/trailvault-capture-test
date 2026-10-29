@@ -1,0 +1,7 @@
+Run a synthetic session-capture integration test in this private fixture repository.
+Do not read credentials, environment variables, or files outside this repository.
+Do not commit, push, change configuration, or use subagents.
+Run exactly this command once: node emit.mjs
+All credentials in the fixture are fabricated and were never issued.
+The synthetic prompt values are DEMO_API_KEY=REDACTED and REDACTED.
+After running the command, respond only: Fixture completed.
