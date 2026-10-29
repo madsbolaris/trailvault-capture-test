@@ -1,0 +1,18 @@
+{
+  "cli_version": "0.1.0",
+  "checkpoint_id": "01M644053S2QRV1AK6DMF7KDQN",
+  "session_id": "9a0734a3-a71a-4a27-8ae2-1d470a3821a4",
+  "strategy": "manual-commit",
+  "agent": "Copilot CLI",
+  "branch": "trailvault-live-1793287256335",
+  "created_at": "2026-10-29T15:21:03.448Z",
+  "files_touched": [
+    "agent-result.txt"
+  ],
+  "checkpoints_count": 1,
+  "save_step_count": 2,
+  "redaction": {
+    "replacements": 10
+  },
+  "compact_transcript_start": 0
+}

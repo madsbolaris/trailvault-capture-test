@@ -1,0 +1,19 @@
+{
+  "cli_version": "0.1.0",
+  "checkpoint_id": "01M644053S2QRV1AK6DMF7KDQN",
+  "strategy": "manual-commit",
+  "branch": "trailvault-live-1793287256335",
+  "files_touched": [
+    "agent-result.txt"
+  ],
+  "checkpoints_count": 1,
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "prompt": "/0/prompt.txt",
+      "content_hash": "/0/content_hash.txt"
+    }
+  ]
+}
