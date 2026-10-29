@@ -1,0 +1,54 @@
+{
+  "version": 1,
+  "hooks": {
+    "sessionStart": [
+      {
+        "type": "command",
+        "bash": "'/Users/mabolan/.local/node-v24.21.0-darwin-arm64/bin/node' '/Users/mabolan/repos/github/madsbolaris/trailvault/bin/trailvault.mjs' hooks copilot-cli session-start",
+        "comment": "Trailvault CLI"
+      }
+    ],
+    "userPromptSubmitted": [
+      {
+        "type": "command",
+        "bash": "'/Users/mabolan/.local/node-v24.21.0-darwin-arm64/bin/node' '/Users/mabolan/repos/github/madsbolaris/trailvault/bin/trailvault.mjs' hooks copilot-cli user-prompt-submitted",
+        "comment": "Trailvault CLI"
+      }
+    ],
+    "agentStop": [
+      {
+        "type": "command",
+        "bash": "'/Users/mabolan/.local/node-v24.21.0-darwin-arm64/bin/node' '/Users/mabolan/repos/github/madsbolaris/trailvault/bin/trailvault.mjs' hooks copilot-cli agent-stop",
+        "comment": "Trailvault CLI"
+      }
+    ],
+    "sessionEnd": [
+      {
+        "type": "command",
+        "bash": "'/Users/mabolan/.local/node-v24.21.0-darwin-arm64/bin/node' '/Users/mabolan/repos/github/madsbolaris/trailvault/bin/trailvault.mjs' hooks copilot-cli session-end",
+        "comment": "Trailvault CLI"
+      }
+    ],
+    "preToolUse": [
+      {
+        "type": "command",
+        "bash": "'/Users/mabolan/.local/node-v24.21.0-darwin-arm64/bin/node' '/Users/mabolan/repos/github/madsbolaris/trailvault/bin/trailvault.mjs' hooks copilot-cli pre-tool-use",
+        "comment": "Trailvault CLI"
+      }
+    ],
+    "postToolUse": [
+      {
+        "type": "command",
+        "bash": "'/Users/mabolan/.local/node-v24.21.0-darwin-arm64/bin/node' '/Users/mabolan/repos/github/madsbolaris/trailvault/bin/trailvault.mjs' hooks copilot-cli post-tool-use",
+        "comment": "Trailvault CLI"
+      }
+    ],
+    "errorOccurred": [
+      {
+        "type": "command",
+        "bash": "'/Users/mabolan/.local/node-v24.21.0-darwin-arm64/bin/node' '/Users/mabolan/repos/github/madsbolaris/trailvault/bin/trailvault.mjs' hooks copilot-cli error-occurred",
+        "comment": "Trailvault CLI"
+      }
+    ]
+  }
+}
