@@ -1,0 +1,18 @@
+{
+  "agent": "Copilot CLI",
+  "branch": "demo/json-export-20261030",
+  "checkpoint_id": "01M670ZJE59P9NGSJ88C7908K3",
+  "checkpoints_count": 1,
+  "cli_version": "0.2.0",
+  "compact_transcript_start": 0,
+  "created_at": "2026-10-30T18:26:02.094704+00:00",
+  "files_touched": [
+    "src/lib.rs"
+  ],
+  "redaction": {
+    "replacements": 0
+  },
+  "save_step_count": 2,
+  "session_id": "a42587ae-bfa4-4319-bfed-89ffd3dc78c8",
+  "strategy": "manual-commit"
+}
