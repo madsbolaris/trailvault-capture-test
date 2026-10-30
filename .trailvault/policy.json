@@ -1,6 +1,6 @@
 {
   "description": "Synthetic E2E fixture; fabricated transcript data only.",
   "destination": "origin",
-  "logging": "required",
+  "logging": "optional",
   "version": 1
 }
