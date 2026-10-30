@@ -133,6 +133,26 @@ pub struct ValidationIssue {
 
 /// Checks every route and returns all issues, ordered by route index.
 /// An empty catalogue is valid.
+///
+/// Indexes are zero-based. Names are compared after `str::trim` and
+/// `str::to_lowercase`; no other Unicode normalization is applied.
+///
+/// ```
+/// use routebook::{Difficulty, Route, ValidationIssue, ValidationReason, validate_routes};
+///
+/// let routes = [
+///     Route { name: "Fern Hollow", distance_km: 6.0, difficulty: Difficulty::Easy },
+///     Route { name: "  fern hollow ", distance_km: 7.5, difficulty: Difficulty::Hard },
+/// ];
+///
+/// assert_eq!(
+///     validate_routes(&routes),
+///     Err(vec![ValidationIssue {
+///         index: 1,
+///         reason: ValidationReason::DuplicateName { first_index: 0 },
+///     }])
+/// );
+/// ```
 pub fn validate_routes(routes: &[Route]) -> Result<(), Vec<ValidationIssue>> {
     let mut issues = Vec::new();
     let mut seen: HashMap<String, usize> = HashMap::new();
