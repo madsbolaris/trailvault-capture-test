@@ -1,0 +1,19 @@
+{
+  "agent": "Copilot CLI",
+  "branch": "demo/finite-distance-api-20261030",
+  "checkpoint_id": "01M670WV386DC9CJS522ETEMHD",
+  "checkpoints_count": 1,
+  "cli_version": "0.2.0",
+  "compact_transcript_start": 0,
+  "created_at": "2026-10-30T18:24:32.547525+00:00",
+  "files_touched": [
+    "README.md",
+    "tests/search_api.rs"
+  ],
+  "redaction": {
+    "replacements": 1
+  },
+  "save_step_count": 2,
+  "session_id": "1d494536-3481-4396-b290-0fc346a3c7df",
+  "strategy": "manual-commit"
+}
