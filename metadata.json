@@ -1,0 +1,19 @@
+{
+  "branch": "trailvault-gh-e2e-01m66zrtv1wf5nerh1xdh9jj3w-required",
+  "checkpoint_id": "01M66ZT9GP95QWFA9MYGNY30RZ",
+  "checkpoints_count": 1,
+  "cli_version": "0.2.0",
+  "files_touched": [
+    "agent.txt"
+  ],
+  "sessions": [
+    {
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "metadata": "/0/metadata.json",
+      "prompt": "/0/prompt.txt",
+      "transcript": "/0/full.jsonl"
+    }
+  ],
+  "strategy": "manual-commit"
+}

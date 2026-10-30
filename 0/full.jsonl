@@ -1,0 +1,3 @@
+{"data":{"sessionId":"659608dd-916e-44ff-9aaf-c02b37a4f9c0"},"timestamp":"2026-01-02T03:04:05Z","type":"session.start"}
+{"data":{"content":"Synthetic capture fixture: password=REDACTED"},"timestamp":"2026-01-02T03:04:06Z","type":"user.message"}
+{"data":{"content":"Created the synthetic fixture file."},"timestamp":"2026-01-02T03:04:07Z","type":"assistant.message"}
