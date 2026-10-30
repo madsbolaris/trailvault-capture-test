@@ -45,6 +45,40 @@ treated as option names, a name search for exactly one of those strings cannot
 be expressed. Other values starting with `-` (such as `--name -x`) are accepted;
 `--max-distance -1` is rejected as a negative distance.
 
+## Exporting JSON
+
+`export` takes the same filters as `search` (same parsing, matching and usage
+errors) and prints the matches as one compact JSON array on a single line.
+
+```sh
+cargo run -q -- export
+cargo run -q -- export --name fern --difficulty moderate
+cargo run -q -- export --max-distance 8.5 | python3 -m json.tool
+cargo run -q -- export --difficulty hard | python3 -c 'import json,sys; print(len(json.load(sys.stdin)))'
+cargo run -q -- export --name nomatch          # []
+```
+
+### Schema
+
+An array of objects, in catalogue order, each with exactly these keys:
+
+| key           | type   | notes                                              |
+|---------------|--------|----------------------------------------------------|
+| `name`        | string | JSON-escaped (`"`, `\`, control characters as `\uXXXX`/short escapes); non-ASCII is emitted as UTF-8 |
+| `distance_km` | number | finite, non-negative, plain decimal (never exponent notation); `7.0` is written `7` |
+| `difficulty`  | string | `easy`, `moderate` or `hard`                       |
+
+Example: `[{"name":"Fern Loop","distance_km":3.2,"difficulty":"easy"}]`
+
+### Output and exit codes
+
+- Success: exit 0, stdout is the JSON array plus a trailing newline, stderr is empty.
+- No matches is a success: stdout is `[]`, exit 0 (unlike `search`, which prints nothing).
+- Usage errors: exit 2, empty stdout, `error: <message>` and usage on stderr.
+- Export failure (a route with a NaN, infinite or negative distance): exit 1,
+  empty stdout, `error: export failed: <reason>` on stderr. No partial JSON is
+  ever written. The built-in catalogue cannot trigger this; it guards the library.
+
 Routes are deliberately fictional. The catalogue has no external data sources,
 accounts, customer information or runtime dependencies.
 

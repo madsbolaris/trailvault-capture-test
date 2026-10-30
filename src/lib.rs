@@ -295,6 +295,36 @@ mod tests {
     }
 
     #[test]
+    fn escapes_every_control_character() {
+        let name: &'static str = Box::leak(
+            (0u8..0x20)
+                .map(char::from)
+                .collect::<String>()
+                .into_boxed_str(),
+        );
+        let json = export_json(&[&route(name, 1.0)]).unwrap();
+        let body = json
+            .strip_prefix(r#"[{"name":""#)
+            .and_then(|s| s.strip_suffix(r#"","distance_km":1,"difficulty":"easy"}]"#))
+            .unwrap();
+        assert!(body.chars().all(|c| c >= '\u{20}'));
+        assert!(body.contains("\\u0000") && body.contains("\\u001f") && body.contains("\\u000b"));
+    }
+
+    #[test]
+    fn extreme_distances_are_plain_json_numbers() {
+        for (value, text) in [
+            (f64::MAX, f64::MAX.to_string()),
+            (f64::MIN_POSITIVE, f64::MIN_POSITIVE.to_string()),
+            (1e-7, "0.0000001".to_string()),
+            (0.1 + 0.2, "0.30000000000000004".to_string()),
+        ] {
+            let json = export_json(&[&route("X", value)]).unwrap();
+            assert!(json.contains(&format!("\"distance_km\":{text},")), "{json}");
+        }
+    }
+
+    #[test]
     fn rejects_nonfinite_distances() {
         for value in [f64::NAN, f64::INFINITY, f64::NEG_INFINITY] {
             let r = route("Bad", value);
