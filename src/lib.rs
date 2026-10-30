@@ -110,6 +110,84 @@ pub fn search<'a>(routes: &'a [Route], filter: &SearchFilter) -> Vec<&'a Route> 
         .collect()
 }
 
+/// Reason a route set could not be exported as JSON.
+#[derive(Clone, Debug, PartialEq)]
+pub enum ExportError {
+    /// The route's distance is NaN or infinite.
+    NonFiniteDistance { name: String },
+    /// The route's distance is below zero.
+    NegativeDistance { name: String, distance_km: f64 },
+}
+
+impl fmt::Display for ExportError {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::NonFiniteDistance { name } => {
+                write!(formatter, "route {name:?} has a non-finite distance")
+            }
+            Self::NegativeDistance { name, distance_km } => {
+                write!(
+                    formatter,
+                    "route {name:?} has a negative distance ({distance_km})"
+                )
+            }
+        }
+    }
+}
+
+impl std::error::Error for ExportError {}
+
+fn push_json_string(out: &mut String, text: &str) {
+    out.push('"');
+    for ch in text.chars() {
+        match ch {
+            '"' => out.push_str("\\\""),
+            '\\' => out.push_str("\\\\"),
+            '\n' => out.push_str("\\n"),
+            '\r' => out.push_str("\\r"),
+            '\t' => out.push_str("\\t"),
+            '\u{08}' => out.push_str("\\b"),
+            '\u{0c}' => out.push_str("\\f"),
+            c if c < '\u{20}' => out.push_str(&format!("\\u{:04x}", c as u32)),
+            c => out.push(c),
+        }
+    }
+    out.push('"');
+}
+
+/// Exports routes as a compact JSON array with `name`, `distance_km` and
+/// `difficulty` keys, preserving input order. Fails before producing any
+/// output if a distance is non-finite or negative.
+pub fn export_json(routes: &[&Route]) -> Result<String, ExportError> {
+    let mut out = String::from("[");
+    for (index, route) in routes.iter().enumerate() {
+        let distance = route.distance_km;
+        if !distance.is_finite() {
+            return Err(ExportError::NonFiniteDistance {
+                name: route.name.to_owned(),
+            });
+        }
+        if distance < 0.0 {
+            return Err(ExportError::NegativeDistance {
+                name: route.name.to_owned(),
+                distance_km: distance,
+            });
+        }
+        if index > 0 {
+            out.push(',');
+        }
+        out.push_str("{\"name\":");
+        push_json_string(&mut out, route.name);
+        // Adding 0.0 normalises -0.0 to 0.0.
+        out.push_str(&format!(",\"distance_km\":{}", distance + 0.0));
+        out.push_str(",\"difficulty\":");
+        push_json_string(&mut out, &route.difficulty.to_string());
+        out.push('}');
+    }
+    out.push(']');
+    Ok(out)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -175,5 +253,70 @@ mod tests {
     #[test]
     fn route_display_is_readable() {
         assert_eq!(display_route(&catalogue()[0]), "Fern Loop | 3.2 km | easy");
+    }
+
+    fn route(name: &'static str, distance_km: f64) -> Route {
+        Route {
+            name,
+            distance_km,
+            difficulty: Difficulty::Easy,
+        }
+    }
+
+    #[test]
+    fn exports_catalogue() {
+        let routes = catalogue();
+        let refs: Vec<&Route> = routes.iter().collect();
+        assert_eq!(
+            export_json(&refs).unwrap(),
+            concat!(
+                r#"[{"name":"Fern Loop","distance_km":3.2,"difficulty":"easy"},"#,
+                r#"{"name":"North Ridge","distance_km":11.5,"difficulty":"hard"},"#,
+                r#"{"name":"Lake Circuit","distance_km":7,"difficulty":"moderate"},"#,
+                r#"{"name":"Fern Valley","distance_km":8.5,"difficulty":"moderate"},"#,
+                r#"{"name":"Summit Traverse","distance_km":16,"difficulty":"hard"}]"#
+            )
+        );
+    }
+
+    #[test]
+    fn exports_empty_selection() {
+        assert_eq!(export_json(&[]).unwrap(), "[]");
+    }
+
+    #[test]
+    fn escapes_special_and_control_characters() {
+        let r = route("a\"b\\c\td\re\nf\u{08}\u{0c}\u{01}\u{1f}é🌲", -0.0);
+        let json = export_json(&[&r]).unwrap();
+        assert_eq!(
+            json,
+            r#"[{"name":"a\"b\\c\td\re\nf\b\f\u0001\u001fé🌲","distance_km":0,"difficulty":"easy"}]"#
+        );
+    }
+
+    #[test]
+    fn rejects_nonfinite_distances() {
+        for value in [f64::NAN, f64::INFINITY, f64::NEG_INFINITY] {
+            let r = route("Bad", value);
+            let err = export_json(&[&r]).unwrap_err();
+            assert_eq!(err, ExportError::NonFiniteDistance { name: "Bad".into() });
+            assert!(err.to_string().contains("non-finite"));
+        }
+    }
+
+    #[test]
+    fn rejects_negative_distance() {
+        let good = route("Good", 1.0);
+        let bad = route("Bad", -0.5);
+        let err = export_json(&[&good, &bad]).unwrap_err();
+        assert_eq!(
+            err,
+            ExportError::NegativeDistance {
+                name: "Bad".into(),
+                distance_km: -0.5
+            }
+        );
+        let _: &dyn std::error::Error = &err;
+        assert!(err.to_string().contains("negative"));
     }
 }
