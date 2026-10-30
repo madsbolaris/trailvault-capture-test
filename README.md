@@ -20,8 +20,30 @@ cargo run -- search --name fern --max-distance 8.5 --difficulty moderate
 cargo run -- search --difficulty hard --max-distance 12
 ```
 
-No matches prints nothing and exits 0. Invalid or missing arguments print an
-error and usage to stderr and exit 2.
+### Output and exit codes
+
+- Success: matching routes are written to stdout, one per line, with exit 0
+  and empty stderr. A search with no matches is still a success: it prints
+  nothing and exits 0.
+- Usage errors: nothing is written to stdout. stderr gets `error: <message>`
+  followed by the usage text, and the exit code is 2. This covers unknown
+  commands, unknown arguments, invalid values, missing values and repeated
+  flags.
+- Each flag may be given at most once; repeating one is an error
+  (`error: --name was given more than once`).
+- A flag must be followed by a value. If the next argument is another option
+  name, the flag is reported as missing its value:
+
+```sh
+cargo run -- search --name --difficulty easy   # error: --name requires a value (exit 2)
+cargo run -- search --name fern                # valid
+cargo run -- search --name nomatch             # prints nothing, exit 0
+```
+
+Limitation: because `--name`, `--max-distance` and `--difficulty` are always
+treated as option names, a name search for exactly one of those strings cannot
+be expressed. Other values starting with `-` (such as `--name -x`) are accepted;
+`--max-distance -1` is rejected as a negative distance.
 
 Routes are deliberately fictional. The catalogue has no external data sources,
 accounts, customer information or runtime dependencies.
