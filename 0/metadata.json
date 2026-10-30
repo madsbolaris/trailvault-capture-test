@@ -1,0 +1,18 @@
+{
+  "agent": "Copilot CLI",
+  "branch": "demo/route-search-20261030",
+  "checkpoint_id": "01M670QQM0VJN4K0HYX6K1SZ0F",
+  "checkpoints_count": 2,
+  "cli_version": "0.2.0",
+  "compact_transcript_start": 0,
+  "created_at": "2026-10-30T18:21:45.135114+00:00",
+  "files_touched": [
+    "README.md"
+  ],
+  "redaction": {
+    "replacements": 0
+  },
+  "save_step_count": 2,
+  "session_id": "03269e9d-a6d4-4507-9566-a7e9137ea2ba",
+  "strategy": "manual-commit"
+}
