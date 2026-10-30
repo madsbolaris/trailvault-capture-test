@@ -1,6 +1,6 @@
 use std::process::{Command, Output};
 
-const USAGE: &str = "Usage:\n  routebook list\n  routebook search [--name TEXT] [--max-distance KM] [--difficulty easy|moderate|hard]\n";
+const USAGE: &str = "Usage:\n  routebook list\n  routebook search [--name TEXT] [--max-distance KM] [--difficulty easy|moderate|hard]\n  routebook export [--name TEXT] [--max-distance KM] [--difficulty easy|moderate|hard]\n";
 
 const FERN_LOOP: &str = "Fern Loop | 3.2 km | easy";
 const NORTH_RIDGE: &str = "North Ridge | 11.5 km | hard";

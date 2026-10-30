@@ -1,6 +1,8 @@
-use routebook::{Difficulty, SearchFilter, catalogue, display_route, search};
+use routebook::{
+    Difficulty, ExportError, Route, SearchFilter, catalogue, display_route, export_json, search,
+};
 
-const USAGE: &str = "Usage:\n  routebook list\n  routebook search [--name TEXT] [--max-distance KM] [--difficulty easy|moderate|hard]";
+const USAGE: &str = "Usage:\n  routebook list\n  routebook search [--name TEXT] [--max-distance KM] [--difficulty easy|moderate|hard]\n  routebook export [--name TEXT] [--max-distance KM] [--difficulty easy|moderate|hard]";
 
 fn parse_difficulty(value: &str) -> Result<Difficulty, String> {
     match value.to_ascii_lowercase().as_str() {
@@ -54,6 +56,10 @@ fn fail(message: &str) -> ! {
     std::process::exit(2);
 }
 
+fn export_matches(routes: &[Route], filter: &SearchFilter) -> Result<String, ExportError> {
+    export_json(&search(routes, filter))
+}
+
 fn main() {
     let args: Vec<String> = std::env::args().skip(1).collect();
     match args.split_first() {
@@ -69,6 +75,16 @@ fn main() {
                 println!("{}", display_route(route));
             }
         }
+        Some((command, rest)) if command == "export" => {
+            let filter = parse_search_args(rest).unwrap_or_else(|message| fail(&message));
+            match export_matches(&catalogue(), &filter) {
+                Ok(json) => println!("{json}"),
+                Err(error) => {
+                    eprintln!("error: export failed: {error}");
+                    std::process::exit(1);
+                }
+            }
+        }
         Some((command, _)) if command == "list" => fail("list takes no arguments"),
         Some((command, _)) => fail(&format!("unknown command '{command}'")),
         None => fail("missing command"),
@@ -82,6 +98,17 @@ mod tests {
     fn parse(args: &[&str]) -> Result<SearchFilter, String> {
         let args: Vec<String> = args.iter().map(|s| s.to_string()).collect();
         parse_search_args(&args)
+    }
+
+    #[test]
+    fn export_reports_serialization_errors() {
+        let bad = Route {
+            name: "Bad",
+            distance_km: f64::NAN,
+            difficulty: Difficulty::Easy,
+        };
+        let err = export_matches(&[bad], &SearchFilter::new()).unwrap_err();
+        assert!(matches!(err, ExportError::NonFiniteDistance { .. }));
     }
 
     #[test]
