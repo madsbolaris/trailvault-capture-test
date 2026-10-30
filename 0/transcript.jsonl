@@ -1,0 +1,3 @@
+{"agent":"Copilot CLI","type":"header","version":1}
+{"content":"Synthetic capture fixture: password=REDACTED","role":"user","type":"message"}
+{"content":"Created the synthetic fixture file.","role":"assistant","type":"message"}
