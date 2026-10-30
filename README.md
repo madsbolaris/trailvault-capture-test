@@ -8,6 +8,17 @@ cargo run -- list
 cargo test
 ```
 
+## Validating
+
+`routebook validate` (no flags) checks the built-in catalogue with the library
+validator. If valid, it prints one line to stdout and exits 0. If issues are
+found, every issue is printed to stderr as `route <index>: <problem>` and the
+exit code is 1. Extra arguments are a usage error (exit 2).
+
+```sh
+cargo run -- validate
+```
+
 ## Searching
 
 `search` accepts any combination of `--name TEXT` (case-insensitive substring),
