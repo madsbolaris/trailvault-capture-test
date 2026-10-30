@@ -58,10 +58,16 @@ fn empty_name_matches_everything() {
 
 #[test]
 fn distance_filter_is_inclusive_and_ordered() {
-    assert_ok(&["search", "--max-distance", "8.5"], &[FERN_LOOP, LAKE_CIRCUIT, FERN_VALLEY]);
+    assert_ok(
+        &["search", "--max-distance", "8.5"],
+        &[FERN_LOOP, LAKE_CIRCUIT, FERN_VALLEY],
+    );
     assert_ok(&["search", "--max-distance", "3.2"], &[FERN_LOOP]);
     assert_ok(&["search", "--max-distance", "16"], &ALL);
-    assert_ok(&["search", "--max-distance", "8.4"], &[FERN_LOOP, LAKE_CIRCUIT]);
+    assert_ok(
+        &["search", "--max-distance", "8.4"],
+        &[FERN_LOOP, LAKE_CIRCUIT],
+    );
     assert_ok(&["search", "--max-distance", "1000"], &ALL);
 }
 
@@ -73,23 +79,51 @@ fn zero_distance_is_valid_and_matches_nothing() {
 #[test]
 fn difficulty_filter_is_case_insensitive() {
     assert_ok(&["search", "--difficulty", "easy"], &[FERN_LOOP]);
-    assert_ok(&["search", "--difficulty", "MODERATE"], &[LAKE_CIRCUIT, FERN_VALLEY]);
+    assert_ok(
+        &["search", "--difficulty", "MODERATE"],
+        &[LAKE_CIRCUIT, FERN_VALLEY],
+    );
     assert_ok(&["search", "--difficulty", "Hard"], &[NORTH_RIDGE, SUMMIT]);
 }
 
 #[test]
 fn filters_combine_in_any_flag_order() {
     assert_ok(
-        &["search", "--name", "fern", "--max-distance", "8.5", "--difficulty", "moderate"],
+        &[
+            "search",
+            "--name",
+            "fern",
+            "--max-distance",
+            "8.5",
+            "--difficulty",
+            "moderate",
+        ],
         &[FERN_VALLEY],
     );
     assert_ok(
-        &["search", "--difficulty", "moderate", "--max-distance", "8.5", "--name", "fern"],
+        &[
+            "search",
+            "--difficulty",
+            "moderate",
+            "--max-distance",
+            "8.5",
+            "--name",
+            "fern",
+        ],
         &[FERN_VALLEY],
     );
-    assert_ok(&["search", "--difficulty", "hard", "--max-distance", "12"], &[NORTH_RIDGE]);
-    assert_ok(&["search", "--name", "fern", "--difficulty", "easy"], &[FERN_LOOP]);
-    assert_ok(&["search", "--name", "lake", "--max-distance", "7"], &[LAKE_CIRCUIT]);
+    assert_ok(
+        &["search", "--difficulty", "hard", "--max-distance", "12"],
+        &[NORTH_RIDGE],
+    );
+    assert_ok(
+        &["search", "--name", "fern", "--difficulty", "easy"],
+        &[FERN_LOOP],
+    );
+    assert_ok(
+        &["search", "--name", "lake", "--max-distance", "7"],
+        &[LAKE_CIRCUIT],
+    );
 }
 
 #[test]
@@ -101,7 +135,9 @@ fn no_matches_prints_nothing_and_exits_zero() {
 
 #[test]
 fn invalid_distances_are_rejected() {
-    for v in ["abc", "-1", "-0.1", "NaN", "nan", "inf", "-inf", "infinity", "+inf", "", "1e999"] {
+    for v in [
+        "abc", "-1", "-0.1", "NaN", "nan", "inf", "-inf", "infinity", "+inf", "", "1e999",
+    ] {
         assert_usage_error(&["search", "--max-distance", v]);
     }
 }
@@ -110,7 +146,10 @@ fn invalid_distances_are_rejected() {
 fn invalid_distance_message_names_flag_and_value() {
     let out = run(&["search", "--max-distance", "abc"]);
     let err = String::from_utf8_lossy(&out.stderr);
-    assert!(err.contains("--max-distance") && err.contains("abc"), "{err:?}");
+    assert!(
+        err.contains("--max-distance") && err.contains("abc"),
+        "{err:?}"
+    );
 }
 
 #[test]
@@ -129,11 +168,54 @@ fn missing_values_are_rejected() {
 }
 
 #[test]
+fn flag_following_a_flag_reports_missing_value() {
+    let flags = ["--name", "--max-distance", "--difficulty"];
+    for flag in flags {
+        for next in flags {
+            let out = run(&["search", flag, next, "easy"]);
+            let err = String::from_utf8_lossy(&out.stderr);
+            assert_usage_error(&["search", flag, next, "easy"]);
+            assert!(
+                err.starts_with(&format!("error: {flag} requires a value\n")),
+                "{flag} {next}: {err:?}"
+            );
+        }
+        let out = run(&["search", flag, "--difficulty"]);
+        let err = String::from_utf8_lossy(&out.stderr);
+        assert!(err.contains("requires a value"), "{flag}: {err:?}");
+    }
+    let out = run(&["search", "--name", "--max-distance", "10"]);
+    let err = String::from_utf8_lossy(&out.stderr);
+    assert!(
+        err.starts_with("error: --name requires a value\n"),
+        "{err:?}"
+    );
+}
+
+#[test]
+fn negative_distance_is_still_a_value_error() {
+    let out = run(&["search", "--max-distance", "-1"]);
+    let err = String::from_utf8_lossy(&out.stderr);
+    assert!(
+        err.starts_with("error: invalid --max-distance '-1'"),
+        "{err:?}"
+    );
+}
+
+#[test]
 fn duplicate_flags_are_rejected() {
     assert_usage_error(&["search", "--name", "a", "--name", "b"]);
     assert_usage_error(&["search", "--max-distance", "5", "--max-distance", "6"]);
     assert_usage_error(&["search", "--difficulty", "easy", "--difficulty", "hard"]);
-    assert_usage_error(&["search", "--name", "a", "--difficulty", "easy", "--name", "a"]);
+    assert_usage_error(&[
+        "search",
+        "--name",
+        "a",
+        "--difficulty",
+        "easy",
+        "--name",
+        "a",
+    ]);
 }
 
 #[test]

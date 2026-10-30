@@ -25,7 +25,7 @@ fn parse_distance(value: &str) -> Result<f64, String> {
 fn parse_search_args(args: &[String]) -> Result<SearchFilter, String> {
     let mut filter = SearchFilter::new();
     let (mut name, mut distance, mut difficulty) = (false, false, false);
-    let mut iter = args.iter();
+    let mut iter = args.iter().peekable();
     while let Some(flag) = iter.next() {
         let seen = match flag.as_str() {
             "--name" => &mut name,
@@ -38,7 +38,7 @@ fn parse_search_args(args: &[String]) -> Result<SearchFilter, String> {
         }
         *seen = true;
         let value = iter
-            .next()
+            .next_if(|next| !matches!(next.as_str(), "--name" | "--max-distance" | "--difficulty"))
             .ok_or_else(|| format!("{flag} requires a value"))?;
         filter = match flag.as_str() {
             "--name" => filter.name_contains(value.as_str()),
@@ -109,6 +109,7 @@ mod tests {
             &["--max-distance", "NaN"],
             &["--difficulty", "extreme"],
             &["--name"],
+            &["--name", "--difficulty", "easy"],
             &["--name", "a", "--name", "b"],
             &["--bogus", "x"],
             &["fern"],
