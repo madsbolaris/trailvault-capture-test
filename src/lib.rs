@@ -80,7 +80,7 @@ impl SearchFilter {
         self
     }
 
-    /// Inclusive maximum distance. NaN or negative values match no routes.
+    /// Inclusive maximum distance. NaN, infinite or negative values match no routes.
     pub fn max_distance_km(mut self, km: f64) -> Self {
         self.max_distance_km = Some(km);
         self
@@ -97,7 +97,7 @@ impl SearchFilter {
             .is_none_or(|text| route.name.to_lowercase().contains(text.as_str()))
             && self
                 .max_distance_km
-                .is_none_or(|max| route.distance_km <= max)
+                .is_none_or(|max| max.is_finite() && max >= 0.0 && route.distance_km <= max)
             && self.difficulty.is_none_or(|d| route.difficulty == d)
     }
 }
@@ -164,6 +164,45 @@ mod tests {
         let routes = catalogue();
         assert!(search(&routes, &SearchFilter::new().max_distance_km(f64::NAN)).is_empty());
         assert!(search(&routes, &SearchFilter::new().max_distance_km(-1.0)).is_empty());
+    }
+
+    #[test]
+    fn positive_infinity_matches_nothing() {
+        let routes = catalogue();
+        let filter = SearchFilter::new().max_distance_km(f64::INFINITY);
+        assert!(search(&routes, &filter).is_empty());
+    }
+
+    #[test]
+    fn negative_infinity_matches_nothing() {
+        let routes = catalogue();
+        let filter = SearchFilter::new().max_distance_km(f64::NEG_INFINITY);
+        assert!(search(&routes, &filter).is_empty());
+    }
+
+    #[test]
+    fn zero_and_f64_max_are_finite_bounds() {
+        let routes = catalogue();
+        assert!(search(&routes, &SearchFilter::new().max_distance_km(0.0)).is_empty());
+        let found = search(&routes, &SearchFilter::new().max_distance_km(f64::MAX));
+        assert_eq!(found.len(), routes.len());
+    }
+
+    #[test]
+    fn invalid_distance_with_other_filters_matches_nothing() {
+        let routes = catalogue();
+        for bad in [f64::INFINITY, f64::NEG_INFINITY, f64::NAN, -1.0] {
+            let filter = SearchFilter::new()
+                .name_contains("fern")
+                .difficulty(Difficulty::Moderate)
+                .max_distance_km(bad);
+            assert!(search(&routes, &filter).is_empty(), "{bad}");
+        }
+        let ok = SearchFilter::new()
+            .name_contains("fern")
+            .difficulty(Difficulty::Moderate)
+            .max_distance_km(f64::MAX);
+        assert_eq!(names(&search(&routes, &ok)), ["Fern Valley"]);
     }
 
     #[test]
