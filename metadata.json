@@ -1,0 +1,20 @@
+{
+  "branch": "demo/catalogue-validation-20261030",
+  "checkpoint_id": "01M67425HXGV8B0M2RYE70NMX5",
+  "checkpoints_count": 1,
+  "cli_version": "0.2.0",
+  "files_touched": [
+    "README.md",
+    "src/lib.rs"
+  ],
+  "sessions": [
+    {
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "metadata": "/0/metadata.json",
+      "prompt": "/0/prompt.txt",
+      "transcript": "/0/full.jsonl"
+    }
+  ],
+  "strategy": "manual-commit"
+}
