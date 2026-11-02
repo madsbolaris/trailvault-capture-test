@@ -1,0 +1,25 @@
+name: Trailvault private cloud capture setup
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  copilot-setup-steps:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build test-only Trailvault runtime when present
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ ! -f .trailvault/cloud-runtime/Cargo.toml ]; then
+            echo "No Trailvault cloud runtime on this branch; skipping test bootstrap."
+            exit 0
+          fi
+          cargo build --locked --release --manifest-path .trailvault/cloud-runtime/Cargo.toml --bin trailvault
+          runtime="$PWD/.trailvault/cloud-runtime/target/release/trailvault"
+          "$runtime" enable --push-sessions
+          git restore -- .github/hooks/trailvault.json .trailvault/settings.json
+          echo "Trailvault runtime and repository Git hooks installed for cloud test."
