@@ -890,6 +890,7 @@ pub fn push(repo: &Repo, remote: &str, automatic: bool) -> Result<()> {
     let config = settings(repo)?;
     if config["enabled"] == false
         || (automatic && config.pointer("/strategy_options/push_sessions") == Some(&json!(false)))
+        || (automatic && config.pointer("/strategy_options/cloud_artifact") == Some(&json!(true)))
     {
         return Ok(());
     }
