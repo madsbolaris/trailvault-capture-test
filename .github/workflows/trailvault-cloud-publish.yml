@@ -1,7 +1,7 @@
 name: Publish Trailvault cloud checkpoints
 on:
   workflow_run:
-    workflows: ["Running Copilot cloud agent"]
+    workflows: ["Copilot cloud agent"]
     types: [completed]
 permissions: {}
 concurrency:
