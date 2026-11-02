@@ -291,6 +291,9 @@ fn run() -> Result<()> {
                     return Ok(());
                 }
                 capture::agent_hook(&repo, arg(1)?, &input)?;
+                if matches!(arg(1)?, "session-start" | "user-prompt-submitted") {
+                    capture::refresh_git_hooks(&repo, &env::current_exe()?.canonicalize()?)?;
+                }
             }
             "git" => match arg(1)? {
                 "prepare-commit-msg" => capture::prepare_commit(

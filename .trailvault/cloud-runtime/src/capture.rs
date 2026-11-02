@@ -198,17 +198,7 @@ fn shell_path(path: &Path) -> Result<String> {
     ))
 }
 
-pub fn enable(repo: &Repo, executable: &Path) -> Result<()> {
-    let global = crate::install::installed()?;
-    enable_options(repo, executable, global, false)
-}
-pub fn enable_local(repo: &Repo, executable: &Path) -> Result<()> {
-    enable_options(repo, executable, true, true)
-}
-pub fn enable_for_policy(repo: &Repo, executable: &Path) -> Result<()> {
-    enable_options(repo, executable, true, false)
-}
-fn enable_options(repo: &Repo, executable: &Path, global: bool, automatic: bool) -> Result<()> {
+fn validate_git_hook_paths(repo: &Repo) -> Result<()> {
     for name in ["prepare-commit-msg", "post-commit", "pre-push"] {
         let path = hook_location(repo, name)?;
         let directory = path.parent().context("Hook has no parent")?;
@@ -222,6 +212,51 @@ fn enable_options(repo: &Repo, executable: &Path, global: bool, automatic: bool)
             "Refusing to modify a shared external hooks directory; configure a repository-local core.hooksPath first"
         );
     }
+    Ok(())
+}
+fn write_git_hooks(repo: &Repo, executable: &Path) -> Result<()> {
+    validate_git_hook_paths(repo)?;
+    for name in ["prepare-commit-msg", "post-commit", "pre-push"] {
+        let path = hook_location(repo, name)?;
+        let backup = PathBuf::from(format!("{}.pre-trailvault", path.display()));
+        if path.try_exists()? && !fs::read_to_string(&path)?.contains("# trailvault-managed-v1") {
+            ensure!(
+                !backup.try_exists()?,
+                "Hook backup already exists: {}",
+                backup.display()
+            );
+            fs::rename(&path, &backup)?;
+        }
+        let backup = shell_path(&backup)?;
+        let body = format!(
+            "#!/bin/sh\n# trailvault-managed-v1\n{} hooks git {name} \"$@\"\nstatus=$?\n[ \"$status\" -eq 0 ] || exit \"$status\"\nif [ -x {backup} ]; then\n  exec {backup} \"$@\"\nfi\n",
+            shell_path(executable)?
+        );
+        git::atomic(&path, body.as_bytes())?;
+        fs::set_permissions(&path, fs::Permissions::from_mode(0o755))?;
+    }
+    Ok(())
+}
+pub fn refresh_git_hooks(repo: &Repo, executable: &Path) -> Result<()> {
+    if settings(repo)?["enabled"] == false || !crate::policy::capture_allowed(repo)? {
+        return Ok(());
+    }
+    crate::install::validate_repository_paths(repo)?;
+    let _lock = repo.lock()?;
+    write_git_hooks(repo, executable)
+}
+pub fn enable(repo: &Repo, executable: &Path) -> Result<()> {
+    let global = crate::install::installed()?;
+    enable_options(repo, executable, global, false)
+}
+pub fn enable_local(repo: &Repo, executable: &Path) -> Result<()> {
+    enable_options(repo, executable, true, true)
+}
+pub fn enable_for_policy(repo: &Repo, executable: &Path) -> Result<()> {
+    enable_options(repo, executable, true, false)
+}
+fn enable_options(repo: &Repo, executable: &Path, global: bool, automatic: bool) -> Result<()> {
+    validate_git_hook_paths(repo)?;
     let _lock = repo.lock()?;
     if automatic
         && settings_with_defaults(repo, json!({"enabled":true,"commit_linking":"prompt"}))?["enabled"]
@@ -283,25 +318,7 @@ fn enable_options(repo: &Repo, executable: &Path, global: bool, automatic: bool)
         }
     }
     git::atomic(&exclude, ignore.as_bytes())?;
-    for name in ["prepare-commit-msg", "post-commit", "pre-push"] {
-        let path = hook_location(repo, name)?;
-        let backup = PathBuf::from(format!("{}.pre-trailvault", path.display()));
-        if path.try_exists()? && !fs::read_to_string(&path)?.contains("# trailvault-managed-v1") {
-            ensure!(
-                !backup.try_exists()?,
-                "Hook backup already exists: {}",
-                backup.display()
-            );
-            fs::rename(&path, &backup)?;
-        }
-        let backup = shell_path(&backup)?;
-        let body = format!(
-            "#!/bin/sh\n# trailvault-managed-v1\n{} hooks git {name} \"$@\"\nstatus=$?\n[ \"$status\" -eq 0 ] || exit \"$status\"\nif [ -x {backup} ]; then\n  exec {backup} \"$@\"\nfi\n",
-            shell_path(executable)?
-        );
-        git::atomic(&path, body.as_bytes())?;
-        fs::set_permissions(&path, fs::Permissions::from_mode(0o755))?;
-    }
+    write_git_hooks(repo, executable)?;
     if !global {
         git::save(
             &repo.root.join(".github/hooks/trailvault.json"),
@@ -371,9 +388,6 @@ pub fn agent_hook(repo: &Repo, name: &str, input: &Value) -> Result<()> {
     }
     crate::install::validate_repository_paths(repo)?;
     if settings(repo)?["enabled"] == false {
-        return Ok(());
-    }
-    if ["pre-tool-use", "post-tool-use"].contains(&name) {
         return Ok(());
     }
     if name == "error-occurred" {
@@ -468,7 +482,7 @@ pub fn agent_hook(repo: &Repo, name: &str, input: &Value) -> Result<()> {
         state.last_prompt = Some(prompt.into());
         state.phase = "active".into();
     }
-    if ["agent-stop", "session-end"].contains(&name) {
+    if ["pre-tool-use", "post-tool-use", "agent-stop", "session-end"].contains(&name) {
         let transcript = transcript_path(input, id)?;
         let content = fs::read_to_string(&transcript)?;
         redact::parse(&content)?;
@@ -485,7 +499,9 @@ pub fn agent_hook(repo: &Repo, name: &str, input: &Value) -> Result<()> {
             }
         }
         state.baseline = after;
-        state.step_count += 1;
+        if ["agent-stop", "session-end"].contains(&name) {
+            state.step_count += 1;
+        }
         state.transcript_path = Some(transcript);
         state.transcript_hash = Some(hash(&content));
         let pending = repo
