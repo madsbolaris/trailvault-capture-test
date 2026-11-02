@@ -387,7 +387,13 @@ pub fn agent_hook(repo: &Repo, name: &str, input: &Value) -> Result<()> {
         return Ok(());
     }
     crate::install::validate_repository_paths(repo)?;
-    if settings(repo)?["enabled"] == false {
+    let config = settings(repo)?;
+    if config["enabled"] == false {
+        return Ok(());
+    }
+    if ["pre-tool-use", "post-tool-use"].contains(&name)
+        && config.pointer("/strategy_options/publish_on_tool_completion") != Some(&json!(true))
+    {
         return Ok(());
     }
     if name == "error-occurred" {
