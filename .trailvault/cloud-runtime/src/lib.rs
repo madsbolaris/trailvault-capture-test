@@ -1,4 +1,5 @@
 pub mod capture;
+pub mod cloud;
 pub mod gh_wrapper;
 pub mod git;
 pub mod install;

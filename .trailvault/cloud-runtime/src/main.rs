@@ -5,7 +5,7 @@ use std::{
     io::{self, Read},
     path::Path,
 };
-use trailvault::{VERSION, capture, gh_wrapper, git::Repo, install, policy, restore};
+use trailvault::{VERSION, capture, cloud, gh_wrapper, git::Repo, install, policy, restore};
 
 fn main() {
     if let Err(error) = run() {
@@ -126,6 +126,41 @@ fn run() -> Result<()> {
     }
     let repo = Repo::discover(&env::current_dir()?)?;
     match command {
+        "cloud" => match arg(0)? {
+            "export" => {
+                ensure!(rest.len() == 2, "Use cloud export <manifest.json>");
+                cloud::export(
+                    &repo,
+                    &env::var("GITHUB_REPOSITORY").context("GITHUB_REPOSITORY is required")?,
+                    env::var("GITHUB_RUN_ID")
+                        .context("GITHUB_RUN_ID is required")?
+                        .parse()?,
+                    env::var("GITHUB_RUN_ATTEMPT")
+                        .context("GITHUB_RUN_ATTEMPT is required")?
+                        .parse()?,
+                    Path::new(arg(1)?),
+                )?;
+            }
+            "upload" => {
+                ensure!(rest.len() == 2, "Use cloud upload <manifest.json>");
+                cloud::upload(Path::new(arg(1)?))?;
+            }
+            "publish" => {
+                ensure!(
+                    rest.len() == 6,
+                    "Use cloud publish <manifest.json> <repository> <run-id> <attempt> <source-branch>"
+                );
+                cloud::publish(
+                    &repo,
+                    Path::new(arg(1)?),
+                    arg(2)?,
+                    arg(3)?.parse()?,
+                    arg(4)?.parse()?,
+                    arg(5)?,
+                )?;
+            }
+            other => bail!("Unknown cloud command {other}"),
+        },
         "restore" => {
             let checkpoint = arg(0)?;
             let mut session = None;
@@ -239,7 +274,7 @@ fn run() -> Result<()> {
                 let _lock = repo.lock()?;
                 capture::update_local(
                     &repo,
-                    &json!({"strategy_options":{"publish_on_tool_completion":true}}),
+                    &json!({"strategy_options":{"publish_on_tool_completion":true,"cloud_artifact":true}}),
                 )?;
             }
             println!(

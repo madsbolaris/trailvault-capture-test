@@ -423,6 +423,7 @@ pub fn agent_hook(repo: &Repo, name: &str, input: &Value) -> Result<()> {
         post_commit(repo)?;
         if settings(repo)?.pointer("/strategy_options/publish_on_tool_completion")
             == Some(&json!(true))
+            && settings(repo)?.pointer("/strategy_options/cloud_artifact") != Some(&json!(true))
         {
             push(repo, "origin", true)?;
         }

@@ -3,3 +3,4 @@
 .trailvault/metadata/
 .trailvault/tmp/
 .trailvault/settings.local.json
+.github/actions/trailvault-export/trailvault
