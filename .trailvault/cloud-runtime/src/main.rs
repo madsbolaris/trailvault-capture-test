@@ -28,7 +28,7 @@ fn run() -> Result<()> {
     };
     if ["--help", "help", "-h"].contains(&command) {
         println!(
-            "trailvault install [--gh-wrapper] | uninstall [--gh-wrapper] | agent add/remove copilot-cli | agent list | consent [--approve | --decline] | policy status | enable [--push-sessions | --skip-push-sessions] | disable | status | push [remote] | fetch [remote] | checkpoint <id> | restore <id> --session <uuid> --copilot-home <absolute-path> --working-directory <path> [--allow-lossy] [--dry-run] | recover | version"
+            "trailvault install [--gh-wrapper] | uninstall [--gh-wrapper] | agent add/remove copilot-cli | agent list | consent [--approve | --decline] | policy status | enable [--cloud] [--push-sessions | --skip-push-sessions] | disable | status | push [remote] | fetch [remote] | checkpoint <id> | restore <id> --session <uuid> --copilot-home <absolute-path> --working-directory <path> [--allow-lossy] [--dry-run] | recover | version"
         );
         return Ok(());
     }
@@ -213,6 +213,7 @@ fn run() -> Result<()> {
                 "--telemetry=false",
                 "--skip-push-sessions",
                 "--push-sessions",
+                "--cloud",
             ];
             ensure!(
                 rest.iter().all(|arg| valid.contains(&arg.as_str())),
@@ -234,6 +235,13 @@ fn run() -> Result<()> {
                 let _lock = repo.lock()?;
                 capture::update_local(&repo, &json!({"strategy_options":{"push_sessions":true}}))?;
             }
+            if rest.iter().any(|s| s == "--cloud") {
+                let _lock = repo.lock()?;
+                capture::update_local(
+                    &repo,
+                    &json!({"strategy_options":{"publish_on_tool_completion":true}}),
+                )?;
+            }
             println!(
                 "Trailvault enabled for Copilot CLI. Commits link context. Automatic publication: {}.",
                 if capture::settings(&repo)?.pointer("/strategy_options/push_sessions")
@@ -241,7 +249,14 @@ fn run() -> Result<()> {
                 {
                     "off (local capture only)"
                 } else {
-                    "on (git push publishes queued transcripts)"
+                    if capture::settings(&repo)?
+                        .pointer("/strategy_options/publish_on_tool_completion")
+                        == Some(&json!(true))
+                    {
+                        "on (cloud tool completion and git push publish queued transcripts)"
+                    } else {
+                        "on (git push publishes queued transcripts)"
+                    }
                 }
             );
         }

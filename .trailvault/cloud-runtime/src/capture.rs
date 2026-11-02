@@ -415,7 +415,9 @@ pub fn agent_hook(repo: &Repo, name: &str, input: &Value) -> Result<()> {
         // Hosted commits can run prepare-commit-msg without the finalization hooks.
         // Recover the prepared bytes before replacing them with a newer snapshot.
         post_commit(repo)?;
-        if input["toolName"] == "report_progress" {
+        if settings(repo)?.pointer("/strategy_options/publish_on_tool_completion")
+            == Some(&json!(true))
+        {
             push(repo, "origin", true)?;
         }
     }
