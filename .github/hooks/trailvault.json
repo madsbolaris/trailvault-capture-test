@@ -1,54 +1,12 @@
 {
   "version": 1,
   "hooks": {
-    "sessionStart": [
-      {
-        "type": "command",
-        "bash": "'/Users/mabolan/.local/node-v24.21.0-darwin-arm64/bin/node' '/Users/mabolan/repos/github/madsbolaris/trailvault/bin/trailvault.mjs' hooks copilot-cli session-start",
-        "comment": "Trailvault CLI"
-      }
-    ],
-    "userPromptSubmitted": [
-      {
-        "type": "command",
-        "bash": "'/Users/mabolan/.local/node-v24.21.0-darwin-arm64/bin/node' '/Users/mabolan/repos/github/madsbolaris/trailvault/bin/trailvault.mjs' hooks copilot-cli user-prompt-submitted",
-        "comment": "Trailvault CLI"
-      }
-    ],
-    "agentStop": [
-      {
-        "type": "command",
-        "bash": "'/Users/mabolan/.local/node-v24.21.0-darwin-arm64/bin/node' '/Users/mabolan/repos/github/madsbolaris/trailvault/bin/trailvault.mjs' hooks copilot-cli agent-stop",
-        "comment": "Trailvault CLI"
-      }
-    ],
-    "sessionEnd": [
-      {
-        "type": "command",
-        "bash": "'/Users/mabolan/.local/node-v24.21.0-darwin-arm64/bin/node' '/Users/mabolan/repos/github/madsbolaris/trailvault/bin/trailvault.mjs' hooks copilot-cli session-end",
-        "comment": "Trailvault CLI"
-      }
-    ],
-    "preToolUse": [
-      {
-        "type": "command",
-        "bash": "'/Users/mabolan/.local/node-v24.21.0-darwin-arm64/bin/node' '/Users/mabolan/repos/github/madsbolaris/trailvault/bin/trailvault.mjs' hooks copilot-cli pre-tool-use",
-        "comment": "Trailvault CLI"
-      }
-    ],
-    "postToolUse": [
-      {
-        "type": "command",
-        "bash": "'/Users/mabolan/.local/node-v24.21.0-darwin-arm64/bin/node' '/Users/mabolan/repos/github/madsbolaris/trailvault/bin/trailvault.mjs' hooks copilot-cli post-tool-use",
-        "comment": "Trailvault CLI"
-      }
-    ],
-    "errorOccurred": [
-      {
-        "type": "command",
-        "bash": "'/Users/mabolan/.local/node-v24.21.0-darwin-arm64/bin/node' '/Users/mabolan/repos/github/madsbolaris/trailvault/bin/trailvault.mjs' hooks copilot-cli error-occurred",
-        "comment": "Trailvault CLI"
-      }
-    ]
+    "sessionStart": [{"type":"command","bash":"bash .trailvault/cloud-hook.sh session-start","timeoutSec":30}],
+    "userPromptSubmitted": [{"type":"command","bash":"bash .trailvault/cloud-hook.sh user-prompt-submitted","timeoutSec":30}],
+    "agentStop": [{"type":"command","bash":"bash .trailvault/cloud-hook.sh agent-stop","timeoutSec":30}],
+    "sessionEnd": [{"type":"command","bash":"bash .trailvault/cloud-hook.sh session-end","timeoutSec":30}],
+    "preToolUse": [{"type":"command","bash":"bash .trailvault/cloud-hook.sh pre-tool-use","timeoutSec":30}],
+    "postToolUse": [{"type":"command","bash":"bash .trailvault/cloud-hook.sh post-tool-use","timeoutSec":30}],
+    "errorOccurred": [{"type":"command","bash":"bash .trailvault/cloud-hook.sh error-occurred","timeoutSec":30}]
   }
 }
