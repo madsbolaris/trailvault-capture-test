@@ -20,6 +20,12 @@ jobs:
           fi
           cargo build --locked --release --manifest-path .trailvault/cloud-runtime/Cargo.toml --bin trailvault
           runtime="$PWD/.trailvault/cloud-runtime/target/release/trailvault"
-          "$runtime" enable --push-sessions
+          "$runtime" enable --cloud --push-sessions
           git restore -- .github/hooks/trailvault.json .trailvault/settings.json
           echo "Trailvault runtime and repository Git hooks installed for cloud test."
+          if [ -f .github/actions/trailvault-export/action.yml ]; then
+            install -m 755 "$runtime" .github/actions/trailvault-export/trailvault
+          fi
+      - name: Register automatic post-job checkpoint artifact export
+        if: hashFiles('.trailvault/cloud-runtime/Cargo.toml') != '' && hashFiles('.github/actions/trailvault-export/action.yml') != ''
+        uses: ./.github/actions/trailvault-export

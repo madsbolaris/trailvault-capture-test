@@ -1,0 +1,56 @@
+name: Publish Trailvault cloud checkpoints
+on:
+  workflow_run:
+    workflows: ["Running Copilot cloud agent"]
+    types: [completed]
+permissions: {}
+concurrency:
+  group: trailvault-publish-${{ github.event.workflow_run.id }}
+  cancel-in-progress: false
+jobs:
+  publish:
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_repository.id == github.event.repository.id &&
+      startsWith(github.event.workflow_run.head_branch, 'copilot/')
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: write
+    env:
+      SOURCE_RUN: ${{ github.event.workflow_run.id }}
+      SOURCE_ATTEMPT: ${{ github.event.workflow_run.run_attempt }}
+      SOURCE_BRANCH: ${{ github.event.workflow_run.head_branch }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+      - name: Build trusted publisher from the default branch
+        run: cargo build --locked --release --manifest-path .trailvault/cloud-runtime/Cargo.toml --bin trailvault
+      - name: Check artifact ownership and size
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          name="trailvault-checkpoints-$SOURCE_RUN-$SOURCE_ATTEMPT"
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$SOURCE_RUN/artifacts" > "$RUNNER_TEMP/trailvault-artifacts.json"
+          jq -e --arg name "$name" '
+            [.artifacts[] | select(.name == $name)] |
+            length == 1 and (.[0].expired == false) and (.[0].size_in_bytes <= 52428800)
+          ' "$RUNNER_TEMP/trailvault-artifacts.json"
+      - uses: actions/download-artifact@v4
+        with:
+          name: trailvault-checkpoints-${{ env.SOURCE_RUN }}-${{ env.SOURCE_ATTEMPT }}
+          run-id: ${{ env.SOURCE_RUN }}
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/trailvault-handoff
+      - name: Validate data and publish checkpoint refs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh auth setup-git
+          .trailvault/cloud-runtime/target/release/trailvault cloud publish \
+            "$RUNNER_TEMP/trailvault-handoff/checkpoints.json" \
+            "$GITHUB_REPOSITORY" "$SOURCE_RUN" "$SOURCE_ATTEMPT" "$SOURCE_BRANCH"

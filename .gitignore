@@ -1,0 +1,6 @@
+.trailvault/cloud-runtime/target/
+.trailvault/cloud-observations/
+.trailvault/metadata/
+.trailvault/tmp/
+.trailvault/settings.local.json
+.github/actions/trailvault-export/trailvault

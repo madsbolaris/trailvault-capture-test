@@ -1,0 +1,8 @@
+name: Retain Trailvault cloud checkpoints
+description: Register an unprivileged post-job checkpoint artifact export
+runs:
+  using: docker
+  image: Dockerfile
+  entrypoint: /register.sh
+  post-entrypoint: /export.sh
+  post-if: always()
