@@ -411,6 +411,14 @@ pub fn agent_hook(repo: &Repo, name: &str, input: &Value) -> Result<()> {
         .filter(|s| !s.is_empty())
         .context("sessionId is required")?;
     let path = state_path(repo, id)?;
+    if name == "post-tool-use" {
+        // Hosted commits can run prepare-commit-msg without the finalization hooks.
+        // Recover the prepared bytes before replacing them with a newer snapshot.
+        post_commit(repo)?;
+        if input["toolName"] == "report_progress" {
+            push(repo, "origin", true)?;
+        }
+    }
     let _lock = repo.lock()?;
     let existing: Option<State> = git::optional(&path)?;
     ensure!(
