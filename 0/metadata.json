@@ -1,0 +1,18 @@
+{
+  "agent": "Codex",
+  "branch": "test/pr-attribution-codex-20261103",
+  "checkpoint_id": "01M6H3RHE57FHJ3SYN7AA2Y6V9",
+  "checkpoints_count": 2,
+  "cli_version": "0.2.0",
+  "compact_transcript_start": 0,
+  "created_at": "2026-11-03T16:27:01.850168+00:00",
+  "files_touched": [
+    "NATIVE-PUBLICATION-codex.txt"
+  ],
+  "redaction": {
+    "replacements": 6
+  },
+  "save_step_count": 0,
+  "session_id": "01a1a23b-b55b-7e71-9363-41a1f408d2a4",
+  "strategy": "manual-commit"
+}
