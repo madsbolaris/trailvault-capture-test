@@ -145,6 +145,10 @@ fn run() -> Result<()> {
                 ensure!(rest.len() == 2, "Use cloud upload <manifest.json>");
                 cloud::upload(Path::new(arg(1)?))?;
             }
+            "dispatch" => {
+                ensure!(rest.len() == 2, "Use cloud dispatch <manifest.json>");
+                cloud::dispatch(Path::new(arg(1)?))?;
+            }
             "publish" => {
                 ensure!(
                     rest.len() == 6,

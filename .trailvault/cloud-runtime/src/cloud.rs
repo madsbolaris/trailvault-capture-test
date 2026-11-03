@@ -520,6 +520,59 @@ fn curl_string(value: &str) -> Result<String> {
     ))
 }
 
+pub fn dispatch(path: &Path) -> Result<()> {
+    let artifact = read_artifact(path)?;
+    ensure!(
+        artifact.repository == env::var("GITHUB_REPOSITORY")?
+            && artifact.run_id.to_string() == env::var("GITHUB_RUN_ID")?
+            && artifact.run_attempt.to_string() == env::var("GITHUB_RUN_ATTEMPT")?,
+        "Dispatch artifact does not belong to this Actions run"
+    );
+    let token = env::var("TRAILVAULT_DISPATCH_TOKEN")
+        .context("TRAILVAULT_DISPATCH_TOKEN is required for automatic publisher dispatch")?;
+    ensure!(!token.is_empty(), "Publisher dispatch token is empty");
+    let body = dispatch_body(&artifact)?;
+    let request = tempfile::NamedTempFile::new()?;
+    git::atomic(request.path(), &serde_json::to_vec(&body)?)?;
+    let config = format!(
+        "url = {}\nrequest = \"POST\"\nheader = {}\nheader = \"Accept: application/vnd.github+json\"\nheader = \"Content-Type: application/json\"\nheader = \"X-GitHub-Api-Version: 2022-11-28\"\ndata-binary = {}\n",
+        curl_string(&format!(
+            "https://api.github.com/repos/{}/actions/workflows/trailvault-cloud-publish.yml/dispatches",
+            artifact.repository
+        ))?,
+        curl_string(&format!("Authorization: Bearer {token}"))?,
+        curl_string(&format!("@{}", request.path().display()))?
+    );
+    http(&config, "publisher dispatch")?;
+    println!(
+        "Dispatched trusted publisher for run {}/{}",
+        artifact.run_id, artifact.run_attempt
+    );
+    Ok(())
+}
+
+fn dispatch_body(artifact: &Artifact) -> Result<Value> {
+    let parts: Vec<_> = artifact.repository.split('/').collect();
+    ensure!(
+        parts.len() == 2
+            && parts.iter().all(|part| !part.is_empty()
+                && *part != "."
+                && *part != ".."
+                && part
+                    .bytes()
+                    .all(|b| b.is_ascii_alphanumeric() || b"-_.".contains(&b))),
+        "Invalid dispatch repository"
+    );
+    ensure!(
+        artifact.version == 1 && artifact.run_id > 0 && artifact.run_attempt > 0,
+        "Invalid dispatch run identity"
+    );
+    Ok(json!({"ref":"main","inputs":{
+        "source_run":artifact.run_id.to_string(),
+        "source_attempt":artifact.run_attempt.to_string()
+    }}))
+}
+
 pub fn upload(path: &Path) -> Result<()> {
     let artifact = read_artifact(path)?;
     let token = env::var("ACTIONS_RUNTIME_TOKEN")
@@ -598,4 +651,83 @@ pub fn upload(path: &Path) -> Result<()> {
     );
     println!("Uploaded automatic checkpoint handoff artifact {name}");
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn dispatch_pins_trusted_main_and_sends_only_source_run_identity() -> Result<()> {
+        let mut artifact = Artifact {
+            version: 1,
+            repository: "owner/repo".into(),
+            run_id: 123,
+            run_attempt: 2,
+            source_branch: "copilot/untrusted".into(),
+            checkpoints: vec![],
+        };
+        assert_eq!(
+            dispatch_body(&artifact)?,
+            json!({"ref":"main","inputs":{
+            "source_run":"123","source_attempt":"2"}})
+        );
+        for repository in [
+            "",
+            "owner/repo/extra",
+            "../repo",
+            "owner/repo?x=y",
+            "owner/repo\nheader",
+        ] {
+            artifact.repository = repository.into();
+            assert!(dispatch_body(&artifact).is_err());
+        }
+        artifact.repository = "owner/repo".into();
+        artifact.run_id = 0;
+        assert!(dispatch_body(&artifact).is_err());
+        Ok(())
+    }
+
+    fn credential(claims: Value) -> Result<String> {
+        Ok(format!(
+            "header.{}.signature",
+            URL_SAFE_NO_PAD.encode(serde_json::to_vec(&claims)?)
+        ))
+    }
+
+    #[test]
+    fn artifact_backend_ids_require_the_actions_results_scope() -> Result<()> {
+        let run = "11111111-1111-4111-8111-111111111111";
+        let job = "22222222-2222-4222-8222-222222222222";
+        let token =
+            credential(json!({"scp":format!("unrelated Actions.Results:{run}:{job} other")}))?;
+        assert_eq!(backend_ids(&token)?, (run.into(), job.into()));
+        for claims in [
+            json!({}),
+            json!({"scp":""}),
+            json!({"scp":"repo:write"}),
+            json!({"scp":format!("Actions.Results:{run}")}),
+            json!({"scp":format!("Actions.Results:{run}:{job}:extra")}),
+            json!({"scp":format!("Actions.Results:not-a-uuid:{job}")}),
+            json!({"scp":format!("Actions.Results:{run}:not-a-uuid")}),
+        ] {
+            assert!(backend_ids(&credential(claims)?).is_err());
+        }
+        for token in ["", "not-a-token", "header.invalid!.signature"] {
+            assert!(backend_ids(token).is_err());
+        }
+        Ok(())
+    }
+
+    #[test]
+    fn curl_configuration_escapes_values_and_rejects_line_injection() -> Result<()> {
+        assert_eq!(curl_string("quote\"slash\\")?, "\"quote\\\"slash\\\\\"");
+        for value in [
+            "https://example.test/\nheader=unsafe",
+            "token\rheader=unsafe",
+        ] {
+            assert!(curl_string(value).is_err());
+        }
+        Ok(())
+    }
 }
