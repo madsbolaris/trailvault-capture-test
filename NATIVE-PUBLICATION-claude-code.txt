@@ -1,0 +1,12 @@
+Route-name filtering (`routebook search --name TEXT`)
+
+- `SearchFilter::name_contains` lowercases the query once; `matches` lowercases
+  each route name and keeps routes whose name contains the query as a substring.
+  So `--name FERN` returns "Fern Loop" and "Fern Valley".
+- An empty query (`--name ""`) matches every route.
+- The name filter is ANDed with `--max-distance` and `--difficulty`; results
+  keep catalogue order. No matches prints nothing and exits 0.
+- `--name` may appear once and needs a value. If the next argument is
+  `--name`, `--max-distance` or `--difficulty`, the CLI reports
+  "--name requires a value" and exits 2, so those exact strings cannot be
+  searched for. Other values starting with `-` are accepted.
