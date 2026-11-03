@@ -1,0 +1,6 @@
+Route-name filtering uses search --name TEXT for a case-insensitive substring match.
+Both the query and route name are lowercased before checking containment;
+for example, FERN matches Fern Loop and Fern Valley.
+An empty query or an omitted name filter matches every route name.
+Combined name, maximum-distance and difficulty filters must all match.
+Results preserve catalogue order; no matches prints nothing and exits with code 0.
