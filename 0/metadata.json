@@ -1,0 +1,18 @@
+{
+  "agent": "Claude Code",
+  "branch": "test/pr-attribution-claude-20261103",
+  "checkpoint_id": "01M6H3RFB5A11QH9MQ7890TXRT",
+  "checkpoints_count": 2,
+  "cli_version": "0.2.0",
+  "compact_transcript_start": 0,
+  "created_at": "2026-11-03T16:26:59.729770+00:00",
+  "files_touched": [
+    "NATIVE-PUBLICATION-claude-code.txt"
+  ],
+  "redaction": {
+    "replacements": 54
+  },
+  "save_step_count": 0,
+  "session_id": "5eff1ec0-7f31-45cc-9bcf-4ed8ef71f3fb",
+  "strategy": "manual-commit"
+}
