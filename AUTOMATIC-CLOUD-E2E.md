@@ -1,0 +1,2 @@
+This is the real hosted GitHub Copilot coding-agent session implementing the genuine automatic Trailvault checkpoint handoff E2E request in madsbolaris/trailvault-capture-test.
+After this agent run finishes, its native checkpoint must become fetchable automatically from a fresh clone through the registered post-job exporter and independently triggered trusted publisher, without manual transfer or ref publication.
