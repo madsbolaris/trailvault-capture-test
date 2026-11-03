@@ -147,7 +147,7 @@ fn run() -> Result<()> {
             }
             "dispatch" => {
                 ensure!(rest.len() == 2, "Use cloud dispatch <manifest.json>");
-                cloud::dispatch(Path::new(arg(1)?))?;
+                cloud::dispatch(&repo, Path::new(arg(1)?))?;
             }
             "publish" => {
                 ensure!(

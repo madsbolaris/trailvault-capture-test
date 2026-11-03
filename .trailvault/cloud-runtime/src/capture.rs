@@ -417,6 +417,14 @@ pub fn agent_hook(repo: &Repo, name: &str, input: &Value) -> Result<()> {
         .filter(|s| !s.is_empty())
         .context("sessionId is required")?;
     let path = state_path(repo, id)?;
+    if name == "session-start"
+        && config.pointer("/strategy_options/cloud_artifact") == Some(&json!(true))
+        && crate::policy::publication_allowed(repo)?
+        && config.pointer("/strategy_options/push_sessions") != Some(&json!(false))
+        && std::env::var_os("TRAILVAULT_DISPATCH_TOKEN").is_some()
+    {
+        crate::cloud::retain_dispatch_credential(repo)?;
+    }
     if name == "post-tool-use" {
         // Hosted commits can run prepare-commit-msg without the finalization hooks.
         // Recover the prepared bytes before replacing them with a newer snapshot.
