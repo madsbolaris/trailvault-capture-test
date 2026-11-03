@@ -1,0 +1,14 @@
+Route name search (`search --name TEXT`)
+
+- Matching is a case-insensitive substring test: both the query and each
+  route name are lowercased, and a route matches if its name contains the
+  query (e.g. `--name FERN` matches "Fern Loop" and "Fern Valley").
+- An empty query matches every route name.
+- `--name` combines with `--max-distance` and `--difficulty`; a route must
+  satisfy every given filter. Results keep catalogue order.
+- No matches is still a success: nothing is printed and the exit code is 0.
+- `--name` may be given at most once and must be followed by a value. If the
+  next argument is another option name (`--name`, `--max-distance`,
+  `--difficulty`), it is reported as a missing value (exit 2), so searching
+  for exactly one of those strings is not possible. Other values starting
+  with `-` are accepted.
