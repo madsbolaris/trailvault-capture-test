@@ -29,5 +29,3 @@ jobs:
       - name: Register automatic post-job checkpoint artifact export
         if: hashFiles('.trailvault/cloud-runtime/Cargo.toml') != '' && hashFiles('.github/actions/trailvault-export/action.yml') != ''
         uses: ./.github/actions/trailvault-export
-        env:
-          TRAILVAULT_DISPATCH_TOKEN: ${{ secrets.TRAILVAULT_DISPATCH_TOKEN }}
