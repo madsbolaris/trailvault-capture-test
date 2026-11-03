@@ -1,0 +1,18 @@
+{
+  "agent": "Copilot CLI",
+  "branch": "copilot/genuine-unattended-trailvault",
+  "checkpoint_id": "01M6GXQ2Q9M4TBHC71HY2WQAS2",
+  "checkpoints_count": 1,
+  "cli_version": "0.2.0",
+  "compact_transcript_start": 0,
+  "created_at": "2026-11-03T14:41:22.378542491+00:00",
+  "files_touched": [
+    "AUTOMATIC-DISPATCH-E2E.md"
+  ],
+  "redaction": {
+    "replacements": 13
+  },
+  "save_step_count": 0,
+  "session_id": "f3561a81-6dc9-47f4-b3b8-bfee2900193d",
+  "strategy": "manual-commit"
+}

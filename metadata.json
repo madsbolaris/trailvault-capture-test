@@ -1,0 +1,19 @@
+{
+  "branch": "copilot/genuine-unattended-trailvault",
+  "checkpoint_id": "01M6GXQ2Q9M4TBHC71HY2WQAS2",
+  "checkpoints_count": 1,
+  "cli_version": "0.2.0",
+  "files_touched": [
+    "AUTOMATIC-DISPATCH-E2E.md"
+  ],
+  "sessions": [
+    {
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "metadata": "/0/metadata.json",
+      "prompt": "/0/prompt.txt",
+      "transcript": "/0/full.jsonl"
+    }
+  ],
+  "strategy": "manual-commit"
+}
