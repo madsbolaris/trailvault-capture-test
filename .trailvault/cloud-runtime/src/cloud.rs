@@ -520,7 +520,17 @@ fn curl_string(value: &str) -> Result<String> {
     ))
 }
 
-pub fn dispatch(path: &Path) -> Result<()> {
+pub fn retain_dispatch_credential(repo: &Repo) -> Result<()> {
+    let token = env::var("TRAILVAULT_DISPATCH_TOKEN")
+        .context("Dispatch credential is unavailable in the agent step")?;
+    ensure!(!token.is_empty(), "Publisher dispatch token is empty");
+    git::atomic(
+        &repo.git_dir.join("trailvault-dispatch-token"),
+        token.as_bytes(),
+    )
+}
+
+pub fn dispatch(repo: &Repo, path: &Path) -> Result<()> {
     let artifact = read_artifact(path)?;
     ensure!(
         artifact.repository == env::var("GITHUB_REPOSITORY")?
@@ -528,9 +538,16 @@ pub fn dispatch(path: &Path) -> Result<()> {
             && artifact.run_attempt.to_string() == env::var("GITHUB_RUN_ATTEMPT")?,
         "Dispatch artifact does not belong to this Actions run"
     );
-    let token = env::var("TRAILVAULT_DISPATCH_TOKEN")
-        .context("TRAILVAULT_DISPATCH_TOKEN is required for automatic publisher dispatch")?;
+    let retained = repo.git_dir.join("trailvault-dispatch-token");
+    let token = match env::var("TRAILVAULT_DISPATCH_TOKEN") {
+        Ok(token) => token,
+        Err(env::VarError::NotPresent) => fs::read_to_string(&retained).context(
+            "Dispatch token is absent from both environment and private agent-step handoff",
+        )?,
+        Err(error) => return Err(error).context("Dispatch credential is not valid UTF-8"),
+    };
     ensure!(!token.is_empty(), "Publisher dispatch token is empty");
+    git::remove(&retained)?;
     let body = dispatch_body(&artifact)?;
     let request = tempfile::NamedTempFile::new()?;
     git::atomic(request.path(), &serde_json::to_vec(&body)?)?;
