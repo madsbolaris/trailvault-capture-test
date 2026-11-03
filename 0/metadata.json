@@ -1,0 +1,16 @@
+{
+  "agent": "Claude Code",
+  "branch": "test/pr-attribution-claude-20261103",
+  "checkpoint_id": "01M6H3RYNSD4P6N5VVER8HF98E",
+  "checkpoints_count": 3,
+  "cli_version": "0.2.0",
+  "compact_transcript_start": 0,
+  "created_at": "2026-11-03T16:27:15.139973+00:00",
+  "files_touched": [],
+  "redaction": {
+    "replacements": 75
+  },
+  "save_step_count": 1,
+  "session_id": "5eff1ec0-7f31-45cc-9bcf-4ed8ef71f3fb",
+  "strategy": "session-snapshot"
+}
