@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "qualification": "Two genuine authenticated CLI sessions against authorized private synthetic draft PRs, separate from the 2,000 deterministic integration cases. Receipt records measured results; it is not an offline substitute for rerunning live GitHub verification.",
+  "repository": "madsbolaris/trailvault-capture-test",
+  "trailvault_version": "0.2.0",
+  "publication": "Git checkpoint refs; explicit fresh-clone fetch, no live ingestion service",
+  "verified": [
+    "native provider and UUID in every checkpoint",
+    "native JSONL and compact transcript plus PR/tool/lifecycle evidence",
+    "pre-push checkpoint uploaded while process still running and remote source head unchanged",
+    "source commit independently confirmed in the exact GitHub PR",
+    "three checkpoints per provider fetched into a fresh clone",
+    "all seven files in each checkpoint compared byte-for-byte",
+    "native transcript SHA-256 verified independently",
+    "original native file unchanged by capture and publication",
+    "eight native tool calls and eight matched results per final session",
+    "session-end is historical, not a live lease or proof of task/background-job completion",
+    "only one authorized fixture source file changed per PR",
+    "both working trees clean and upload queues empty"
+  ],
+  "runs": [
+    {
+      "provider": "claude-code",
+      "cli_version": "2.1.311 (Claude Code)",
+      "session_id": "5eff1ec0-7f31-45cc-9bcf-4ed8ef71f3fb",
+      "pr": 18,
+      "before_head": "80ffb58855e1416c0edb6cdf3e44fd1df432ff36",
+      "source_commit": "a190fd5d3f369414c4845702ef89ec342dde49ad",
+      "source_file": "NATIVE-PUBLICATION-claude-code.txt",
+      "early_checkpoint": "01M6H3QTA8R6TK8X0R5R49ERB7",
+      "source_checkpoint": "01M6H3RFB5A11QH9MQ7890TXRT",
+      "final_checkpoint": "01M6H3RYNSD4P6N5VVER8HF98E",
+      "early_publication_elapsed_seconds": 15,
+      "duration_seconds": 57,
+      "tools": ["Bash", "Read", "Write"],
+      "tool_starts": 8,
+      "tool_returns": 8,
+      "failed_tools": 0,
+      "final_native_sha256": "52f729e0b9339856373e49c030ce86172405f6b0d214f4a3795ec928fdf227dd",
+      "verified_at": "2026-11-03T16:27:21.844055+00:00",
+      "detailed_evidence": "/tmp/trailvault-native-publication-20261103-run2/claude.json"
+    },
+    {
+      "provider": "codex",
+      "cli_version": "codex-cli 0.166.0-alpha.2",
+      "session_id": "01a1a23b-b55b-7e71-9363-41a1f408d2a4",
+      "pr": 19,
+      "before_head": "e9873744498afc1f034ca129f62201cf9a84b8e3",
+      "source_commit": "172278986be873778169501356ab3486a1c312ed",
+      "source_file": "NATIVE-PUBLICATION-codex.txt",
+      "early_checkpoint": "01M6H3QVYBS910GPFDAP24YYXP",
+      "source_checkpoint": "01M6H3RHE57FHJ3SYN7AA2Y6V9",
+      "final_checkpoint": "01M6H3S0MAAG73WXCYAKVR14JD",
+      "early_publication_elapsed_seconds": 17,
+      "duration_seconds": 59,
+      "tools": ["exec"],
+      "tool_starts": 8,
+      "tool_returns": 8,
+      "failed_tools": 0,
+      "final_native_sha256": "52b6267c8912179650bc1913bcc41fb3f7bf8924a4e331e2bc465b9ecc591c51",
+      "verified_at": "2026-11-03T16:27:23.378687+00:00",
+      "detailed_evidence": "/tmp/trailvault-native-publication-20261103-run2/codex.json"
+    }
+  ],
+  "initial_environment_failure": {
+    "reason": "Required repository logging policy did not yet have a current local consent receipt. Capture failed explicitly rather than bypassing policy.",
+    "resolution": "Explicitly approved capture/publication for these authorized synthetic fixture repositories, then reran successfully.",
+    "failed_attempt_directory": "/tmp/trailvault-native-publication-20261103-run1",
+    "original_study_sessions": "Preserved; no unrelated sessions inspected or modified"
+  },
+  "limitations": [
+    "Explicit native capture boundaries; no automatic Claude/Codex user-wide hook registration",
+    "Historical Git snapshots are not live presence leases",
+    "The early snapshot had no pending native call at that exact observation, so its native activity state was honestly unknown despite independently observed process liveness",
+    "PR references remain mentioned/provider-linked until independent relationship verification",
+    "Cloud artifact export and native restoration remain Copilot-specific",
+    "Do not update pending transcript bytes while prepare/post-commit linking is in progress"
+  ]
+}

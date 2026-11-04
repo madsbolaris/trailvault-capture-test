@@ -1,0 +1,271 @@
+{
+  "assertions": 43,
+  "binary_sha256": "37e245ec18ec26a50ea23db48e2ded69ef7b1b6f3974b31c55d989304d72bc3b",
+  "branch_prefix": "trailvault-gh-e2e-01m66zrtv1wf5nerh1xdh9jj3w",
+  "cases": [
+    {
+      "error": null,
+      "name": "required-decline",
+      "passed": true
+    },
+    {
+      "error": null,
+      "name": "required-default-no",
+      "passed": true
+    },
+    {
+      "error": null,
+      "name": "required-headless",
+      "passed": true
+    },
+    {
+      "error": null,
+      "name": "optional-decline",
+      "passed": true
+    },
+    {
+      "name": "no-policy",
+      "passed": true
+    },
+    {
+      "branch": "trailvault-gh-e2e-01m66zrtv1wf5nerh1xdh9jj3w-required-approve",
+      "checkpoint": "01M66ZT9GP95QWFA9MYGNY30RZ",
+      "checkpoint_commit": "8164c02be1fc6114341a107acfb8bd8af2bfbcaf",
+      "checkpoint_ref": "refs/trailvault/checkpoints/RZ/01M66ZT9GP95QWFA9MYGNY30RZ",
+      "name": "required-approve",
+      "passed": true,
+      "session": "659608dd-916e-44ff-9aaf-c02b37a4f9c0",
+      "source_commit": "2b9adee49c8d3a2c69d3b3634c1a49a46f692e3e"
+    }
+  ],
+  "checks": [
+    {
+      "case": "setup",
+      "name": "required policy branch verified remotely",
+      "passed": true
+    },
+    {
+      "case": "setup",
+      "name": "optional policy branch verified remotely",
+      "passed": true
+    },
+    {
+      "case": "setup",
+      "name": "none policy branch verified remotely",
+      "passed": true
+    },
+    {
+      "case": "delegation",
+      "name": "wrapper returns genuine gh version unchanged",
+      "passed": true
+    },
+    {
+      "case": "required-decline",
+      "name": "genuine gh clone prompted in terminal",
+      "passed": true
+    },
+    {
+      "case": "required-decline",
+      "name": "receipt is declined or pending, never approved",
+      "passed": true
+    },
+    {
+      "case": "required-decline",
+      "name": "declining never captures native session data",
+      "passed": true
+    },
+    {
+      "case": "required-decline",
+      "name": "managed commit blocked with policy explanation",
+      "passed": true
+    },
+    {
+      "case": "required-decline",
+      "name": "commit --no-verify still blocked",
+      "passed": true
+    },
+    {
+      "case": "required-decline",
+      "name": "real GitHub push blocked with policy explanation",
+      "passed": true
+    },
+    {
+      "case": "required-decline",
+      "name": "blocked branch absent on GitHub",
+      "passed": true
+    },
+    {
+      "case": "required-default-no",
+      "name": "genuine gh clone prompted in terminal",
+      "passed": true
+    },
+    {
+      "case": "required-default-no",
+      "name": "receipt is declined or pending, never approved",
+      "passed": true
+    },
+    {
+      "case": "required-default-no",
+      "name": "declining never captures native session data",
+      "passed": true
+    },
+    {
+      "case": "required-default-no",
+      "name": "managed commit blocked with policy explanation",
+      "passed": true
+    },
+    {
+      "case": "required-default-no",
+      "name": "commit --no-verify still blocked",
+      "passed": true
+    },
+    {
+      "case": "required-default-no",
+      "name": "real GitHub push blocked with policy explanation",
+      "passed": true
+    },
+    {
+      "case": "required-default-no",
+      "name": "blocked branch absent on GitHub",
+      "passed": true
+    },
+    {
+      "case": "required-headless",
+      "name": "headless clone refuses implicit consent",
+      "passed": true
+    },
+    {
+      "case": "required-headless",
+      "name": "receipt is declined or pending, never approved",
+      "passed": true
+    },
+    {
+      "case": "required-headless",
+      "name": "declining never captures native session data",
+      "passed": true
+    },
+    {
+      "case": "required-headless",
+      "name": "managed commit blocked with policy explanation",
+      "passed": true
+    },
+    {
+      "case": "required-headless",
+      "name": "commit --no-verify still blocked",
+      "passed": true
+    },
+    {
+      "case": "required-headless",
+      "name": "real GitHub push blocked with policy explanation",
+      "passed": true
+    },
+    {
+      "case": "required-headless",
+      "name": "blocked branch absent on GitHub",
+      "passed": true
+    },
+    {
+      "case": "optional-decline",
+      "name": "genuine gh clone prompted in terminal",
+      "passed": true
+    },
+    {
+      "case": "optional-decline",
+      "name": "receipt is declined or pending, never approved",
+      "passed": true
+    },
+    {
+      "case": "optional-decline",
+      "name": "declining never captures native session data",
+      "passed": true
+    },
+    {
+      "case": "optional-decline",
+      "name": "optional refusal permits normal manual commit",
+      "passed": true
+    },
+    {
+      "case": "optional-decline",
+      "name": "optional refusal permits real source push",
+      "passed": true
+    },
+    {
+      "case": "optional-decline",
+      "name": "optional source commit verified on GitHub",
+      "passed": true
+    },
+    {
+      "case": "no-policy",
+      "name": "ordinary genuine gh clone succeeds without prompt",
+      "passed": true
+    },
+    {
+      "case": "no-policy",
+      "name": "no consent receipt invented",
+      "passed": true
+    },
+    {
+      "case": "no-policy",
+      "name": "clone does not implicitly enable publication",
+      "passed": true
+    },
+    {
+      "case": "required-approve",
+      "name": "genuine gh clone asks before capture/publication",
+      "passed": true
+    },
+    {
+      "case": "required-approve",
+      "name": "explicit approval persisted",
+      "passed": true
+    },
+    {
+      "case": "required-approve",
+      "name": "checkpoint object hash verified on GitHub",
+      "passed": true
+    },
+    {
+      "case": "required-approve",
+      "name": "source commit verified on GitHub",
+      "passed": true
+    },
+    {
+      "case": "required-approve",
+      "name": "fresh clone fetched identical checkpoint",
+      "passed": true
+    },
+    {
+      "case": "required-approve",
+      "name": "fabricated secret redacted in published transcript",
+      "passed": true
+    },
+    {
+      "case": "required-approve",
+      "name": "native transcript remains byte-identical",
+      "passed": true
+    },
+    {
+      "case": "required-approve",
+      "name": "fresh clone contains all checkpoint artifacts",
+      "passed": true
+    },
+    {
+      "case": "required-approve",
+      "name": "approval enables publication explicitly",
+      "passed": true
+    }
+  ],
+  "complete": true,
+  "error": null,
+  "format_version": 1,
+  "passed": true,
+  "real_gh": true,
+  "real_gh_version": "gh version 2.102.0 (2026-09-30)\nhttps://github.com/cli/cli/releases/tag/v2.102.0",
+  "real_github": true,
+  "repository": "madsbolaris/trailvault-capture-test",
+  "runner_sha256": "7ae478cb198995617b7693bf183e0e7724c7aaeaa75da37059a4044665f8ca4b",
+  "synthetic_agent_events": true,
+  "terminal_consent": true,
+  "timestamp": "2026-10-30T18:05:47.965198+00:00",
+  "visibility": "PRIVATE"
+}

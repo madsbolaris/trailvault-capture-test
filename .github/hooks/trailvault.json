@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "hooks": {
+    "sessionStart": [{"type":"command","bash":"bash .trailvault/cloud-hook.sh session-start","timeoutSec":30}],
+    "userPromptSubmitted": [{"type":"command","bash":"bash .trailvault/cloud-hook.sh user-prompt-submitted","timeoutSec":30}],
+    "agentStop": [{"type":"command","bash":"bash .trailvault/cloud-hook.sh agent-stop","timeoutSec":30}],
+    "sessionEnd": [{"type":"command","bash":"bash .trailvault/cloud-hook.sh session-end","timeoutSec":30}],
+    "preToolUse": [{"type":"command","bash":"bash .trailvault/cloud-hook.sh pre-tool-use","timeoutSec":30}],
+    "postToolUse": [{"type":"command","bash":"bash .trailvault/cloud-hook.sh post-tool-use","timeoutSec":30}],
+    "errorOccurred": [{"type":"command","bash":"bash .trailvault/cloud-hook.sh error-occurred","timeoutSec":30}]
+  }
+}

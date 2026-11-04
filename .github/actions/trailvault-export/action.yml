@@ -1,0 +1,8 @@
+name: Retain Trailvault cloud checkpoints
+description: Export checkpoints after the job and dispatch the trusted publisher
+runs:
+  using: docker
+  image: Dockerfile
+  entrypoint: /register.sh
+  post-entrypoint: /export.sh
+  post-if: always()

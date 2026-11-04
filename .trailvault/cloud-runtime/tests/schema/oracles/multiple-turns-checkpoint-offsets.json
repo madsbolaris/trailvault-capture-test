@@ -1,0 +1,65 @@
+{
+  "checkpoints": [
+    {
+      "id": "01M66BY33VK9DD6FGRJ138PK4K",
+      "files": {
+        "0/content_hash.txt": {
+          "mode": "100644",
+          "utf8": "sha256:c25a44ab0855f1a6e83ab7ba57b599f3fc17f7dd750abbca5c063bec4b46ad53"
+        },
+        "0/full.jsonl": {
+          "mode": "100644",
+          "utf8": "{\"data\":{\"context\":{\"branch\":\"main\",\"cwd\":\"/fixture/worktree\"},\"copilotVersion\":\"1.0.105\",\"sessionId\":\"20000000-0000-4000-8000-000000000000\"},\"id\":\"event-start\",\"parentId\":null,\"timestamp\":\"2026-01-02T03:04:05Z\",\"type\":\"session.start\"}\n{\"data\":{\"content\":\"Update the synthetic fixture.\"},\"id\":\"event-0-0-0\",\"parentId\":null,\"timestamp\":\"2026-01-02T03:04:06Z\",\"type\":\"user.message\"}\n{\"data\":{\"content\":\"First turn.\"},\"id\":\"event-0-0-1\",\"parentId\":\"event-0-0-0\",\"timestamp\":\"2026-01-02T03:04:07Z\",\"type\":\"assistant.message\"}\n"
+        },
+        "0/metadata.json": {
+          "mode": "100644",
+          "utf8": "{\n  \"cli_version\": \"0.12.2\",\n  \"checkpoint_id\": \"01M66BY33VK9DD6FGRJ138PK4K\",\n  \"session_id\": \"20000000-0000-4000-8000-000000000000\",\n  \"strategy\": \"manual-commit\",\n  \"created_at\": \"2026-10-30T12:18:13.381861Z\",\n  \"branch\": \"main\",\n  \"checkpoints_count\": 1,\n  \"save_step_count\": 1,\n  \"files_touched\": [\n    \"agent-0.txt\"\n  ],\n  \"agent\": \"Copilot CLI\",\n  \"model\": \"\",\n  \"turn_id\": \"c72c57a80a44\",\n  \"compact_transcript_start\": 0,\n  \"token_usage\": {\n    \"input_tokens\": 0,\n    \"cache_creation_tokens\": 0,\n    \"cache_read_tokens\": 0,\n    \"output_tokens\": 0,\n    \"api_call_count\": 0\n  },\n  \"redaction\": {\n    \"replacements\": 0,\n    \"layers\": {\n      \"betterleaks\": 0,\n      \"connection_string\": 0,\n      \"credential_key\": 0,\n      \"credential_value\": 0,\n      \"credentialed_uri\": 0,\n      \"entropy\": 0,\n      \"key_context\": 0,\n      \"provider_token\": 0,\n      \"shell_stdin\": 0\n    }\n  },\n  \"session_metrics\": {\n    \"turn_count\": 1\n  }\n}\n"
+        },
+        "0/prompt.txt": {
+          "mode": "100644",
+          "utf8": "Update the synthetic fixture."
+        },
+        "0/transcript.jsonl": {
+          "mode": "100644",
+          "utf8": "{\"v\":1,\"agent\":\"copilot-cli\",\"cli_version\":\"0.12.2\",\"type\":\"user\",\"ts\":\"2026-01-02T03:04:06Z\",\"content\":[{\"text\":\"Update the synthetic fixture.\"}]}\n{\"v\":1,\"agent\":\"copilot-cli\",\"cli_version\":\"0.12.2\",\"type\":\"assistant\",\"ts\":\"2026-01-02T03:04:07Z\",\"content\":[{\"text\":\"First turn.\",\"type\":\"text\"}]}\n"
+        },
+        "metadata.json": {
+          "mode": "100644",
+          "utf8": "{\n  \"cli_version\": \"0.12.2\",\n  \"checkpoint_id\": \"01M66BY33VK9DD6FGRJ138PK4K\",\n  \"strategy\": \"manual-commit\",\n  \"branch\": \"main\",\n  \"checkpoints_count\": 1,\n  \"files_touched\": [\n    \"agent-0.txt\"\n  ],\n  \"sessions\": [\n    {\n      \"metadata\": \"/0/metadata.json\",\n      \"transcript\": \"/0/full.jsonl\",\n      \"compact_transcript\": \"/0/transcript.jsonl\",\n      \"content_hash\": \"/0/content_hash.txt\",\n      \"prompt\": \"/0/prompt.txt\"\n    }\n  ],\n  \"token_usage\": {\n    \"input_tokens\": 0,\n    \"cache_creation_tokens\": 0,\n    \"cache_read_tokens\": 0,\n    \"output_tokens\": 0,\n    \"api_call_count\": 0\n  },\n  \"redaction\": {\n    \"replacements\": 0,\n    \"layers\": {\n      \"betterleaks\": 0,\n      \"connection_string\": 0,\n      \"credential_key\": 0,\n      \"credential_value\": 0,\n      \"credentialed_uri\": 0,\n      \"entropy\": 0,\n      \"key_context\": 0,\n      \"provider_token\": 0,\n      \"shell_stdin\": 0\n    }\n  }\n}\n"
+        }
+      }
+    },
+    {
+      "id": "01M66BY3R8HDBJ4GX5CPNX87AV",
+      "files": {
+        "0/content_hash.txt": {
+          "mode": "100644",
+          "utf8": "sha256:34a1ec6d7f3e419db964aba9152e1e3b702f07572b05c76f5fe5af3f08ecf439"
+        },
+        "0/full.jsonl": {
+          "mode": "100644",
+          "utf8": "{\"data\":{\"context\":{\"branch\":\"main\",\"cwd\":\"/fixture/worktree\"},\"copilotVersion\":\"1.0.105\",\"sessionId\":\"20000000-0000-4000-8000-000000000000\"},\"id\":\"event-start\",\"parentId\":null,\"timestamp\":\"2026-01-02T03:04:05Z\",\"type\":\"session.start\"}\n{\"data\":{\"content\":\"Update the synthetic fixture.\"},\"id\":\"event-0-0-0\",\"parentId\":null,\"timestamp\":\"2026-01-02T03:04:06Z\",\"type\":\"user.message\"}\n{\"data\":{\"content\":\"First turn.\"},\"id\":\"event-0-0-1\",\"parentId\":\"event-0-0-0\",\"timestamp\":\"2026-01-02T03:04:07Z\",\"type\":\"assistant.message\"}\n{\"data\":{\"content\":\"Second edit.\"},\"id\":\"event-0-1-0\",\"parentId\":null,\"timestamp\":\"2026-01-02T03:04:06Z\",\"type\":\"user.message\"}\n{\"data\":{\"content\":\"Second turn.\",\"messageId\":\"turn-2\",\"outputTokens\":5},\"id\":\"event-0-1-1\",\"parentId\":\"event-0-1-0\",\"timestamp\":\"2026-01-02T03:04:07Z\",\"type\":\"assistant.message\"}\n"
+        },
+        "0/metadata.json": {
+          "mode": "100644",
+          "utf8": "{\n  \"cli_version\": \"0.12.2\",\n  \"checkpoint_id\": \"01M66BY3R8HDBJ4GX5CPNX87AV\",\n  \"session_id\": \"20000000-0000-4000-8000-000000000000\",\n  \"strategy\": \"manual-commit\",\n  \"created_at\": \"2026-10-30T12:18:14.061133Z\",\n  \"branch\": \"main\",\n  \"checkpoints_count\": 1,\n  \"save_step_count\": 1,\n  \"files_touched\": [\n    \"agent-0.txt\"\n  ],\n  \"agent\": \"Copilot CLI\",\n  \"model\": \"\",\n  \"turn_id\": \"2707f16a0684\",\n  \"checkpoint_transcript_start\": 3,\n  \"transcript_lines_at_start\": 3,\n  \"compact_transcript_start\": 2,\n  \"token_usage\": {\n    \"input_tokens\": 0,\n    \"cache_creation_tokens\": 0,\n    \"cache_read_tokens\": 0,\n    \"output_tokens\": 5,\n    \"api_call_count\": 1\n  },\n  \"redaction\": {\n    \"replacements\": 0,\n    \"layers\": {\n      \"betterleaks\": 0,\n      \"connection_string\": 0,\n      \"credential_key\": 0,\n      \"credential_value\": 0,\n      \"credentialed_uri\": 0,\n      \"entropy\": 0,\n      \"key_context\": 0,\n      \"provider_token\": 0,\n      \"shell_stdin\": 0\n    }\n  },\n  \"session_metrics\": {\n    \"turn_count\": 2\n  }\n}\n"
+        },
+        "0/prompt.txt": {
+          "mode": "100644",
+          "utf8": "Second edit."
+        },
+        "0/transcript.jsonl": {
+          "mode": "100644",
+          "utf8": "{\"v\":1,\"agent\":\"copilot-cli\",\"cli_version\":\"0.12.2\",\"type\":\"user\",\"ts\":\"2026-01-02T03:04:06Z\",\"content\":[{\"text\":\"Update the synthetic fixture.\"}]}\n{\"v\":1,\"agent\":\"copilot-cli\",\"cli_version\":\"0.12.2\",\"type\":\"assistant\",\"ts\":\"2026-01-02T03:04:07Z\",\"content\":[{\"text\":\"First turn.\",\"type\":\"text\"}]}\n{\"v\":1,\"agent\":\"copilot-cli\",\"cli_version\":\"0.12.2\",\"type\":\"user\",\"ts\":\"2026-01-02T03:04:06Z\",\"content\":[{\"text\":\"Second edit.\"}]}\n{\"v\":1,\"agent\":\"copilot-cli\",\"cli_version\":\"0.12.2\",\"type\":\"assistant\",\"ts\":\"2026-01-02T03:04:07Z\",\"id\":\"turn-2\",\"output_tokens\":5,\"content\":[{\"text\":\"Second turn.\",\"type\":\"text\"}]}\n"
+        },
+        "metadata.json": {
+          "mode": "100644",
+          "utf8": "{\n  \"cli_version\": \"0.12.2\",\n  \"checkpoint_id\": \"01M66BY3R8HDBJ4GX5CPNX87AV\",\n  \"strategy\": \"manual-commit\",\n  \"branch\": \"main\",\n  \"checkpoints_count\": 1,\n  \"files_touched\": [\n    \"agent-0.txt\"\n  ],\n  \"sessions\": [\n    {\n      \"metadata\": \"/0/metadata.json\",\n      \"transcript\": \"/0/full.jsonl\",\n      \"compact_transcript\": \"/0/transcript.jsonl\",\n      \"content_hash\": \"/0/content_hash.txt\",\n      \"prompt\": \"/0/prompt.txt\"\n    }\n  ],\n  \"token_usage\": {\n    \"input_tokens\": 0,\n    \"cache_creation_tokens\": 0,\n    \"cache_read_tokens\": 0,\n    \"output_tokens\": 5,\n    \"api_call_count\": 1\n  },\n  \"redaction\": {\n    \"replacements\": 0,\n    \"layers\": {\n      \"betterleaks\": 0,\n      \"connection_string\": 0,\n      \"credential_key\": 0,\n      \"credential_value\": 0,\n      \"credentialed_uri\": 0,\n      \"entropy\": 0,\n      \"key_context\": 0,\n      \"provider_token\": 0,\n      \"shell_stdin\": 0\n    }\n  }\n}\n"
+        }
+      }
+    }
+  ],
+  "native": [
+    "34a1ec6d7f3e419db964aba9152e1e3b702f07572b05c76f5fe5af3f08ecf439"
+  ]
+}

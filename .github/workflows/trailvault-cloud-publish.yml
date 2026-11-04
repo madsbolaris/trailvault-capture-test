@@ -1,0 +1,80 @@
+name: Publish Trailvault cloud checkpoints
+on:
+  workflow_dispatch:
+    inputs:
+      source_run:
+        description: Hosted Copilot Actions run ID
+        required: true
+        type: string
+      source_attempt:
+        description: Hosted run attempt
+        required: true
+        type: string
+permissions: {}
+concurrency:
+  group: trailvault-publish-${{ inputs.source_run }}-${{ inputs.source_attempt }}
+  cancel-in-progress: false
+jobs:
+  publish:
+    if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: write
+    env:
+      SOURCE_RUN: ${{ inputs.source_run }}
+      SOURCE_ATTEMPT: ${{ inputs.source_attempt }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+      - name: Verify completed hosted source run
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          [[ "$SOURCE_RUN" =~ ^[1-9][0-9]*$ && "$SOURCE_ATTEMPT" =~ ^[1-9][0-9]*$ ]]
+          for attempt in $(seq 1 30); do
+            gh api "repos/$GITHUB_REPOSITORY/actions/runs/$SOURCE_RUN/attempts/$SOURCE_ATTEMPT" > "$RUNNER_TEMP/trailvault-source.json"
+            if jq -e '.status == "completed"' "$RUNNER_TEMP/trailvault-source.json" > /dev/null; then
+              break
+            fi
+            sleep 10
+          done
+          jq -e --arg repo "$GITHUB_REPOSITORY" --argjson attempt "$SOURCE_ATTEMPT" '
+            .status == "completed" and .conclusion == "success" and
+            .event == "dynamic" and .path == "dynamic/copilot-swe-agent/copilot" and
+            .head_repository.full_name == $repo and .run_attempt == $attempt and
+            (.head_branch | startswith("copilot/"))
+          ' "$RUNNER_TEMP/trailvault-source.json"
+          branch=$(jq -r '.head_branch' "$RUNNER_TEMP/trailvault-source.json")
+          printf 'SOURCE_BRANCH=%s\n' "$branch" >> "$GITHUB_ENV"
+      - name: Build trusted publisher from the default branch
+        run: cargo build --locked --release --manifest-path .trailvault/cloud-runtime/Cargo.toml --bin trailvault
+      - name: Check artifact ownership and size
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          name="trailvault-checkpoints-$SOURCE_RUN-$SOURCE_ATTEMPT"
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$SOURCE_RUN/artifacts" > "$RUNNER_TEMP/trailvault-artifacts.json"
+          jq -e --arg name "$name" '
+            [.artifacts[] | select(.name == $name)] |
+            length == 1 and (.[0].expired == false) and (.[0].size_in_bytes <= 52428800)
+          ' "$RUNNER_TEMP/trailvault-artifacts.json"
+      - uses: actions/download-artifact@v4
+        with:
+          name: trailvault-checkpoints-${{ env.SOURCE_RUN }}-${{ env.SOURCE_ATTEMPT }}
+          run-id: ${{ env.SOURCE_RUN }}
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/trailvault-handoff
+      - name: Validate data and publish checkpoint refs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh auth setup-git
+          .trailvault/cloud-runtime/target/release/trailvault cloud publish \
+            "$RUNNER_TEMP/trailvault-handoff/checkpoints.json" \
+            "$GITHUB_REPOSITORY" "$SOURCE_RUN" "$SOURCE_ATTEMPT" "$SOURCE_BRANCH"

@@ -1,0 +1,76 @@
+{
+  "api_history": {
+    "basis": "persisted item projections, not streamed lifecycle hooks; provider compaction/output limits may apply",
+    "environments": [
+      {
+        "environmentConfigId": "4ee7d41d-5e8b-4ea4-a263-ed502f90db05~asenvcfg_c392ab98850081918e0f81ce4ce9428a",
+        "environmentId": "ccarenv_b64_Y2NhcmVudl83YjQwYjFhMmEyMDQ4MTkxOGY2NDVlODgyZWJlMjgxYw"
+      }
+    ],
+    "incomplete_preview_chains": 1,
+    "item_count": 34,
+    "original_history_complete": false,
+    "pagination": "available_history_fully_paged",
+    "pagination_scope": "per_turn",
+    "provider_reported_status": {
+      "type": "idle"
+    },
+    "thread_id": "01a1a6d4-9246-7149-9768-48911d427067",
+    "turn_count": 3
+  },
+  "byte_equality_verified": true,
+  "checkpoint": "01M6KHXTYZWSBB55F177ZAHN0Z",
+  "checkpoint_commit": "6e2bbfc7ed871f681d114bfb8d71f293657d3254",
+  "file_sha256": {
+    "0/content_hash.txt": "9697d6728bdf759e25d9a577d6f5b4b6072d93d3869c5fb50f32fb0caed106af",
+    "0/evidence.json": "f1c9d0b70a992e54c5aa793a5cf611eb6539955f6dacdf220cfcf9cc57332628",
+    "0/full.jsonl": "83527329476951ccab8666a0c6c61c2745fa59283ac94928131246daca3687fd",
+    "0/metadata.json": "92c911fea0fb92c2b91e92a7e4c6aefae4485dcecba620ee4bf5072f15bc521f",
+    "0/prompt.txt": "fb427fc6f226f6bf84c82a177ca6aa29f4b94c1a85891d1e0081ec8d62645358",
+    "0/transcript.jsonl": "7e7f324a7502b40888fe49e56dd9966041b68d9f8c4c0b5cc92abd64d628f42d",
+    "metadata.json": "dc2f0df6e18bef438f59ea52ef2cc7bb3bb522b4d231a68e49b8eb5a4eaf989a"
+  },
+  "fixture_clean": true,
+  "hosted": {
+    "collected_at": "2026-11-04T14:59:23.502Z",
+    "collection": "codex-app-server",
+    "completeness": "available-persisted-history",
+    "identity_basis": "collector_asserted",
+    "remote_session_id": "01a1a6d4-9246-7149-9768-48911d427067",
+    "repository": "madsbolaris/trailvault-capture-test",
+    "source_branch": "test/pr-attribution-codex-cloud-20261104",
+    "source_commit": "5b7eb6b806b1a62daad50a77d5871c57817ae5a9",
+    "transcript_cwd": "/workspace",
+    "transcript_scope": "available persisted app-server history; not original streaming events"
+  },
+  "lifecycle": {
+    "background_jobs": "unverified",
+    "basis": "persisted API history; provider-reported thread/turn status is not a live lease or proof of remote termination",
+    "boundary": "cloud-import",
+    "live_lease": false,
+    "pending_calls_are_historical": true,
+    "pending_tool_calls": [],
+    "presence": "historical_snapshot",
+    "state": "unknown",
+    "task_completion": "unverified"
+  },
+  "native_session_id": "01a1a6d4-9246-7149-9768-48911d427067",
+  "native_tools": {
+    "explicit_failed_results": 4,
+    "finished": 16,
+    "starts": 16
+  },
+  "normal_clone_excluded_custom_refs": true,
+  "original_provider_archive_unchanged": true,
+  "pr": 21,
+  "provider": "codex-cloud",
+  "qualification": "Genuine current Codex Cloud execution. Git proxy refused direct push; both original cloud Git commits transported in an inert verified bundle and published by trusted local Git authorization. Native request-ID-correlated app-server history was collected through the authorized client, not UI transcript snapshots. Three turns and 34 available persisted items; full available pagination does not guarantee original streaming/pre-compaction history. Provider status is not a live lease. Standalone headless cloud access is not verified. The agent corrected its initial Markdown-link formatting error in a second original commit; final file independently verified at 251 bytes.",
+  "queue_empty": true,
+  "reference": "refs/trailvault/checkpoints/0Z/01M6KHXTYZWSBB55F177ZAHN0Z",
+  "remote_session_id": "01a1a6d4-9246-7149-9768-48911d427067",
+  "repository": "madsbolaris/trailvault-capture-test",
+  "source_commit": "5b7eb6b806b1a62daad50a77d5871c57817ae5a9",
+  "source_commit_verified_in_pr": true,
+  "verified": true,
+  "verified_at": "2026-11-04T15:13:09.471589+00:00"
+}

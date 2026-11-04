@@ -1,0 +1,127 @@
+{
+  "cases": [
+    {
+      "answer": "Original marker: fern-e481527fe66e4888997f869b7cab63d2\n\nI've also noted the second marker: ridge-7df7b92d269c4283994cb4b6d7ee6fa8",
+      "events_after": 14,
+      "name": "synthetic-history-native-resume",
+      "passed": true,
+      "restored_session_id": "33d94968-ed5e-4320-88e6-75680c2a3b98"
+    },
+    {
+      "answer": "Original marker: fern-e481527fe66e4888997f869b7cab63d2\n\nSecond marker: ridge-7df7b92d269c4283994cb4b6d7ee6fa8",
+      "events_after": 23,
+      "name": "continued-history-native-transfer",
+      "passed": true,
+      "restored_session_id": "05605bf2-174a-4fd0-b755-3d801976b4bb"
+    },
+    {
+      "answer": "SearchFilter",
+      "checkpoint_commit": "7d9bc9eba8892569dded559214cd2b7fb838f001",
+      "events_after": 49,
+      "name": "real-published-checkpoint-native-resume",
+      "passed": true,
+      "restored_session_id": "4a8dd5d8-48c4-4af9-bcf5-9b98e4750037"
+    }
+  ],
+  "copilot_version": "GitHub Copilot CLI 1.0.105.\nRun 'copilot update' to check for updates.",
+  "isolated_homes": true,
+  "kind": "experimental-native-restoration",
+  "limits": [
+    "Not a full runtime-state restore",
+    "Not shared-session synchronization",
+    "No native rewind files restored",
+    "Synthetic recall history is explicitly synthetic; real checkpoint case is genuine"
+  ],
+  "live_turns": 3,
+  "model_override": false,
+  "new_tool_calls": 0,
+  "real_checkpoint_file_restorations": [
+    {
+      "checkpoint": "01M670FBAQ4R23ZYAA58E8822X",
+      "checkpoint_commit": "7d9bc9eba8892569dded559214cd2b7fb838f001",
+      "passed": true,
+      "source_session_id": "e5c8abe2-f209-40f0-a505-841736b935b3"
+    },
+    {
+      "checkpoint": "01M670HD8S2JG3B69GH3HGQFJJ",
+      "checkpoint_commit": "0282ce0609720f1acccb55c5a4b3f1fa7768bf77",
+      "passed": true,
+      "source_session_id": "e5c8abe2-f209-40f0-a505-841736b935b3"
+    },
+    {
+      "checkpoint": "01M670KZC64PBFBJFEF114XZ6J",
+      "checkpoint_commit": "8d53e803e4e85b4f4676a1adc6ed7d90852041e7",
+      "passed": true,
+      "source_session_id": "6fb0a219-3078-444e-ba73-204d5553ffe8"
+    },
+    {
+      "checkpoint": "01M670NXG35QZR8895975T2PD7",
+      "checkpoint_commit": "008d2e5dbd70f6ecf3e36b035afec0f3fe79e50c",
+      "passed": true,
+      "source_session_id": "03269e9d-a6d4-4507-9566-a7e9137ea2ba"
+    },
+    {
+      "checkpoint": "01M670QQM0VJN4K0HYX6K1SZ0F",
+      "checkpoint_commit": "cf20ce1d3f6a87e92a9d4f0d4f37e67b68b6df35",
+      "passed": true,
+      "source_session_id": "03269e9d-a6d4-4507-9566-a7e9137ea2ba"
+    },
+    {
+      "checkpoint": "01M670W0JBCS40D0FV2MR4K826",
+      "checkpoint_commit": "08384e3f2ed8baabbddf8c55a7d06f55e8628316",
+      "passed": true,
+      "source_session_id": "80524579-957a-4833-8064-1cef012961a7"
+    },
+    {
+      "checkpoint": "01M670WV386DC9CJS522ETEMHD",
+      "checkpoint_commit": "757cd2fbb563311dfc3f86325f5eb34f16c92a73",
+      "passed": true,
+      "source_session_id": "1d494536-3481-4396-b290-0fc346a3c7df"
+    },
+    {
+      "checkpoint": "01M670ZJE59P9NGSJ88C7908K3",
+      "checkpoint_commit": "0b8ac3882e5795804269ed20786a4d9651062661",
+      "passed": true,
+      "source_session_id": "a42587ae-bfa4-4319-bfed-89ffd3dc78c8"
+    },
+    {
+      "checkpoint": "01M6710ZGPDZM0ETZ7SRSJB2F8",
+      "checkpoint_commit": "bbde50935be1a517908ddca722c6b4b535708dd1",
+      "passed": true,
+      "source_session_id": "fc89f83c-48a2-4317-9e9e-a101f9a2f8e1"
+    },
+    {
+      "checkpoint": "01M6712HJQPGAT374B3N419MH5",
+      "checkpoint_commit": "02eb714cfd50b3d894e5a433f623afbd79302ee8",
+      "passed": true,
+      "source_session_id": "b95a5cdd-22eb-4e5a-b9c9-bab93b54a6da"
+    },
+    {
+      "checkpoint": "01M6714EM242DREYVBKB5HKWDN",
+      "checkpoint_commit": "9634359f92c426d50732d6a8201385ff624fba20",
+      "passed": true,
+      "source_session_id": "d1e1d56c-f1e2-4151-a5df-59fc9efbf9d2"
+    },
+    {
+      "checkpoint": "01M6715J7G2QKEMYF1B15S465C",
+      "checkpoint_commit": "ac5d88bd80309321e2675ecf5e6382f04385f2b5",
+      "passed": true,
+      "source_session_id": "8f031855-fa5b-40f3-bec7-82ddc461d1fd"
+    },
+    {
+      "checkpoint": "01M6716YKGY1Y25DAV1V9DDWA8",
+      "checkpoint_commit": "b8be3ccc222e792e171a22729abd7569ca2c44d4",
+      "passed": true,
+      "source_session_id": "abf65024-7cf0-4ef4-b2d4-c641dce43a3c"
+    },
+    {
+      "checkpoint": "01M67425HXGV8B0M2RYE70NMX5",
+      "checkpoint_commit": "7c4d59a7af024b39125cd0ac1e14173e1cb2037f",
+      "passed": true,
+      "source_session_id": "9304b8e0-e533-4c14-88c5-f70c32068ac2"
+    }
+  ],
+  "source_unchanged": true,
+  "temporary_homes_removed_on_exit": true,
+  "timestamp": "2026-11-02T13:42:33.784840+00:00"
+}
