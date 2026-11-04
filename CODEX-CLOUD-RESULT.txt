@@ -1,6 +1,6 @@
 provider=codex-cloud-current
 repository=madsbolaris/trailvault-capture-test
-pr=[https://github.com/madsbolaris/trailvault-capture-test/pull/21](https://github.com/madsbolaris/trailvault-capture-test/pull/21)
+pr=https://github.com/madsbolaris/trailvault-capture-test/pull/21
 source_branch=test/pr-attribution-codex-cloud-20261104
 marker=TRAILVAULT_CODEX_HOSTED_20261104
 arithmetic=42
