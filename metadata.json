@@ -1,0 +1,22 @@
+{
+  "branch": "copilot/pr1-six-copilot-cloud-20261104-verified",
+  "checkpoint_id": "01M6KZ08T1QGJ8XVVQ0Q18QY0J",
+  "checkpoints_count": 1,
+  "cli_version": "0.2.0",
+  "files_touched": [],
+  "publication": {
+    "contribution_verified": false,
+    "kind": "session-snapshot",
+    "source_commit": "fed35c49a691ab2bb45381068997ab3c74f16136"
+  },
+  "sessions": [
+    {
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "metadata": "/0/metadata.json",
+      "prompt": "/0/prompt.txt",
+      "transcript": "/0/full.jsonl"
+    }
+  ],
+  "strategy": "session-snapshot"
+}
