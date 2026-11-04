@@ -175,7 +175,7 @@ fn trials() -> Vec<Trial> {
             event("assistant.message", json!({"content":"Hi"})),
         ])?)?;
         assert_eq!(rows[0]["version"], 2);
-        assert_eq!(rows[0]["classification_version"], 1);
+        assert_eq!(rows[0]["classification_version"], 2);
         assert_eq!(rows[1]["role"], "user");
         assert_eq!(rows[2]["role"], "assistant");
         assert_eq!(rows[1]["classification"]["provenance"], "user_prompts");
