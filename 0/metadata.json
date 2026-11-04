@@ -1,0 +1,16 @@
+{
+  "agent": "Codex Cloud",
+  "branch": "test/pr-attribution-codex-cloud-20261104",
+  "checkpoint_id": "01M6KHFG2X72Q1YW9PR7GTZ498",
+  "checkpoints_count": 1,
+  "cli_version": "0.2.0",
+  "compact_transcript_start": 0,
+  "created_at": "2026-11-04T15:05:14.155264+00:00",
+  "files_touched": [],
+  "redaction": {
+    "replacements": 202
+  },
+  "save_step_count": 0,
+  "session_id": "01a1a6d4-9246-7149-9768-48911d427067",
+  "strategy": "session-snapshot"
+}
