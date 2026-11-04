@@ -20,6 +20,15 @@ jobs:
           fi
           cargo build --locked --release --manifest-path .trailvault/cloud-runtime/Cargo.toml --bin trailvault
           runtime="$PWD/.trailvault/cloud-runtime/target/release/trailvault"
+          git diff --exit-code -- .github/hooks/trailvault.json .trailvault/settings.json
+          mv .github/hooks/trailvault.json "$(git rev-parse --git-path trailvault-cloud-hooks.json)"
+          trap 'git restore -- .github/hooks/trailvault.json .trailvault/settings.json' EXIT
+          if [ -f .trailvault/policy.json ]; then
+            test "$GITHUB_REPOSITORY" = "madsbolaris/trailvault-capture-test"
+            policy_sha="$(sha256sum .trailvault/policy.json | cut -d ' ' -f 1)"
+            test "$policy_sha" = "454251230398b7f7e7bced28bc741f2832e04e8f7caf7c9c95d6ab8019218dae"
+            "$runtime" consent --approve
+          fi
           "$runtime" enable --cloud --push-sessions
           git restore -- .github/hooks/trailvault.json .trailvault/settings.json
           echo "Trailvault runtime and repository Git hooks installed for cloud test."
