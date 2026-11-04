@@ -20,6 +20,7 @@ jobs:
           fi
           cargo build --locked --release --manifest-path .trailvault/cloud-runtime/Cargo.toml --bin trailvault
           runtime="$PWD/.trailvault/cloud-runtime/target/release/trailvault"
+          source .trailvault/cloud-publication-env.sh
           git diff --exit-code -- .github/hooks/trailvault.json .trailvault/settings.json
           mv .github/hooks/trailvault.json "$(git rev-parse --git-path trailvault-cloud-hooks.json)"
           trap 'git restore -- .github/hooks/trailvault.json .trailvault/settings.json' EXIT
