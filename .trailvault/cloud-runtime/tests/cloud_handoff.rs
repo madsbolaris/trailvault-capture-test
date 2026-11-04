@@ -71,12 +71,12 @@ fn export_publish_and_fresh_clone_preserve_exact_native_bytes() -> Result<()> {
         .get("0/full.jsonl")
         .context("Missing native transcript")?;
     let compact = trailvault::redact::parse(&artifact.checkpoints[0].files["0/transcript.jsonl"])?;
-    ensure!(compact[0]["version"] == 2 && compact[0]["classification_version"] == 1);
+    ensure!(compact[0]["version"] == 2 && compact[0]["classification_version"] == 2);
     ensure!(
         compact
             .iter()
             .skip(1)
-            .all(|row| row["classification"]["version"] == 1)
+            .all(|row| row["classification"]["version"] == 2)
     );
     h.publish()?;
     let fresh = h.f.temp.path().join("fresh");
