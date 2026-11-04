@@ -1,5 +1,6 @@
 #!/bin/bash
 set -euo pipefail
+source .trailvault/cloud-publication-env.sh
 event="$1"
 payload="$(cat)"
 mkdir -p .trailvault/cloud-observations

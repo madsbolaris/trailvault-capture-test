@@ -1,9 +1,7 @@
 #!/bin/sh
 set -eu
 cd "$GITHUB_WORKSPACE"
-export GIT_CONFIG_COUNT=1
-export GIT_CONFIG_KEY_0=safe.directory
-export GIT_CONFIG_VALUE_0="$GITHUB_WORKSPACE"
+. .trailvault/cloud-publication-env.sh
 /usr/local/bin/trailvault cloud export /tmp/checkpoints.json
 /usr/local/bin/trailvault cloud upload /tmp/checkpoints.json
 /usr/local/bin/trailvault cloud dispatch /tmp/checkpoints.json
