@@ -1,0 +1,83 @@
+{
+  "contractSHA256": "74c3f50ffd093a43811359242b49d4db61f3eb035d52c52608b2b95296b64c85",
+  "contracts": [
+    {
+      "implementation": "rust",
+      "passed": 1000,
+      "scenarios": 40,
+      "target": "entire",
+      "tests": 1000,
+      "timestamp": "2026-10-29T16:39:17.848205+00:00"
+    },
+    {
+      "implementation": "rust",
+      "passed": 1000,
+      "scenarios": 40,
+      "target": "trailvault",
+      "tests": 1000,
+      "timestamp": "2026-10-29T16:44:58.736383+00:00"
+    }
+  ],
+  "frozenJavaScriptContractAgainstRust": {
+    "caseNamesSHA256": "df3916de3b4a09654b2f49c94a22e758e4e8b926fefd4cbdfba7ae938a105477",
+    "passed": 1000,
+    "tests": 1000,
+    "timestamp": "2026-10-29T16:37:37.827Z"
+  },
+  "generatedAt": "2026-10-29T16:46:02.983200+00:00",
+  "github": [
+    {
+      "branch": "entire-rust-live-1793292037941",
+      "checkpoint": "01M648J6P54BSR4K754SBSAC05",
+      "checkpointHash": "2896bc6d80c18c6a2bf49fb73aa0bae047d2584e",
+      "copilotVersion": "GitHub Copilot CLI 1.0.105.\nRun 'copilot update' to check for updates.",
+      "freshCloneFetchVerified": true,
+      "implementation": "rust",
+      "nativeHashPreserved": true,
+      "redactionVerified": true,
+      "ref": "refs/entire/checkpoints/05/01M648J6P54BSR4K754SBSAC05",
+      "remoteHashVerified": true,
+      "repository": "madsbolaris/trailvault-capture-test",
+      "session": "16209d7f-5f66-4bd1-86b4-a40064dd3903",
+      "sourceCommit": "92ef0da55614df38abf60201fe7f557975d307ea",
+      "target": "entire",
+      "timestamp": "2026-10-29T16:40:55.020745+00:00",
+      "visibility": "PRIVATE"
+    },
+    {
+      "branch": "trailvault-rust-live-1793292037934",
+      "checkpoint": "01M648J6YKRYCD95MZNR6EY444",
+      "checkpointHash": "e7f8ff373e0e6ffbbd0d61cfdc9fab9dc8301483",
+      "copilotVersion": "GitHub Copilot CLI 1.0.105.\nRun 'copilot update' to check for updates.",
+      "freshCloneFetchVerified": true,
+      "implementation": "rust",
+      "nativeHashPreserved": true,
+      "redactionVerified": true,
+      "ref": "refs/trailvault/checkpoints/44/01M648J6YKRYCD95MZNR6EY444",
+      "remoteHashVerified": true,
+      "repository": "madsbolaris/trailvault-capture-test",
+      "session": "87768b74-ad83-488d-9acf-385110788763",
+      "sourceCommit": "57a1641666503ff6e340782d0706814efd2f5432",
+      "target": "trailvault",
+      "timestamp": "2026-10-29T16:40:55.352305+00:00",
+      "visibility": "PRIVATE"
+    }
+  ],
+  "harnessSHA256": "375a53f79417a44b444ca1d653933b77dd970ce8656882795ce1c94433529019",
+  "implementation": "rust",
+  "matrix": "8 file workflows x 5 privacy profiles x 25 checks = 1000 named cases",
+  "originalContractSHA256": "e1b8db9b74bcb888acb05a1a93843a18c7fcbfc5f783ccc3200b15919fddcb2a",
+  "previousImplementationCommit": "df80fb4",
+  "qualification": "40 synthetic lifecycle scenarios per target; not 1000 independent live agent sessions. Supplementary tests and two real Copilot/GitHub runs are separate.",
+  "referenceVersion": "Entire CLI 0.12.2",
+  "supplementary": {
+    "failures": 0,
+    "filtered": 0,
+    "ignored": 0,
+    "implementation": "rust",
+    "passed": 66,
+    "tests": 66
+  },
+  "testFirstCommit": "e10de93",
+  "version": "0.2.0"
+}

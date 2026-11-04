@@ -28,7 +28,7 @@ fn run() -> Result<()> {
     };
     if ["--help", "help", "-h"].contains(&command) {
         println!(
-            "trailvault install [--gh-wrapper] | uninstall [--gh-wrapper] | agent add/remove copilot-cli | agent list | consent [--approve | --decline] | policy status | enable [--cloud] [--push-sessions | --skip-push-sessions] | disable | status | push [remote] | fetch [remote] | checkpoint <id> | restore <id> --session <uuid> --copilot-home <absolute-path> --working-directory <path> [--allow-lossy] [--dry-run] | recover | version"
+            "trailvault install [--gh-wrapper] | uninstall [--gh-wrapper] | agent add/remove copilot-cli | agent list | consent [--approve | --decline] | policy status | enable [--cloud] [--push-sessions | --skip-push-sessions] | capture <claude-code|codex> <boundary> <payload.json|-> [--checkpoint] | capture-cloud <claude-code|codex> <payload.json|-> | disable | status | push [remote] | fetch [remote] | related <PR-url> | checkpoint <id> | restore <id> --session <uuid> --copilot-home <absolute-path> --working-directory <path> [--allow-lossy] [--dry-run] | recover | version"
         );
         return Ok(());
     }
@@ -36,9 +36,35 @@ fn run() -> Result<()> {
         println!("Trailvault CLI {VERSION}");
         return Ok(());
     }
+    if command == "capture-cloud"
+        && rest
+            .iter()
+            .any(|arg| ["--help", "-h"].contains(&arg.as_str()))
+    {
+        println!(
+            "trailvault capture-cloud <claude-code|codex> <payload.json|->\nImport an explicitly selected hosted archive; queue a session-only Git checkpoint. Requires repository consent and enabled capture. Payload: native_session_id (UUID), transcript_path (absolute), provenance {{ remote_session_id, repository (owner/repo matching origin), source_commit (available full SHA), source_branch, transcript_cwd (literal provider cwd), collected_at (RFC3339), collection, completeness, identity_basis: \"collector_asserted\" }}.\nClaude: native JSONL handoff; remote_session_id=session_..., collection=\"claude-teleport\", completeness=\"handoff-may-be-compacted\". Remote/native mapping is collector asserted; a handoff may include local turns.\nCodex: request-ID-correlated thread/read, thread/turns/list and thread/items/list JSON export (trailvault.codex-app-server-observation.v1); remote_session_id equals native_session_id and the API thread UUID; collection=\"codex-app-server\", completeness=\"available-persisted-history\". Requires cloud runtime identity and complete available pagination, either whole-thread or every turn; not UI snapshots or a local rollout substitute. Original pre-compaction history is not guaranteed.\nNeither importer launches remote work, authenticates the collector, provides unattended cloud access or asserts live presence/remote termination. Use push/fetch explicitly. Input limit: 64 MiB."
+        );
+        return Ok(());
+    }
     if command == "restore" && rest.iter().any(|arg| arg == "--help" || arg == "-h") {
         println!(
             "trailvault restore <checkpoint-id> --session <source-uuid> --copilot-home <absolute-path> --working-directory <existing-path> [--allow-lossy] [--dry-run]\nExperimental Copilot CLI 1.0.105 native-file restoration. Creates a NEW local session, never overwrites the original. Does not launch Copilot or modify code. Fetch the checkpoint first. Runtime state/permissions/rewind files are not restored. Use an isolated home and only resume trusted transcripts; archived context can influence agent actions."
+        );
+        return Ok(());
+    }
+    if command == "capture" && rest.iter().any(|arg| arg == "--help" || arg == "-h") {
+        println!(
+            "trailvault capture <claude-code|codex> <session-start|user-prompt-submitted|pre-tool-use|post-tool-use|agent-stop|session-end> <payload.json|-> [--checkpoint]\nExplicit native capture; no Claude/Codex hooks or live presence service are installed. Payload: sessionId (UUID), transcriptPath (absolute native session path, required for snapshot boundaries), prompt (prompt boundary). Call session-start before edits. --checkpoint queues an independent session-only Git checkpoint and requires a snapshot boundary. Without that flag, read-only PR-related sessions checkpoint automatically at observed agent-stop/session-end boundaries; automatic pushes obey repository settings and consent. Fetch remains explicit. Native transcripts must reside under the provider's configured projects/sessions directory. Capture payload limit: 16 MiB; native transcript limit: 64 MiB."
+        );
+        return Ok(());
+    }
+    if command == "related"
+        && rest
+            .iter()
+            .any(|arg| ["--help", "-h"].contains(&arg.as_str()))
+    {
+        println!(
+            "trailvault related <https://github.com/owner/repo/pull/number>\nRead locally available checkpoint refs and return matching PR relationships as JSON. No implicit network access; run fetch explicitly first. Merge with PR source-commit/trailer discovery. Mentions and review requests are not verified retrieval, completed review or contribution."
         );
         return Ok(());
     }
@@ -126,6 +152,78 @@ fn run() -> Result<()> {
     }
     let repo = Repo::discover(&env::current_dir()?)?;
     match command {
+        "capture-cloud" => {
+            ensure!(
+                rest.len() == 2 && ["claude-code", "codex"].contains(&arg(0)?),
+                "Use capture-cloud <claude-code|codex> <payload.json|->"
+            );
+            let input = if arg(1)? == "-" {
+                hook_input()?
+            } else {
+                bounded_payload(std::fs::File::open(arg(1)?)?)?
+            };
+            let collection = input["provenance"]["collection"]
+                .as_str()
+                .context("Missing hosted collection method")?;
+            ensure!(
+                matches!(
+                    collection,
+                    "claude-teleport" | trailvault::codex_api::COLLECTION
+                ),
+                "Unsupported hosted collection method"
+            );
+            ensure!(
+                (arg(0)? == "codex") == (collection == trailvault::codex_api::COLLECTION),
+                "Hosted provider/collection mismatch"
+            );
+            println!("{}", capture::hosted_checkpoint(&repo, &input)?);
+        }
+        "capture" => {
+            ensure!(
+                (3..=4).contains(&rest.len()) && rest.get(3).is_none_or(|v| v == "--checkpoint"),
+                "Use capture <claude-code|codex> <boundary> <payload.json|-> [--checkpoint]"
+            );
+            let provider = trailvault::native::Provider::parse(arg(0)?)?;
+            ensure!(
+                rest.len() != 4 || !["session-start", "user-prompt-submitted"].contains(&arg(1)?),
+                "Checkpoint requires a transcript snapshot boundary"
+            );
+            let input = if arg(2)? == "-" {
+                hook_input()?
+            } else {
+                bounded_payload(std::fs::File::open(arg(2)?)?)
+                    .context("Cannot read capture payload file")?
+            };
+            ensure!(input.is_object(), "Capture payload must be an object");
+            capture::native_hook(&repo, provider, arg(1)?, &input)?;
+            if rest.len() == 4 {
+                let id = capture::native_checkpoint(
+                    &repo,
+                    input["sessionId"]
+                        .as_str()
+                        .context("Missing native sessionId")?,
+                )?;
+                println!("{id}");
+            } else if ["agent-stop", "session-end"].contains(&arg(1)?) {
+                capture::checkpoint_related(
+                    &repo,
+                    input["sessionId"]
+                        .as_str()
+                        .context("Missing native sessionId")?,
+                )?;
+            }
+        }
+        "related" => {
+            ensure!(
+                rest.len() == 1,
+                "Use related <https://github.com/owner/repo/pull/number>"
+            );
+            let target = trailvault::relationships::Target::parse(arg(0)?)?;
+            println!(
+                "{}",
+                serde_json::to_string_pretty(&trailvault::relationships::related(&repo, &target)?)?
+            );
+        }
         "cloud" => match arg(0)? {
             "export" => {
                 ensure!(rest.len() == 2, "Use cloud export <manifest.json>");
@@ -371,10 +469,11 @@ fn run() -> Result<()> {
 }
 
 fn hook_input() -> Result<Value> {
+    bounded_payload(io::stdin())
+}
+fn bounded_payload(input: impl Read) -> Result<Value> {
     let mut bytes = vec![];
-    io::stdin()
-        .take(16 * 1024 * 1024 + 1)
-        .read_to_end(&mut bytes)?;
+    input.take(16 * 1024 * 1024 + 1).read_to_end(&mut bytes)?;
     ensure!(
         bytes.len() <= 16 * 1024 * 1024,
         "Hook payload exceeds 16 MiB"

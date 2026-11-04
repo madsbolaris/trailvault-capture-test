@@ -20,3 +20,44 @@ tempfile = "3"
 ulid = "1"
 uuid = { version = "1", features = ["v4"] }
 wait-timeout = "0.2"
+
+[dev-dependencies]
+libtest-mimic = "0.8"
+portable-pty = "0.9"
+vt100 = "0.15"
+
+[[test]]
+name = "contract"
+harness = false
+
+[[test]]
+name = "supplementary"
+harness = false
+
+[[test]]
+name = "restoration"
+harness = false
+
+[[test]]
+name = "copilot_cloud"
+harness = false
+
+[[test]]
+name = "native_capture"
+harness = false
+
+[[test]]
+name = "claude_hosted"
+harness = false
+
+[[test]]
+name = "codex_hosted"
+harness = false
+
+[[test]]
+name = "classification"
+harness = false
+
+[[test]]
+name = "relationships"
+harness = false

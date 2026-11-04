@@ -13,7 +13,7 @@ use std::{
     collections::{BTreeMap, BTreeSet},
     env,
     fs::{self, OpenOptions},
-    io::{BufRead, BufReader, Write},
+    io::{BufRead, BufReader, Read, Write},
     os::{fd::AsFd, unix::fs::PermissionsExt},
     path::{Path, PathBuf},
 };
@@ -21,6 +21,129 @@ use tempfile::TempDir;
 use ulid::Ulid;
 
 type Snapshot = BTreeMap<String, Option<String>>;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum ClientApp {
+    Vscode,
+    Copilot,
+    CopilotCli,
+    Codex,
+    ClaudeCode,
+    Cli,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum ClientEnvironment {
+    Local,
+    Cloud,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Client {
+    pub app: ClientApp,
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "client_environment"
+    )]
+    pub environment: Option<ClientEnvironment>,
+}
+
+fn client_environment<'de, D>(
+    deserializer: D,
+) -> std::result::Result<Option<ClientEnvironment>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    ClientEnvironment::deserialize(deserializer).map(Some)
+}
+
+impl Client {
+    pub(crate) fn native(
+        provider: crate::native::Provider,
+        environment: ClientEnvironment,
+    ) -> Self {
+        Self {
+            app: match provider {
+                crate::native::Provider::Claude => ClientApp::ClaudeCode,
+                crate::native::Provider::Codex => ClientApp::Codex,
+            },
+            environment: Some(environment),
+        }
+    }
+
+    pub(crate) fn validate_hosted(&self) -> Result<()> {
+        ensure!(
+            self.environment != Some(ClientEnvironment::Local),
+            "Hosted capture client cannot assert a local environment"
+        );
+        Ok(())
+    }
+}
+
+pub(crate) fn client(input: &Value) -> Result<Option<Client>> {
+    input
+        .get("client")
+        .map(|value| serde_json::from_value(value.clone()).context("Invalid session client"))
+        .transpose()
+}
+
+pub(crate) fn deserialize_client<'de, D>(
+    deserializer: D,
+) -> std::result::Result<Option<Client>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    Client::deserialize(deserializer).map(Some)
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Participant {
+    pub github_login: String,
+}
+
+pub(crate) fn validate_participants(participants: &[Participant]) -> Result<()> {
+    ensure!(
+        participants.len() <= 32,
+        "At most 32 session participants are supported"
+    );
+    let mut logins = BTreeSet::new();
+    for participant in participants {
+        let login = &participant.github_login;
+        ensure!(
+            !login.is_empty()
+                && login.len() <= 39
+                && login
+                    .bytes()
+                    .all(|byte| byte.is_ascii_alphanumeric() || byte == b'-')
+                && !login.starts_with('-')
+                && !login.ends_with('-')
+                && !login.contains("--"),
+            "Invalid participant GitHub login"
+        );
+        ensure!(
+            logins.insert(login.to_ascii_lowercase()),
+            "Duplicate session participant"
+        );
+    }
+    Ok(())
+}
+
+fn participants(input: &Value) -> Result<Option<Vec<Participant>>> {
+    input
+        .get("participants")
+        .map(|value| {
+            let participants: Vec<Participant> =
+                serde_json::from_value(value.clone()).context("Invalid session participants")?;
+            validate_participants(&participants)?;
+            Ok(participants)
+        })
+        .transpose()
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct State {
@@ -55,14 +178,24 @@ pub struct State {
     pub ended_at: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub last_checkpoint_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub last_related_fingerprint: Option<String>,
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub tasks: BTreeMap<String, crate::subagent::Task>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub native_context: Option<crate::native::ContextSnapshot>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub participants: Vec<Participant>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub client: Option<Client>,
 }
 #[derive(Serialize, Deserialize)]
 struct PlanSession {
     id: String,
     transcript_hash: String,
     files: Vec<String>,
+    #[serde(default)]
+    native_context: Option<crate::native::ContextSnapshot>,
 }
 #[derive(Serialize, Deserialize)]
 struct Plan {
@@ -74,6 +207,44 @@ struct Entry {
     state: State,
     full: String,
     touched: Vec<String>,
+    native_context: Option<crate::native::ContextSnapshot>,
+}
+
+fn initial_state(repo: &Repo, id: &str, agent: &str) -> Result<State> {
+    Ok(State {
+        session_id: id.into(),
+        agent_type: agent.into(),
+        worktree_path: repo.root.clone(),
+        base_commit: repo.g(&["rev-parse", "HEAD"])?,
+        branch: git::run(
+            &repo.root,
+            &["symbolic-ref", "--quiet", "--short", "HEAD"],
+            &BTreeMap::new(),
+            None,
+        )?
+        .stdout
+        .trim_end()
+        .into(),
+        started_at: Utc::now().to_rfc3339(),
+        phase: "active".into(),
+        files_touched: vec![],
+        touched_file_hashes: BTreeMap::new(),
+        checkpoint_count: 0,
+        step_count: 0,
+        prompts: vec![],
+        baseline: snapshot(repo)?,
+        last_prompt: None,
+        transcript_path: None,
+        transcript_hash: None,
+        pending_transcript: None,
+        ended_at: None,
+        last_checkpoint_id: None,
+        last_related_fingerprint: None,
+        tasks: BTreeMap::new(),
+        native_context: None,
+        participants: vec![],
+        client: None,
+    })
 }
 
 pub fn hash(bytes: impl AsRef<[u8]>) -> String {
@@ -416,6 +587,14 @@ pub fn agent_hook(repo: &Repo, name: &str, input: &Value) -> Result<()> {
         .as_str()
         .filter(|s| !s.is_empty())
         .context("sessionId is required")?;
+    let participants = participants(input)?;
+    let client = client(input)?;
+    let hosted = config.pointer("/strategy_options/cloud_artifact") == Some(&json!(true));
+    if hosted {
+        if let Some(client) = &client {
+            client.validate_hosted()?;
+        }
+    }
     let path = state_path(repo, id)?;
     if name == "session-start"
         && config.pointer("/strategy_options/cloud_artifact") == Some(&json!(true))
@@ -444,37 +623,28 @@ pub fn agent_hook(repo: &Repo, name: &str, input: &Value) -> Result<()> {
     );
     let mut state = match existing {
         Some(state) => state,
-        None => State {
-            session_id: id.into(),
-            agent_type: "Copilot CLI".into(),
-            worktree_path: repo.root.clone(),
-            base_commit: repo.g(&["rev-parse", "HEAD"])?,
-            branch: git::run(
-                &repo.root,
-                &["symbolic-ref", "--quiet", "--short", "HEAD"],
-                &BTreeMap::new(),
-                None,
-            )?
-            .stdout
-            .trim_end()
-            .into(),
-            started_at: Utc::now().to_rfc3339(),
-            phase: "active".into(),
-            files_touched: vec![],
-            touched_file_hashes: BTreeMap::new(),
-            checkpoint_count: 0,
-            step_count: 0,
-            prompts: vec![],
-            baseline: snapshot(repo)?,
-            last_prompt: None,
-            transcript_path: None,
-            transcript_hash: None,
-            pending_transcript: None,
-            ended_at: None,
-            last_checkpoint_id: None,
-            tasks: BTreeMap::new(),
-        },
+        None => initial_state(repo, id, "Copilot CLI")?,
     };
+    if let Some(participants) = participants {
+        state.participants = participants;
+    }
+    state.client = client.or(state.client).or(Some(Client {
+        app: if hosted {
+            ClientApp::Copilot
+        } else {
+            ClientApp::CopilotCli
+        },
+        environment: Some(if hosted {
+            ClientEnvironment::Cloud
+        } else {
+            ClientEnvironment::Local
+        }),
+    }));
+    if hosted {
+        if let Some(client) = &state.client {
+            client.validate_hosted()?;
+        }
+    }
     if name == "subagent-stop" {
         let transcript = transcript_path(input, id)?;
         let expected = crate::install::home()?
@@ -509,7 +679,15 @@ pub fn agent_hook(repo: &Repo, name: &str, input: &Value) -> Result<()> {
     }
     if ["pre-tool-use", "post-tool-use", "agent-stop", "session-end"].contains(&name) {
         let transcript = transcript_path(input, id)?;
-        let content = fs::read_to_string(&transcript)?;
+        let mut bytes = Vec::new();
+        fs::File::open(&transcript)?
+            .take(64 * 1024 * 1024 + 1)
+            .read_to_end(&mut bytes)?;
+        ensure!(
+            bytes.len() <= 64 * 1024 * 1024,
+            "Native transcript exceeds 64 MiB"
+        );
+        let content = String::from_utf8(bytes).context("Native transcript is not UTF-8")?;
         redact::parse(&content)?;
         let after = snapshot(repo)?;
         let paths: BTreeSet<_> = state.baseline.keys().chain(after.keys()).collect();
@@ -545,7 +723,369 @@ pub fn agent_hook(repo: &Repo, name: &str, input: &Value) -> Result<()> {
             state.ended_at = Some(Utc::now().to_rfc3339());
         }
     }
+    git::save(&path, &state)?;
+    drop(_lock);
+    if ["agent-stop", "session-end"].contains(&name) {
+        checkpoint_related(repo, id)?;
+    }
+    Ok(())
+}
+
+fn uncommitted_touched_files(repo: &Repo, state: &State) -> Result<Vec<String>> {
+    let mut remaining = vec![];
+    for path in &state.files_touched {
+        let tree = repo.g(&["ls-tree", "-z", "HEAD", "--", path])?;
+        let committed = tree.split_once('\t').and_then(|(head, _)| {
+            let mut parts = head.split_whitespace();
+            parts.next()?;
+            if parts.next()? != "blob" {
+                return None;
+            }
+            parts.next().map(str::to_owned)
+        });
+        if committed != state.touched_file_hashes.get(path).cloned().flatten() {
+            remaining.push(path.clone());
+        }
+    }
+    Ok(remaining)
+}
+
+pub fn checkpoint_related(repo: &Repo, id: &str) -> Result<Option<String>> {
+    if settings(repo)?["enabled"] != true || !crate::policy::capture_allowed(repo)? {
+        return Ok(None);
+    }
+    let checkpoint = {
+        let _lock = repo.lock()?;
+        let mut state: State = git::read(&state_path(repo, id)?)?;
+        if !uncommitted_touched_files(repo, &state)?.is_empty() {
+            return Ok(None);
+        }
+        let Some(path) = state.pending_transcript.as_ref() else {
+            return Ok(None);
+        };
+        let raw = fs::read_to_string(path)?;
+        ensure!(
+            state.transcript_hash.as_deref() == Some(hash(&raw).as_str()),
+            "Related session snapshot changed"
+        );
+        let config = settings(repo)?;
+        let fingerprint = hash(format!(
+            "{}\n{}\n{}\n{}\n{:?}",
+            raw,
+            serde_json::to_string(&config)?,
+            state.phase,
+            repo.g(&["rev-parse", "HEAD"])?,
+            crate::relationships::origin_repository(repo)?
+        ));
+        if state.last_related_fingerprint.as_deref() == Some(&fingerprint) {
+            drop(_lock);
+            push(repo, "origin", true)?;
+            return Ok(None);
+        }
+        let mut redactor = Redactor::new(&config)?;
+        let (compact, provider_links) = if let Some(context) = &state.native_context {
+            let (_, compact, evidence) =
+                crate::native::checkpoint(repo, id, &raw, context, &mut redactor)?;
+            (compact, evidence.get("pr_references").cloned())
+        } else {
+            let events = redact::parse(&raw)?
+                .iter()
+                .map(|event| redactor.event(event))
+                .collect::<Vec<_>>();
+            (redact::compact(&events)?, None)
+        };
+        let links = crate::relationships::collect(
+            &compact,
+            crate::relationships::origin_repository(repo)?.as_deref(),
+            provider_links.as_ref(),
+        )?;
+        if links.relationships.is_empty() {
+            return Ok(None);
+        }
+        let checkpoint = checkpoint_id();
+        let reference = build_checkpoint(
+            repo,
+            &checkpoint,
+            &[Entry {
+                state: state.clone(),
+                full: raw,
+                touched: vec![],
+                native_context: state.native_context.clone(),
+            }],
+            "session-snapshot",
+        )?;
+        let mut queue: Vec<String> = git::optional(&queue_path(repo))?.unwrap_or_default();
+        if !queue.contains(&reference) {
+            queue.push(reference);
+        }
+        git::save(&queue_path(repo), &queue)?;
+        state.last_related_fingerprint = Some(fingerprint);
+        state.last_checkpoint_id = Some(checkpoint.clone());
+        state.checkpoint_count += 1;
+        git::save(&state_path(repo, id)?, &state)?;
+        checkpoint
+    };
+    push(repo, "origin", true)?;
+    Ok(Some(checkpoint))
+}
+
+pub fn native_hook(
+    repo: &Repo,
+    provider: crate::native::Provider,
+    name: &str,
+    input: &Value,
+) -> Result<()> {
+    ensure!(
+        [
+            "session-start",
+            "user-prompt-submitted",
+            "pre-tool-use",
+            "post-tool-use",
+            "agent-stop",
+            "session-end"
+        ]
+        .contains(&name),
+        "Unsupported native capture boundary {name}"
+    );
+    ensure!(
+        crate::policy::capture_allowed(repo)?,
+        "Native capture requires current repository consent"
+    );
+    crate::install::validate_repository_paths(repo)?;
+    ensure!(
+        settings(repo)?["enabled"] == true,
+        "Native capture is disabled"
+    );
+    let id = input["sessionId"]
+        .as_str()
+        .context("sessionId is required")?;
+    uuid::Uuid::parse_str(id).context("Native sessionId must be a UUID")?;
+    let participants = participants(input)?;
+    let client = client(input)?;
+    let path = state_path(repo, id)?;
+    let _lock = repo.lock()?;
+    let existing: Option<State> = git::optional(&path)?;
+    ensure!(
+        existing.is_some() || name == "session-start",
+        "Start the native session before capturing updates"
+    );
+    let mut state = match existing {
+        Some(state) => state,
+        None => initial_state(repo, id, provider.label())?,
+    };
+    if let Some(participants) = participants {
+        state.participants = participants;
+    }
+    state.client = client
+        .or(state.client)
+        .or_else(|| Some(Client::native(provider, ClientEnvironment::Local)));
+    ensure!(
+        state.worktree_path == repo.root
+            && state.agent_type == provider.label()
+            && state
+                .native_context
+                .as_ref()
+                .is_none_or(|context| context.hosted.is_none()),
+        "Session belongs to a different worktree/provider"
+    );
+    if name == "session-start" {
+        state.phase = "active".into();
+        state.ended_at = None;
+    } else if name == "user-prompt-submitted" {
+        let prompt = input["prompt"]
+            .as_str()
+            .context("prompt must be a string")?;
+        state.baseline = snapshot(repo)?;
+        state.prompts.push(prompt.into());
+        state.last_prompt = Some(prompt.into());
+        state.phase = "active".into();
+    } else {
+        let transcript = provider.transcript(
+            Path::new(
+                input["transcriptPath"]
+                    .as_str()
+                    .context("transcriptPath is required")?,
+            ),
+            id,
+        )?;
+        let content = fs::read_to_string(&transcript)?;
+        let parsed = crate::native::parse(provider, id, &repo.root, &content)?;
+        let after = snapshot(repo)?;
+        let paths: BTreeSet<_> = state.baseline.keys().chain(after.keys()).collect();
+        for path in paths {
+            if state.baseline.get(path) != after.get(path) {
+                if !state.files_touched.contains(path) {
+                    state.files_touched.push(path.clone());
+                }
+                state
+                    .touched_file_hashes
+                    .insert(path.clone(), after.get(path).cloned().flatten());
+            }
+        }
+        state.baseline = after;
+        if state.prompts.is_empty() {
+            state.prompts = parsed
+                .canonical
+                .iter()
+                .filter(|e| e["type"] == "user.message")
+                .filter_map(|e| e["data"]["content"].as_str().map(String::from))
+                .collect();
+            state.last_prompt = state.prompts.last().cloned();
+        }
+        let dirty = repo.g(&["diff", "--name-only", "--no-renames", "-z", "HEAD", "--"])?;
+        let untracked = repo.g(&["ls-files", "--others", "--exclude-standard", "-z"])?;
+        let dirty_files: BTreeSet<_> = dirty
+            .split('\0')
+            .chain(untracked.split('\0'))
+            .filter(|p| !p.is_empty())
+            .map(String::from)
+            .collect();
+        state.native_context = Some(crate::native::ContextSnapshot {
+            provider,
+            boundary: name.into(),
+            observed_at: Utc::now().to_rfc3339(),
+            source_head_sha: repo.g(&["rev-parse", "HEAD"])?,
+            branch: repo.g(&["branch", "--show-current"])?,
+            dirty_files: dirty_files.into_iter().collect(),
+            hosted: None,
+        });
+        let pending = repo
+            .root
+            .join(".trailvault/metadata")
+            .join(id)
+            .join("full.jsonl");
+        git::atomic(&pending, content.as_bytes())?;
+        git::atomic(
+            &pending.with_file_name("prompt.txt"),
+            (state.prompts.join("\n\n") + "\n").as_bytes(),
+        )?;
+        state.pending_transcript = Some(pending);
+        state.transcript_path = Some(transcript);
+        state.transcript_hash = Some(hash(&content));
+        if ["agent-stop", "session-end"].contains(&name) {
+            state.step_count += 1;
+        }
+        state.phase = if name == "session-end" {
+            "ended"
+        } else if name == "agent-stop" {
+            "idle"
+        } else {
+            "active"
+        }
+        .into();
+        if name == "session-end" {
+            state.ended_at = Some(Utc::now().to_rfc3339());
+        }
+    }
     git::save(&path, &state)
+}
+
+pub fn native_checkpoint(repo: &Repo, id: &str) -> Result<String> {
+    ensure!(
+        crate::policy::capture_allowed(repo)?,
+        "Native checkpoint requires current repository consent"
+    );
+    ensure!(
+        settings(repo)?["enabled"] == true,
+        "Native capture is disabled"
+    );
+    let _lock = repo.lock()?;
+    let mut state: State = git::read(&state_path(repo, id)?)?;
+    ensure!(
+        state.worktree_path == repo.root,
+        "Session belongs to another worktree"
+    );
+    let context = state
+        .native_context
+        .clone()
+        .context("Native session has no captured snapshot")?;
+    let full = fs::read_to_string(
+        state
+            .pending_transcript
+            .as_ref()
+            .context("No pending native transcript")?,
+    )?;
+    ensure!(
+        state.transcript_hash.as_deref() == Some(hash(&full).as_str()),
+        "Pending native snapshot hash mismatch"
+    );
+    let checkpoint = checkpoint_id();
+    let reference = build_checkpoint(
+        repo,
+        &checkpoint,
+        &[Entry {
+            state: state.clone(),
+            full,
+            touched: state.files_touched.clone(),
+            native_context: Some(context),
+        }],
+        "session-snapshot",
+    )?;
+    let mut queue: Vec<String> = git::optional(&queue_path(repo))?.unwrap_or_default();
+    queue.push(reference);
+    git::save(&queue_path(repo), &queue)?;
+    state.checkpoint_count += 1;
+    state.last_checkpoint_id = Some(checkpoint.clone());
+    git::save(&state_path(repo, id)?, &state)?;
+    Ok(checkpoint)
+}
+
+pub fn hosted_checkpoint(repo: &Repo, input: &Value) -> Result<String> {
+    ensure!(
+        crate::policy::capture_allowed(repo)?,
+        "Hosted capture requires current repository consent"
+    );
+    crate::install::validate_repository_paths(repo)?;
+    ensure!(
+        settings(repo)?["enabled"] == true,
+        "Hosted capture is disabled"
+    );
+    let (provenance, session, full) = crate::hosted::validate(repo, input)?;
+    let _lock = repo.lock()?;
+    let mut state = initial_state(repo, &session, provenance.label())?;
+    state.participants = participants(input)?.unwrap_or_default();
+    state.client = client(input)?.or_else(|| {
+        Some(Client::native(
+            provenance.provider(),
+            ClientEnvironment::Cloud,
+        ))
+    });
+    state.phase = "imported".into();
+    state.branch = provenance.source_branch.clone();
+    state.base_commit = provenance.source_commit.clone();
+    state.prompts = provenance
+        .parse(&session, &full)?
+        .canonical
+        .iter()
+        .filter(|e| e["type"] == "user.message")
+        .filter_map(|e| e["data"]["content"].as_str().map(String::from))
+        .collect();
+    let context = crate::native::ContextSnapshot {
+        provider: provenance.provider(),
+        boundary: "cloud-import".into(),
+        observed_at: provenance.collected_at.clone(),
+        source_head_sha: provenance.source_commit.clone(),
+        branch: provenance.source_branch.clone(),
+        dirty_files: vec![],
+        hosted: Some(provenance),
+    };
+    state.native_context = Some(context.clone());
+    let id = checkpoint_id();
+    let reference = build_checkpoint(
+        repo,
+        &id,
+        &[Entry {
+            state,
+            full,
+            touched: vec![],
+            native_context: Some(context),
+        }],
+        "session-snapshot",
+    )?;
+    let mut queue: Vec<String> = git::optional(&queue_path(repo))?.unwrap_or_default();
+    queue.push(reference);
+    git::save(&queue_path(repo), &queue)?;
+    Ok(id)
 }
 fn changed_paths(repo: &Repo) -> Result<Vec<String>> {
     Ok(repo
@@ -675,6 +1215,7 @@ pub fn prepare_commit(repo: &Repo, path: &Path, source: Option<&str>) -> Result<
                         .into_iter()
                         .filter(|p| paths.contains(p))
                         .collect(),
+                    native_context: state.native_context,
                 })
             })
             .collect::<Result<_>>()?,
@@ -704,7 +1245,21 @@ pub fn prepare_commit(repo: &Repo, path: &Path, source: Option<&str>) -> Result<
     }
     Ok(())
 }
-fn build_checkpoint(repo: &Repo, checkpoint: &str, entries: &[Entry]) -> Result<String> {
+fn build_checkpoint(
+    repo: &Repo,
+    checkpoint: &str,
+    entries: &[Entry],
+    strategy: &str,
+) -> Result<String> {
+    let source_commit = if strategy == "manual-commit" {
+        repo.g(&["rev-parse", "HEAD"])?
+    } else {
+        entries
+            .first()
+            .and_then(|e| e.native_context.as_ref())
+            .map(|c| c.source_head_sha.clone())
+            .unwrap_or(repo.g(&["rev-parse", "HEAD"])?)
+    };
     let reference = checkpoint_ref(checkpoint)?;
     let old = git::run(
         &repo.root,
@@ -725,12 +1280,26 @@ fn build_checkpoint(repo: &Repo, checkpoint: &str, entries: &[Entry]) -> Result<
     let config = settings(repo)?;
     for (number, entry) in entries.iter().enumerate() {
         let mut redactor = Redactor::new(&config)?;
-        let events: Vec<_> = redact::parse(&entry.full)?
-            .iter()
-            .map(|event| redactor.event(event))
-            .collect();
-        let full = redact::jsonl(&events)?;
-        let compact = redact::compact(&events)?;
+        let (full, compact, evidence) = if let Some(context) = &entry.native_context {
+            let (full, compact, mut evidence) = crate::native::checkpoint(
+                repo,
+                &entry.state.session_id,
+                &entry.full,
+                context,
+                &mut redactor,
+            )?;
+            evidence["publication"]["kind"] = json!(strategy);
+            if strategy == "manual-commit" {
+                evidence["publication"]["source_commit"] = json!(repo.g(&["rev-parse", "HEAD"])?);
+            }
+            (full, compact, Some(evidence))
+        } else {
+            let events: Vec<_> = redact::parse(&entry.full)?
+                .iter()
+                .map(|event| redactor.event(event))
+                .collect();
+            (redact::jsonl(&events)?, redact::compact(&events)?, None)
+        };
         for task in entry.state.tasks.values() {
             let mut value = serde_json::to_value(task)?;
             value["task_description"] = json!(redactor.text(&task.task_description));
@@ -742,13 +1311,37 @@ fn build_checkpoint(repo: &Repo, checkpoint: &str, entries: &[Entry]) -> Result<
             files.insert(task_path, serde_json::to_string_pretty(&value)? + "\n");
         }
         let prompt = redactor.text(&entry.state.prompts.join("\n\n")) + "\n";
-        let details = json!({
+        let mut details = json!({
             "cli_version":VERSION,"checkpoint_id":checkpoint,"session_id":entry.state.session_id,
-            "strategy":"manual-commit","agent":"Copilot CLI","branch":entry.state.branch,
+            "strategy":strategy,"agent":entry.state.agent_type,"branch":entry.state.branch,
             "created_at":Utc::now().to_rfc3339(),"files_touched":entry.touched,
             "checkpoints_count":entry.state.checkpoint_count+1,"save_step_count":entry.state.step_count,
             "redaction":{"replacements":redactor.replacements},"compact_transcript_start":0
         });
+        details["pr_relationships"] = serde_json::to_value(crate::relationships::collect(
+            &compact,
+            crate::relationships::origin_repository(repo)?.as_deref(),
+            evidence.as_ref().and_then(|e| e.get("pr_references")),
+        )?)?;
+        details["publication"] = json!({"kind":strategy,"source_commit":source_commit,
+            "contribution_verified":false});
+        details["capture_coverage"] = serde_json::to_value(crate::coverage::build(
+            crate::coverage::Source::for_capture(
+                entry.native_context.as_ref(),
+                config.pointer("/strategy_options/publish_on_tool_completion")
+                    == Some(&json!(true)),
+            ),
+            &entry.full,
+            &full,
+            &compact,
+        )?)?;
+        if !entry.state.participants.is_empty() {
+            details["participants"] = serde_json::to_value(&entry.state.participants)?;
+            details["participant_identity_basis"] = json!("capture_input");
+        }
+        if let Some(client) = &entry.state.client {
+            details["client"] = serde_json::to_value(client)?;
+        }
         files.insert(
             format!("{number}/metadata.json"),
             serde_json::to_string_pretty(&details)? + "\n",
@@ -760,16 +1353,25 @@ fn build_checkpoint(repo: &Repo, checkpoint: &str, entries: &[Entry]) -> Result<
         files.insert(format!("{number}/full.jsonl"), full);
         files.insert(format!("{number}/transcript.jsonl"), compact);
         files.insert(format!("{number}/prompt.txt"), prompt);
-        metadata.push(json!({
+        let mut index = json!({
             "metadata":format!("/{number}/metadata.json"),"transcript":format!("/{number}/full.jsonl"),
             "compact_transcript":format!("/{number}/transcript.jsonl"),"prompt":format!("/{number}/prompt.txt"),
             "content_hash":format!("/{number}/content_hash.txt")
-        }));
+        });
+        if let Some(evidence) = evidence {
+            files.insert(
+                format!("{number}/evidence.json"),
+                serde_json::to_string_pretty(&evidence)? + "\n",
+            );
+            index["evidence"] = json!(format!("/{number}/evidence.json"));
+        }
+        metadata.push(index);
     }
     let touched: BTreeSet<_> = entries.iter().flat_map(|e| &e.touched).collect();
     files.insert("metadata.json".into(), serde_json::to_string_pretty(&json!({
-        "cli_version":VERSION,"checkpoint_id":checkpoint,"strategy":"manual-commit","branch":entries[0].state.branch,
-        "files_touched":touched,"checkpoints_count":1,"sessions":metadata
+        "cli_version":VERSION,"checkpoint_id":checkpoint,"strategy":strategy,"branch":entries[0].state.branch,
+        "files_touched":touched,"checkpoints_count":1,"sessions":metadata,
+        "publication":{"kind":strategy,"source_commit":source_commit,"contribution_verified":false}
     }))? + "\n");
     repo.env(&["read-tree", "--empty"], &env)?;
     for (path, content) in files {
@@ -844,11 +1446,12 @@ pub fn post_commit(repo: &Repo) -> Result<()> {
                 state,
                 full,
                 touched: item.files,
+                native_context: item.native_context,
             })
         })
         .collect::<Result<_>>()?;
     ensure!(!entries.is_empty(), "Prepared checkpoint has no sessions");
-    let reference = build_checkpoint(repo, &plan.checkpoint, &entries)?;
+    let reference = build_checkpoint(repo, &plan.checkpoint, &entries, "manual-commit")?;
     let mut queue: Vec<String> = git::optional(&queue_path(repo))?.unwrap_or_default();
     if !queue.contains(&reference) {
         queue.push(reference);
@@ -856,22 +1459,7 @@ pub fn post_commit(repo: &Repo) -> Result<()> {
     git::save(&queue_path(repo), &queue)?;
     for entry in entries {
         let mut state = entry.state;
-        let mut remaining = vec![];
-        for path in &state.files_touched {
-            let tree = repo.g(&["ls-tree", "-z", "HEAD", "--", path])?;
-            let committed = tree.split_once('\t').and_then(|(head, _)| {
-                let mut parts = head.split_whitespace();
-                parts.next()?;
-                if parts.next()? != "blob" {
-                    return None;
-                }
-                parts.next().map(str::to_owned)
-            });
-            if committed != state.touched_file_hashes.get(path).cloned().flatten() {
-                remaining.push(path.clone());
-            }
-        }
-        state.files_touched = remaining;
+        state.files_touched = uncommitted_touched_files(repo, &state)?;
         state.checkpoint_count += 1;
         state.last_checkpoint_id = Some(plan.checkpoint.clone());
         state.base_commit = repo.g(&["rev-parse", "HEAD"])?;

@@ -1,5 +1,5 @@
 name: Retain Trailvault cloud checkpoints
-description: Register an unprivileged post-job checkpoint artifact export
+description: Export checkpoints after the job and dispatch the trusted publisher
 runs:
   using: docker
   image: Dockerfile

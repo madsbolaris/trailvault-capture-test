@@ -166,14 +166,20 @@ impl Redactor {
     }
 
     pub fn event(&mut self, value: &Value) -> Value {
-        self.walk(value, false)
+        self.walk(value, false, false)
     }
-    fn walk(&mut self, value: &Value, active: bool) -> Value {
+    pub fn native_event(&mut self, value: &Value) -> Value {
+        self.walk(value, true, true)
+    }
+    fn walk(&mut self, value: &Value, active: bool, native: bool) -> Value {
         match value {
             Value::String(text) if active => Value::String(self.text(text)),
-            Value::Array(values) => {
-                Value::Array(values.iter().map(|v| self.walk(v, active)).collect())
-            }
+            Value::Array(values) => Value::Array(
+                values
+                    .iter()
+                    .map(|v| self.walk(v, active, native))
+                    .collect(),
+            ),
             Value::Object(object) => Value::Object(
                 object
                     .iter()
@@ -192,7 +198,11 @@ impl Redactor {
                                 | "timestamp"
                                 | "toolCallId"
                                 | "name"
-                        );
+                        ) || (native
+                            && matches!(
+                                key.as_str(),
+                                "session_id" | "uuid" | "parentUuid" | "call_id" | "tool_use_id"
+                            ));
                         let text = matches!(
                             key.as_str(),
                             "content"
@@ -213,7 +223,7 @@ impl Redactor {
                         );
                         (
                             key.clone(),
-                            self.walk(item, !structural && (active || text)),
+                            self.walk(item, !structural && (active || text), native),
                         )
                     })
                     .collect(),
@@ -263,7 +273,29 @@ pub fn jsonl(events: &[Value]) -> Result<String> {
         + "\n")
 }
 pub fn compact(events: &[Value]) -> Result<String> {
-    let mut rows = vec![json!({"type":"header","version":1,"agent":"Copilot CLI"})];
+    compact_classified(events, 2)
+}
+
+pub fn compact_v1(events: &[Value]) -> Result<String> {
+    compact_version(events, None)
+}
+
+pub(crate) fn compact_classified(events: &[Value], version: u8) -> Result<String> {
+    anyhow::ensure!(
+        matches!(version, 1 | 2),
+        "Unsupported classification version"
+    );
+    compact_version(events, Some(version))
+}
+
+fn compact_version(events: &[Value], classification_version: Option<u8>) -> Result<String> {
+    let classified = classification_version.is_some();
+    let mut header =
+        json!({"type":"header","version":if classified {2} else {1},"agent":"Copilot CLI"});
+    if classified {
+        header["classification_version"] = json!(classification_version);
+    }
+    let mut rows = vec![header];
     let mut children = std::collections::BTreeMap::new();
     for event in events
         .iter()
@@ -280,26 +312,98 @@ pub fn compact(events: &[Value]) -> Result<String> {
             }
         }
     }
+    let starts: std::collections::BTreeMap<_, _> = events
+        .iter()
+        .filter(|event| event["type"] == "tool.execution_start")
+        .filter_map(|event| {
+            event["data"]["toolCallId"]
+                .as_str()
+                .map(|id| (id, &event["data"]))
+        })
+        .collect();
+    let mut emitted_requests = std::collections::BTreeMap::new();
     for event in events {
         match event["type"].as_str() {
-            Some(kind @ ("user.message" | "assistant.message")) => rows.push(json!({
-                "type":"message", "role":kind.split('.').next(), "content":event["data"].get("content").cloned().unwrap_or(json!(""))
-            })),
-            Some(kind @ ("tool.execution_start" | "tool.execution_complete")) => {
-                let mut data=event["data"].clone();
-                if kind=="tool.execution_complete" {
-                    if let Some(child)=data["toolCallId"].as_str().and_then(|id|children.get(id)) {
-                        if data.get("result").is_none_or(Value::is_null) {
-                            data["result"]=json!({});
+            Some(kind @ ("user.message" | "assistant.message")) => {
+                rows.push(json!({
+                    "type":"message", "role":kind.split('.').next(), "content":event["data"].get("content").cloned().unwrap_or(json!(""))
+                }));
+                if classified {
+                    if let Some(requests) = event["data"]["toolRequests"].as_array() {
+                        for request in requests {
+                            let id = request["toolCallId"]
+                                .as_str()
+                                .filter(|id| !id.is_empty())
+                                .context("Tool request lacks call ID")?;
+                            let name = request
+                                .get("name")
+                                .or_else(|| request.get("toolName"))
+                                .and_then(Value::as_str)
+                                .filter(|name| !name.is_empty())
+                                .context("Tool request lacks name")?;
+                            let data = json!({
+                                "toolCallId":id,"toolName":name,
+                                "arguments":request.get("arguments").cloned().unwrap_or(Value::Null)});
+                            if let Some(previous) =
+                                emitted_requests.insert(id.to_owned(), data.clone())
+                            {
+                                ensure!(
+                                    previous == data,
+                                    "Conflicting embedded tool-call evidence for {id}"
+                                );
+                                continue;
+                            }
+                            if let Some(start) = starts.get(id) {
+                                ensure!(
+                                    start["toolName"] == data["toolName"]
+                                        && start.get("arguments").unwrap_or(&Value::Null)
+                                            == &data["arguments"],
+                                    "Conflicting request and lifecycle evidence for {id}"
+                                );
+                            } else {
+                                rows.push(json!({"type":"tool.execution_start","data":{
+                                    "toolCallId":id,"toolName":name,"arguments":request.get("arguments").cloned().unwrap_or(Value::Null)}}));
+                            }
                         }
-                        anyhow::ensure!(data["result"].is_object(),"Subagent tool result must be an object");
-                        data["result"]["agent"]=json!({"id":child});
+                    }
+                }
+            }
+            Some(
+                kind @ ("system.message"
+                | "developer.message"
+                | "assistant.reasoning"
+                | "skill.activated"
+                | "tools.catalog"),
+            ) if classified => {
+                let mut row = json!({"type":"context","kind":kind,
+                    "content":event["data"].get("content").cloned().unwrap_or(Value::Null)});
+                if let Some(representation) = event["data"].get("representation") {
+                    row["representation"] = representation.clone();
+                }
+                rows.push(row);
+            }
+            Some(kind @ ("tool.execution_start" | "tool.execution_complete")) => {
+                let mut data = event["data"].clone();
+                if kind == "tool.execution_complete" {
+                    if let Some(child) = data["toolCallId"].as_str().and_then(|id| children.get(id))
+                    {
+                        if data.get("result").is_none_or(Value::is_null) {
+                            data["result"] = json!({});
+                        }
+                        anyhow::ensure!(
+                            data["result"].is_object(),
+                            "Subagent tool result must be an object"
+                        );
+                        data["result"]["agent"] = json!({"id":child});
                     }
                 }
                 rows.push(json!({"type":kind,"data":data}));
             }
             _ => {}
         }
+    }
+    if let Some(version) = classification_version {
+        crate::classification::annotate_version(&mut rows, version)?;
     }
     jsonl(&rows)
 }

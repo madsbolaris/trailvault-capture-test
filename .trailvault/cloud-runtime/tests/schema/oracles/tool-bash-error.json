@@ -1,0 +1,36 @@
+{
+  "checkpoints": [
+    {
+      "id": "01M66BWECF1SRSD8EXAFMHVHXM",
+      "files": {
+        "0/content_hash.txt": {
+          "mode": "100644",
+          "utf8": "sha256:6aab3f5fd08872b5631e4ea0d8066ef1c915a406a95908f44c0eddcecc31cf8c"
+        },
+        "0/full.jsonl": {
+          "mode": "100644",
+          "utf8": "{\"data\":{\"context\":{\"branch\":\"main\",\"cwd\":\"/fixture/worktree\"},\"copilotVersion\":\"1.0.105\",\"sessionId\":\"20000000-0000-4000-8000-000000000000\"},\"id\":\"event-start\",\"parentId\":null,\"timestamp\":\"2026-01-02T03:04:05Z\",\"type\":\"session.start\"}\n{\"data\":{\"content\":\"Update the synthetic fixture.\"},\"id\":\"event-0-0-0\",\"parentId\":null,\"timestamp\":\"2026-01-02T03:04:06Z\",\"type\":\"user.message\"}\n{\"data\":{\"content\":\"Using a tool.\",\"messageId\":\"message-tool\",\"toolRequests\":[{\"arguments\":{\"command\":\"exit 3\"},\"name\":\"bash\",\"toolCallId\":\"call-1\"}]},\"id\":\"event-0-0-1\",\"parentId\":\"event-0-0-0\",\"timestamp\":\"2026-01-02T03:04:07Z\",\"type\":\"assistant.message\"}\n{\"data\":{\"arguments\":{\"command\":\"exit 3\"},\"toolCallId\":\"call-1\",\"toolName\":\"bash\"},\"id\":\"event-0-0-2\",\"parentId\":\"event-0-0-1\",\"timestamp\":\"2026-01-02T03:04:08Z\",\"type\":\"tool.execution_start\"}\n{\"data\":{\"result\":{\"content\":\"exit status 3\"},\"success\":false,\"toolCallId\":\"call-1\"},\"id\":\"event-0-0-3\",\"parentId\":\"event-0-0-2\",\"timestamp\":\"2026-01-02T03:04:09Z\",\"type\":\"tool.execution_complete\"}\n"
+        },
+        "0/metadata.json": {
+          "mode": "100644",
+          "utf8": "{\n  \"cli_version\": \"0.12.2\",\n  \"checkpoint_id\": \"01M66BWECF1SRSD8EXAFMHVHXM\",\n  \"session_id\": \"20000000-0000-4000-8000-000000000000\",\n  \"strategy\": \"manual-commit\",\n  \"created_at\": \"2026-10-30T12:17:19.39111Z\",\n  \"branch\": \"main\",\n  \"checkpoints_count\": 1,\n  \"save_step_count\": 1,\n  \"files_touched\": [\n    \"agent-0.txt\"\n  ],\n  \"agent\": \"Copilot CLI\",\n  \"model\": \"\",\n  \"turn_id\": \"a2b26231994f\",\n  \"compact_transcript_start\": 0,\n  \"token_usage\": {\n    \"input_tokens\": 0,\n    \"cache_creation_tokens\": 0,\n    \"cache_read_tokens\": 0,\n    \"output_tokens\": 0,\n    \"api_call_count\": 0\n  },\n  \"redaction\": {\n    \"replacements\": 0,\n    \"layers\": {\n      \"betterleaks\": 0,\n      \"connection_string\": 0,\n      \"credential_key\": 0,\n      \"credential_value\": 0,\n      \"credentialed_uri\": 0,\n      \"entropy\": 0,\n      \"key_context\": 0,\n      \"provider_token\": 0,\n      \"shell_stdin\": 0\n    }\n  },\n  \"session_metrics\": {\n    \"turn_count\": 1\n  }\n}\n"
+        },
+        "0/prompt.txt": {
+          "mode": "100644",
+          "utf8": "Update the synthetic fixture."
+        },
+        "0/transcript.jsonl": {
+          "mode": "100644",
+          "utf8": "{\"v\":1,\"agent\":\"copilot-cli\",\"cli_version\":\"0.12.2\",\"type\":\"user\",\"ts\":\"2026-01-02T03:04:06Z\",\"content\":[{\"text\":\"Update the synthetic fixture.\"}]}\n{\"v\":1,\"agent\":\"copilot-cli\",\"cli_version\":\"0.12.2\",\"type\":\"assistant\",\"ts\":\"2026-01-02T03:04:07Z\",\"id\":\"message-tool\",\"content\":[{\"text\":\"Using a tool.\",\"type\":\"text\"},{\"id\":\"call-1\",\"input\":{\"command\":\"exit 3\"},\"name\":\"bash\",\"result\":{\"output\":\"exit status 3\",\"status\":\"error\"},\"type\":\"tool_use\"}]}\n"
+        },
+        "metadata.json": {
+          "mode": "100644",
+          "utf8": "{\n  \"cli_version\": \"0.12.2\",\n  \"checkpoint_id\": \"01M66BWECF1SRSD8EXAFMHVHXM\",\n  \"strategy\": \"manual-commit\",\n  \"branch\": \"main\",\n  \"checkpoints_count\": 1,\n  \"files_touched\": [\n    \"agent-0.txt\"\n  ],\n  \"sessions\": [\n    {\n      \"metadata\": \"/0/metadata.json\",\n      \"transcript\": \"/0/full.jsonl\",\n      \"compact_transcript\": \"/0/transcript.jsonl\",\n      \"content_hash\": \"/0/content_hash.txt\",\n      \"prompt\": \"/0/prompt.txt\"\n    }\n  ],\n  \"token_usage\": {\n    \"input_tokens\": 0,\n    \"cache_creation_tokens\": 0,\n    \"cache_read_tokens\": 0,\n    \"output_tokens\": 0,\n    \"api_call_count\": 0\n  },\n  \"redaction\": {\n    \"replacements\": 0,\n    \"layers\": {\n      \"betterleaks\": 0,\n      \"connection_string\": 0,\n      \"credential_key\": 0,\n      \"credential_value\": 0,\n      \"credentialed_uri\": 0,\n      \"entropy\": 0,\n      \"key_context\": 0,\n      \"provider_token\": 0,\n      \"shell_stdin\": 0\n    }\n  }\n}\n"
+        }
+      }
+    }
+  ],
+  "native": [
+    "6aab3f5fd08872b5631e4ea0d8066ef1c915a406a95908f44c0eddcecc31cf8c"
+  ]
+}

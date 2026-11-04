@@ -1,0 +1,67 @@
+{
+  "added_user_message_visible": true,
+  "after": {
+    "columns": 160,
+    "expected_visible_text": "README examples added",
+    "isolated_folder_trust_approved": true,
+    "matched": true,
+    "prompt_submitted": false,
+    "raw_bytes": 18118,
+    "raw_file": "02-after-pull-continue.ansi",
+    "rows": 90,
+    "screen_file": "02-after-pull-continue.txt",
+    "screen_sha256": "884193edd8c6b2851e1e9b833328b64b69b22fcf85773c2a371759bdae0fa24d",
+    "startup": [
+      "--continue"
+    ],
+    "terminal_setup_declined": false
+  },
+  "automatic_startup_fetch": false,
+  "bare_startup": {
+    "columns": 160,
+    "expected_visible_text": "Getting started",
+    "isolated_folder_trust_approved": true,
+    "matched": true,
+    "prompt_submitted": false,
+    "raw_bytes": 9136,
+    "raw_file": "03-bare-startup.ansi",
+    "rows": 90,
+    "screen_file": "03-bare-startup.txt",
+    "screen_sha256": "1ea10b2842c8d20b7e8cfb501b2a929a11e82846c7e5ce67c55e98021bcc3373",
+    "startup": [],
+    "terminal_setup_declined": false
+  },
+  "before": {
+    "columns": 160,
+    "expected_visible_text": "Public API",
+    "isolated_folder_trust_approved": true,
+    "matched": true,
+    "prompt_submitted": false,
+    "raw_bytes": 50109,
+    "raw_file": "01-before-pull.ansi",
+    "rows": 90,
+    "screen_file": "01-before-pull.txt",
+    "screen_sha256": "90267abecaa2352c75adf5f9f41b99fc1f87fb7de0d8c4c20bbc65d4fde0c8c2",
+    "startup": [
+      "--resume=f379a950-25f7-49f1-bb79-6a0869418108"
+    ],
+    "terminal_setup_declined": true
+  },
+  "copilot_version": "GitHub Copilot CLI 1.0.105.\nRun 'copilot update' to check for updates.",
+  "earlier_checkpoint": "01M670FBAQ4R23ZYAA58E8822X",
+  "earlier_session_preserved": true,
+  "evidence_directory": "/Users/mabolan/.copilot/session-state/c06767e6-cd11-4984-b96e-261d4255b5e0/files/restoration-terminal",
+  "explicit_fetch": true,
+  "explicit_import": true,
+  "later_checkpoint": "01M670HD8S2JG3B69GH3HGQFJJ",
+  "model_prompts_submitted": 0,
+  "notes": [
+    "Published historical snapshots from the genuine resumed route-search session, not a new collaborator writing during this test.",
+    "Next boot uses Copilot --continue, not bare copilot, which normally starts a fresh session.",
+    "Text files are terminal screen equivalents; ANSI files retain actual PTY output."
+  ],
+  "real_cli_not_mocked": true,
+  "source_repository": "https://github.com/madsbolaris/trailvault-capture-test.git",
+  "terminal_emulator": "vt100",
+  "timestamp": "2026-11-02T13:59:22.506798+00:00"
+}

@@ -95,20 +95,6 @@ pub fn export(
             "HEAD",
         ])?;
         let sources: Vec<_> = candidates.lines().collect();
-        ensure!(
-            sources.len() == 1,
-            "Checkpoint must have exactly one source commit"
-        );
-        let source_commit = sources[0].to_owned();
-        ensure!(
-            capture::trailer(
-                &repo.g(&["show", "-s", "--format=%B", &source_commit])?,
-                "Trailvault-Checkpoint"
-            )
-            .as_deref()
-                == Some(id),
-            "Source checkpoint trailer mismatch"
-        );
         let paths = repo.g(&["ls-tree", "-r", "--name-only", "-z", &reference])?;
         let mut files = BTreeMap::new();
         for path in paths.split('\0').filter(|p| !p.is_empty()) {
@@ -121,6 +107,38 @@ pub fn export(
             )?;
             files.insert(path.to_owned(), git_raw(raw)?);
         }
+        let root: Value = serde_json::from_str(
+            files
+                .get("metadata.json")
+                .context("Missing checkpoint metadata")?,
+        )?;
+        let source_commit = if root["strategy"] == "session-snapshot" {
+            root["publication"]["source_commit"]
+                .as_str()
+                .context("Snapshot lacks captured source HEAD")?
+                .to_owned()
+        } else {
+            ensure!(
+                sources.len() == 1,
+                "Checkpoint must have exactly one source commit"
+            );
+            let source = sources[0].to_owned();
+            ensure!(
+                capture::trailer(
+                    &repo.g(&["show", "-s", "--format=%B", &source])?,
+                    "Trailvault-Checkpoint"
+                )
+                .as_deref()
+                    == Some(id),
+                "Source checkpoint trailer mismatch"
+            );
+            source
+        };
+        validate(&Checkpoint {
+            id: id.into(),
+            source_commit: source_commit.clone(),
+            files: files.clone(),
+        })?;
         checkpoints.push(Checkpoint {
             id: id.into(),
             source_commit,
@@ -128,7 +146,14 @@ pub fn export(
         });
     }
     let artifact = Artifact {
-        version: 1,
+        version: if checkpoints.iter().any(|c| {
+            serde_json::from_str::<Value>(&c.files["metadata.json"])
+                .is_ok_and(|r| r["strategy"] == "session-snapshot")
+        }) {
+            2
+        } else {
+            1
+        },
         repository: repository.into(),
         run_id,
         run_attempt,
@@ -220,6 +245,16 @@ pub fn validate(checkpoint: &Checkpoint) -> Result<()> {
         root["checkpoint_id"] == checkpoint.id,
         "Checkpoint metadata ID mismatch"
     );
+    let snapshot = root["strategy"] == "session-snapshot";
+    if snapshot {
+        ensure!(
+            root["publication"]["kind"] == "session-snapshot"
+                && root["publication"]["source_commit"] == checkpoint.source_commit
+                && root["publication"]["contribution_verified"] == false
+                && root["files_touched"] == json!([]),
+            "Invalid session-only snapshot source binding"
+        );
+    }
     let sessions = root["sessions"]
         .as_array()
         .context("Missing session index")?;
@@ -274,10 +309,57 @@ pub fn validate(checkpoint: &Checkpoint) -> Result<()> {
                 && events.iter().any(|e| e["type"] == "assistant.message"),
             "Missing native conversation"
         );
+        let compact = file(checkpoint, &format!("{number}/transcript.jsonl"))?;
+        let records = redact::parse(compact)?;
+        let expected_compact = match records
+            .first()
+            .and_then(|header| header["version"].as_u64())
+        {
+            Some(1) => redact::compact_v1(&events)?,
+            Some(2) => match records[0]["classification_version"].as_u64() {
+                Some(1) => redact::compact_classified(&events, 1)?,
+                Some(2) => redact::compact(&events)?,
+                _ => anyhow::bail!("Unsupported classification version"),
+            },
+            _ => anyhow::bail!("Unsupported compact transcript version"),
+        };
         ensure!(
-            file(checkpoint, &format!("{number}/transcript.jsonl"))? == redact::compact(&events)?,
+            compact == expected_compact,
             "Compact/native transcript mismatch"
         );
+        if let Some(value) = details.get("pr_relationships") {
+            let links: crate::relationships::Collection = serde_json::from_value(value.clone())?;
+            ensure!(
+                links
+                    == crate::relationships::collect(
+                        compact,
+                        links.context_repository.as_deref(),
+                        None
+                    )?,
+                "PR relationships do not match native/compact evidence"
+            );
+            if snapshot {
+                ensure!(
+                    !links.relationships.is_empty(),
+                    "Session-only cloud snapshot requires a PR relationship"
+                );
+            }
+        } else {
+            ensure!(
+                !snapshot,
+                "Session-only cloud snapshot lacks PR relationships"
+            );
+        }
+        if snapshot {
+            ensure!(
+                details["files_touched"] == json!([])
+                    && details["publication"] == root["publication"],
+                "Session-only snapshot cannot claim source changes"
+            );
+        }
+        if let Some(coverage) = details.get("capture_coverage") {
+            crate::coverage::validate_copilot(coverage, full, compact)?;
+        }
     }
     ensure!(
         checkpoint
@@ -304,7 +386,7 @@ pub fn publish(
 ) -> Result<()> {
     let artifact = read_artifact(path)?;
     ensure!(
-        artifact.version == 1
+        matches!(artifact.version, 1 | 2)
             && artifact.repository == repository
             && artifact.run_id == run_id
             && artifact.run_attempt == run_attempt,
@@ -346,6 +428,14 @@ pub fn publish(
             .success,
             "Checkpoint source is outside the completed agent branch"
         );
+        let root: Value = serde_json::from_str(file(checkpoint, "metadata.json")?)?;
+        if root["strategy"] == "session-snapshot" {
+            ensure!(
+                artifact.version == 2,
+                "Session-only cloud snapshots require artifact version 2"
+            );
+            continue;
+        }
         ensure!(
             capture::trailer(
                 &repo.g(&["show", "-s", "--format=%B", &checkpoint.source_commit])?,
@@ -581,7 +671,7 @@ fn dispatch_body(artifact: &Artifact) -> Result<Value> {
         "Invalid dispatch repository"
     );
     ensure!(
-        artifact.version == 1 && artifact.run_id > 0 && artifact.run_attempt > 0,
+        matches!(artifact.version, 1 | 2) && artifact.run_id > 0 && artifact.run_attempt > 0,
         "Invalid dispatch run identity"
     );
     Ok(json!({"ref":"main","inputs":{

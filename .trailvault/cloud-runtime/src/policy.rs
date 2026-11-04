@@ -295,7 +295,7 @@ pub fn review(repo: &Repo, executable: &Path, answer: Option<bool>) -> Result<()
         eprintln!("Policy: {}", serde_json::to_string(description)?);
     }
     eprintln!(
-        "Approval permits capture and automatic publication of redacted Copilot prompts, replies, tool activity and task metadata to {}.",
+        "Approval permits capture and automatic publication of redacted coding-agent prompts, replies, native transcripts, tool activity, PR/lifecycle evidence and task metadata to {}.",
         serde_json::to_string(policy.destination.as_ref().context("Missing destination")?)?
     );
     eprintln!(
