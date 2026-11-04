@@ -1,0 +1,321 @@
+{
+  "event": "user-prompt-submitted",
+  "keys": [
+    "cwd",
+    "prompt",
+    "sessionId",
+    "timestamp"
+  ],
+  "sessionId": "a8ebb3e5-97ed-4793-8889-fce868a9a1f5",
+  "cwd": "/home/runner/work/trailvault-capture-test/trailvault-capture-test",
+  "transcriptPath": null
+}
+{
+  "event": "session-start",
+  "keys": [
+    "cwd",
+    "initialPrompt",
+    "sessionId",
+    "source",
+    "timestamp"
+  ],
+  "sessionId": "a8ebb3e5-97ed-4793-8889-fce868a9a1f5",
+  "cwd": "/home/runner/work/trailvault-capture-test/trailvault-capture-test",
+  "transcriptPath": null
+}
+{
+  "event": "pre-tool-use",
+  "keys": [
+    "cwd",
+    "sessionId",
+    "timestamp",
+    "toolArgs",
+    "toolName"
+  ],
+  "sessionId": "a8ebb3e5-97ed-4793-8889-fce868a9a1f5",
+  "cwd": "/home/runner/work/trailvault-capture-test/trailvault-capture-test",
+  "transcriptPath": null
+}
+{
+  "event": "post-tool-use",
+  "keys": [
+    "cwd",
+    "sessionId",
+    "timestamp",
+    "toolArgs",
+    "toolName",
+    "toolResult"
+  ],
+  "sessionId": "a8ebb3e5-97ed-4793-8889-fce868a9a1f5",
+  "cwd": "/home/runner/work/trailvault-capture-test/trailvault-capture-test",
+  "transcriptPath": null
+}
+{
+  "event": "pre-tool-use",
+  "keys": [
+    "cwd",
+    "sessionId",
+    "timestamp",
+    "toolArgs",
+    "toolName"
+  ],
+  "sessionId": "a8ebb3e5-97ed-4793-8889-fce868a9a1f5",
+  "cwd": "/home/runner/work/trailvault-capture-test/trailvault-capture-test",
+  "transcriptPath": null
+}
+{
+  "event": "pre-tool-use",
+  "keys": [
+    "cwd",
+    "sessionId",
+    "timestamp",
+    "toolArgs",
+    "toolName"
+  ],
+  "sessionId": "a8ebb3e5-97ed-4793-8889-fce868a9a1f5",
+  "cwd": "/home/runner/work/trailvault-capture-test/trailvault-capture-test",
+  "transcriptPath": null
+}
+{
+  "event": "pre-tool-use",
+  "keys": [
+    "cwd",
+    "sessionId",
+    "timestamp",
+    "toolArgs",
+    "toolName"
+  ],
+  "sessionId": "a8ebb3e5-97ed-4793-8889-fce868a9a1f5",
+  "cwd": "/home/runner/work/trailvault-capture-test/trailvault-capture-test",
+  "transcriptPath": null
+}
+{
+  "event": "post-tool-use",
+  "keys": [
+    "cwd",
+    "sessionId",
+    "timestamp",
+    "toolArgs",
+    "toolName",
+    "toolResult"
+  ],
+  "sessionId": "a8ebb3e5-97ed-4793-8889-fce868a9a1f5",
+  "cwd": "/home/runner/work/trailvault-capture-test/trailvault-capture-test",
+  "transcriptPath": null
+}
+{
+  "event": "post-tool-use",
+  "keys": [
+    "cwd",
+    "sessionId",
+    "timestamp",
+    "toolArgs",
+    "toolName",
+    "toolResult"
+  ],
+  "sessionId": "a8ebb3e5-97ed-4793-8889-fce868a9a1f5",
+  "cwd": "/home/runner/work/trailvault-capture-test/trailvault-capture-test",
+  "transcriptPath": null
+}
+{
+  "event": "post-tool-use",
+  "keys": [
+    "cwd",
+    "sessionId",
+    "timestamp",
+    "toolArgs",
+    "toolName",
+    "toolResult"
+  ],
+  "sessionId": "a8ebb3e5-97ed-4793-8889-fce868a9a1f5",
+  "cwd": "/home/runner/work/trailvault-capture-test/trailvault-capture-test",
+  "transcriptPath": null
+}
+{
+  "event": "pre-tool-use",
+  "keys": [
+    "cwd",
+    "sessionId",
+    "timestamp",
+    "toolArgs",
+    "toolName"
+  ],
+  "sessionId": "a8ebb3e5-97ed-4793-8889-fce868a9a1f5",
+  "cwd": "/home/runner/work/trailvault-capture-test/trailvault-capture-test",
+  "transcriptPath": null
+}
+{
+  "event": "pre-tool-use",
+  "keys": [
+    "cwd",
+    "sessionId",
+    "timestamp",
+    "toolArgs",
+    "toolName"
+  ],
+  "sessionId": "a8ebb3e5-97ed-4793-8889-fce868a9a1f5",
+  "cwd": "/home/runner/work/trailvault-capture-test/trailvault-capture-test",
+  "transcriptPath": null
+}
+{
+  "event": "pre-tool-use",
+  "keys": [
+    "cwd",
+    "sessionId",
+    "timestamp",
+    "toolArgs",
+    "toolName"
+  ],
+  "sessionId": "a8ebb3e5-97ed-4793-8889-fce868a9a1f5",
+  "cwd": "/home/runner/work/trailvault-capture-test/trailvault-capture-test",
+  "transcriptPath": null
+}
+{
+  "event": "post-tool-use",
+  "keys": [
+    "cwd",
+    "sessionId",
+    "timestamp",
+    "toolArgs",
+    "toolName",
+    "toolResult"
+  ],
+  "sessionId": "a8ebb3e5-97ed-4793-8889-fce868a9a1f5",
+  "cwd": "/home/runner/work/trailvault-capture-test/trailvault-capture-test",
+  "transcriptPath": null
+}
+{
+  "event": "post-tool-use",
+  "keys": [
+    "cwd",
+    "sessionId",
+    "timestamp",
+    "toolArgs",
+    "toolName",
+    "toolResult"
+  ],
+  "sessionId": "a8ebb3e5-97ed-4793-8889-fce868a9a1f5",
+  "cwd": "/home/runner/work/trailvault-capture-test/trailvault-capture-test",
+  "transcriptPath": null
+}
+{
+  "event": "post-tool-use",
+  "keys": [
+    "cwd",
+    "sessionId",
+    "timestamp",
+    "toolArgs",
+    "toolName",
+    "toolResult"
+  ],
+  "sessionId": "a8ebb3e5-97ed-4793-8889-fce868a9a1f5",
+  "cwd": "/home/runner/work/trailvault-capture-test/trailvault-capture-test",
+  "transcriptPath": null
+}
+{
+  "event": "pre-tool-use",
+  "keys": [
+    "cwd",
+    "sessionId",
+    "timestamp",
+    "toolArgs",
+    "toolName"
+  ],
+  "sessionId": "a8ebb3e5-97ed-4793-8889-fce868a9a1f5",
+  "cwd": "/home/runner/work/trailvault-capture-test/trailvault-capture-test",
+  "transcriptPath": null
+}
+{
+  "event": "pre-tool-use",
+  "keys": [
+    "cwd",
+    "sessionId",
+    "timestamp",
+    "toolArgs",
+    "toolName"
+  ],
+  "sessionId": "a8ebb3e5-97ed-4793-8889-fce868a9a1f5",
+  "cwd": "/home/runner/work/trailvault-capture-test/trailvault-capture-test",
+  "transcriptPath": null
+}
+{
+  "event": "pre-tool-use",
+  "keys": [
+    "cwd",
+    "sessionId",
+    "timestamp",
+    "toolArgs",
+    "toolName"
+  ],
+  "sessionId": "a8ebb3e5-97ed-4793-8889-fce868a9a1f5",
+  "cwd": "/home/runner/work/trailvault-capture-test/trailvault-capture-test",
+  "transcriptPath": null
+}
+{
+  "event": "post-tool-use",
+  "keys": [
+    "cwd",
+    "sessionId",
+    "timestamp",
+    "toolArgs",
+    "toolName",
+    "toolResult"
+  ],
+  "sessionId": "a8ebb3e5-97ed-4793-8889-fce868a9a1f5",
+  "cwd": "/home/runner/work/trailvault-capture-test/trailvault-capture-test",
+  "transcriptPath": null
+}
+{
+  "event": "post-tool-use",
+  "keys": [
+    "cwd",
+    "sessionId",
+    "timestamp",
+    "toolArgs",
+    "toolName",
+    "toolResult"
+  ],
+  "sessionId": "a8ebb3e5-97ed-4793-8889-fce868a9a1f5",
+  "cwd": "/home/runner/work/trailvault-capture-test/trailvault-capture-test",
+  "transcriptPath": null
+}
+{
+  "event": "post-tool-use",
+  "keys": [
+    "cwd",
+    "sessionId",
+    "timestamp",
+    "toolArgs",
+    "toolName",
+    "toolResult"
+  ],
+  "sessionId": "a8ebb3e5-97ed-4793-8889-fce868a9a1f5",
+  "cwd": "/home/runner/work/trailvault-capture-test/trailvault-capture-test",
+  "transcriptPath": null
+}
+{
+  "event": "agent-stop",
+  "keys": [
+    "cwd",
+    "sessionId",
+    "stopReason",
+    "stop_hook_active",
+    "timestamp",
+    "transcriptPath"
+  ],
+  "sessionId": "a8ebb3e5-97ed-4793-8889-fce868a9a1f5",
+  "cwd": "/home/runner/work/trailvault-capture-test/trailvault-capture-test",
+  "transcriptPath": "/home/runner/.copilot/session-state/a8ebb3e5-97ed-4793-8889-fce868a9a1f5/events.jsonl"
+}
+{
+  "event": "session-end",
+  "keys": [
+    "cwd",
+    "reason",
+    "sessionId",
+    "timestamp"
+  ],
+  "sessionId": "a8ebb3e5-97ed-4793-8889-fce868a9a1f5",
+  "cwd": "/home/runner/work/trailvault-capture-test/trailvault-capture-test",
+  "transcriptPath": null
+}
