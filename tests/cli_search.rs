@@ -1,6 +1,6 @@
 use std::process::{Command, Output};
 
-const USAGE: &str = "Usage:\n  routebook list\n  routebook search [--name TEXT] [--max-distance KM] [--difficulty easy|moderate|hard]\n";
+const USAGE: &str = "Usage:\n  routebook list\n  routebook validate\n  routebook search [--name TEXT] [--max-distance KM] [--difficulty easy|moderate|hard]\n";
 
 const FERN_LOOP: &str = "Fern Loop | 3.2 km | easy";
 const NORTH_RIDGE: &str = "North Ridge | 11.5 km | hard";
@@ -31,6 +31,30 @@ fn assert_usage_error(args: &[&str]) {
     let err = String::from_utf8_lossy(&out.stderr).into_owned();
     assert!(err.starts_with("error: "), "args {args:?}: {err:?}");
     assert!(err.ends_with(USAGE), "args {args:?}: {err:?}");
+}
+
+#[test]
+fn validate_reports_success_on_stdout_only() {
+    let out = run(&["validate"]);
+    assert_eq!(out.status.code(), Some(0));
+    assert_eq!(
+        String::from_utf8_lossy(&out.stdout),
+        "catalogue valid: 5 routes checked\n"
+    );
+    assert_eq!(String::from_utf8_lossy(&out.stderr), "");
+}
+
+#[test]
+fn validate_rejects_extra_arguments() {
+    assert_usage_error(&["validate", "extra"]);
+    assert_usage_error(&["validate", "--json"]);
+}
+
+#[test]
+fn unknown_command_is_still_rejected() {
+    assert_usage_error(&["validat"]);
+    let out = run(&["bogus"]);
+    assert!(String::from_utf8_lossy(&out.stderr).contains("error: unknown command 'bogus'"));
 }
 
 #[test]

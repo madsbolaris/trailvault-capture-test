@@ -8,6 +8,54 @@ cargo run -- list
 cargo test
 ```
 
+## Validating
+
+`routebook validate` takes no arguments and checks only the built-in fictional
+catalogue with the library validator. It does not read files or stdin, and
+there is no import option.
+
+- Success: prints one line to stdout and exits 0.
+- Invalid catalogue: every issue is printed to stderr as
+  `route <index>: <problem>`, and the exit code is 1.
+- Usage error (for example, any extra argument): exits 2 with
+  `error: <message>` and the usage text on stderr.
+
+Route indexes are zero-based positions in the catalogue, so `route 0` is the
+first route. Issues are ordered by index.
+
+Duplicate names are detected on the name after `str::trim` (Unicode
+whitespace at both ends) and `str::to_lowercase`. No other Unicode
+normalization is applied, so differently composed but visually identical
+names are not treated as duplicates. A name that is empty after trimming is
+reported as blank rather than as a duplicate. Distances must be finite and
+greater than zero.
+
+```sh
+cargo run -- validate
+```
+
+### Validating a caller-supplied catalogue
+
+The CLI cannot load a catalogue, but the library can validate any
+`&[Route]`. `Route::name` is a `&'static str`.
+
+```rust
+use routebook::{Difficulty, Route, ValidationIssue, ValidationReason, validate_routes};
+
+let routes = [
+    Route { name: "Fern Hollow", distance_km: 6.0, difficulty: Difficulty::Easy },
+    Route { name: "  fern hollow ", distance_km: 7.5, difficulty: Difficulty::Hard },
+];
+
+assert_eq!(
+    validate_routes(&routes),
+    Err(vec![ValidationIssue {
+        index: 1,
+        reason: ValidationReason::DuplicateName { first_index: 0 },
+    }])
+);
+```
+
 ## Searching
 
 `search` accepts any combination of `--name TEXT` (case-insensitive substring),

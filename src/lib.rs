@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::fmt;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -110,9 +111,178 @@ pub fn search<'a>(routes: &'a [Route], filter: &SearchFilter) -> Vec<&'a Route> 
         .collect()
 }
 
+/// Why a route failed catalogue validation.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum ValidationReason {
+    BlankName,
+    /// Name matches (trimmed, case-insensitively) the route at `first_index`.
+    DuplicateName {
+        first_index: usize,
+    },
+    /// Distance is NaN or infinite.
+    NonFiniteDistance,
+    /// Distance is finite but zero or negative.
+    NonPositiveDistance,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct ValidationIssue {
+    pub index: usize,
+    pub reason: ValidationReason,
+}
+
+/// Checks every route and returns all issues, ordered by route index.
+/// An empty catalogue is valid.
+///
+/// Indexes are zero-based. Names are compared after `str::trim` and
+/// `str::to_lowercase`; no other Unicode normalization is applied.
+///
+/// ```
+/// use routebook::{Difficulty, Route, ValidationIssue, ValidationReason, validate_routes};
+///
+/// let routes = [
+///     Route { name: "Fern Hollow", distance_km: 6.0, difficulty: Difficulty::Easy },
+///     Route { name: "  fern hollow ", distance_km: 7.5, difficulty: Difficulty::Hard },
+/// ];
+///
+/// assert_eq!(
+///     validate_routes(&routes),
+///     Err(vec![ValidationIssue {
+///         index: 1,
+///         reason: ValidationReason::DuplicateName { first_index: 0 },
+///     }])
+/// );
+/// ```
+pub fn validate_routes(routes: &[Route]) -> Result<(), Vec<ValidationIssue>> {
+    let mut issues = Vec::new();
+    let mut seen: HashMap<String, usize> = HashMap::new();
+
+    for (index, route) in routes.iter().enumerate() {
+        let name = route.name.trim();
+        if name.is_empty() {
+            issues.push(ValidationIssue {
+                index,
+                reason: ValidationReason::BlankName,
+            });
+        } else if let Some(&first_index) = seen.get(&name.to_lowercase()) {
+            issues.push(ValidationIssue {
+                index,
+                reason: ValidationReason::DuplicateName { first_index },
+            });
+        } else {
+            seen.insert(name.to_lowercase(), index);
+        }
+
+        if !route.distance_km.is_finite() {
+            issues.push(ValidationIssue {
+                index,
+                reason: ValidationReason::NonFiniteDistance,
+            });
+        } else if route.distance_km <= 0.0 {
+            issues.push(ValidationIssue {
+                index,
+                reason: ValidationReason::NonPositiveDistance,
+            });
+        }
+    }
+
+    if issues.is_empty() {
+        Ok(())
+    } else {
+        Err(issues)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn route(name: &'static str, distance_km: f64) -> Route {
+        Route {
+            name,
+            distance_km,
+            difficulty: Difficulty::Easy,
+        }
+    }
+
+    fn issue(index: usize, reason: ValidationReason) -> ValidationIssue {
+        ValidationIssue { index, reason }
+    }
+
+    #[test]
+    fn valid_and_empty_catalogues_pass() {
+        assert_eq!(validate_routes(&catalogue()), Ok(()));
+        assert_eq!(validate_routes(&[]), Ok(()));
+    }
+
+    #[test]
+    fn reports_multiple_simultaneous_issues() {
+        let routes = [
+            route("  ", 1.0),
+            route("A", -2.0),
+            route(" a ", f64::NAN),
+            route("B", 0.0),
+        ];
+        assert_eq!(
+            validate_routes(&routes),
+            Err(vec![
+                issue(0, ValidationReason::BlankName),
+                issue(1, ValidationReason::NonPositiveDistance),
+                issue(2, ValidationReason::DuplicateName { first_index: 1 }),
+                issue(2, ValidationReason::NonFiniteDistance),
+                issue(3, ValidationReason::NonPositiveDistance),
+            ])
+        );
+    }
+
+    #[test]
+    fn duplicates_ignore_case_and_whitespace() {
+        let routes = [
+            route("Fern", 1.0),
+            route(" FERN\t", 2.0),
+            route("fern", 3.0),
+        ];
+        assert_eq!(
+            validate_routes(&routes),
+            Err(vec![
+                issue(1, ValidationReason::DuplicateName { first_index: 0 }),
+                issue(2, ValidationReason::DuplicateName { first_index: 0 }),
+            ])
+        );
+    }
+
+    #[test]
+    fn duplicates_use_unicode_lowercasing() {
+        let routes = [route("ÉCOLE", 1.0), route("école", 1.0)];
+        assert_eq!(
+            validate_routes(&routes),
+            Err(vec![issue(
+                1,
+                ValidationReason::DuplicateName { first_index: 0 }
+            )])
+        );
+    }
+
+    #[test]
+    fn invalid_distances_are_typed() {
+        let routes = [
+            route("zero", 0.0),
+            route("neg", -1.0),
+            route("nan", f64::NAN),
+            route("inf", f64::INFINITY),
+            route("neginf", f64::NEG_INFINITY),
+        ];
+        assert_eq!(
+            validate_routes(&routes),
+            Err(vec![
+                issue(0, ValidationReason::NonPositiveDistance),
+                issue(1, ValidationReason::NonPositiveDistance),
+                issue(2, ValidationReason::NonFiniteDistance),
+                issue(3, ValidationReason::NonFiniteDistance),
+                issue(4, ValidationReason::NonFiniteDistance),
+            ])
+        );
+    }
 
     fn names(found: &[&Route]) -> Vec<&'static str> {
         found.iter().map(|route| route.name).collect()

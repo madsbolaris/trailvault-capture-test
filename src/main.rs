@@ -1,6 +1,9 @@
-use routebook::{Difficulty, SearchFilter, catalogue, display_route, search};
+use routebook::{
+    Difficulty, SearchFilter, ValidationIssue, ValidationReason, catalogue, display_route, search,
+    validate_routes,
+};
 
-const USAGE: &str = "Usage:\n  routebook list\n  routebook search [--name TEXT] [--max-distance KM] [--difficulty easy|moderate|hard]";
+const USAGE: &str = "Usage:\n  routebook list\n  routebook validate\n  routebook search [--name TEXT] [--max-distance KM] [--difficulty easy|moderate|hard]";
 
 fn parse_difficulty(value: &str) -> Result<Difficulty, String> {
     match value.to_ascii_lowercase().as_str() {
@@ -49,6 +52,18 @@ fn parse_search_args(args: &[String]) -> Result<SearchFilter, String> {
     Ok(filter)
 }
 
+fn describe(issue: &ValidationIssue) -> String {
+    let problem = match issue.reason {
+        ValidationReason::BlankName => "blank name".to_string(),
+        ValidationReason::DuplicateName { first_index } => {
+            format!("duplicate name (first seen at route {first_index})")
+        }
+        ValidationReason::NonFiniteDistance => "distance is not finite".to_string(),
+        ValidationReason::NonPositiveDistance => "distance must be positive".to_string(),
+    };
+    format!("route {}: {problem}", issue.index)
+}
+
 fn fail(message: &str) -> ! {
     eprintln!("error: {message}\n{USAGE}");
     std::process::exit(2);
@@ -69,6 +84,19 @@ fn main() {
                 println!("{}", display_route(route));
             }
         }
+        Some((command, rest)) if command == "validate" && rest.is_empty() => {
+            let routes = catalogue();
+            match validate_routes(&routes) {
+                Ok(()) => println!("catalogue valid: {} routes checked", routes.len()),
+                Err(issues) => {
+                    for issue in &issues {
+                        eprintln!("{}", describe(issue));
+                    }
+                    std::process::exit(1);
+                }
+            }
+        }
+        Some((command, _)) if command == "validate" => fail("validate takes no arguments"),
         Some((command, _)) if command == "list" => fail("list takes no arguments"),
         Some((command, _)) => fail(&format!("unknown command '{command}'")),
         None => fail("missing command"),
