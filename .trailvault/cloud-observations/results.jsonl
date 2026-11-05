@@ -1,0 +1,96 @@
+{
+  "event": "user-prompt-submitted",
+  "status": 0
+}
+{
+  "event": "session-start",
+  "status": 0
+}
+{
+  "event": "pre-tool-use",
+  "status": 0
+}
+{
+  "event": "post-tool-use",
+  "status": 0
+}
+{
+  "event": "pre-tool-use",
+  "status": 0
+}
+{
+  "event": "pre-tool-use",
+  "status": 0
+}
+{
+  "event": "pre-tool-use",
+  "status": 0
+}
+{
+  "event": "post-tool-use",
+  "status": 0
+}
+{
+  "event": "post-tool-use",
+  "status": 0
+}
+{
+  "event": "post-tool-use",
+  "status": 0
+}
+{
+  "event": "pre-tool-use",
+  "status": 0
+}
+{
+  "event": "pre-tool-use",
+  "status": 0
+}
+{
+  "event": "pre-tool-use",
+  "status": 0
+}
+{
+  "event": "post-tool-use",
+  "status": 0
+}
+{
+  "event": "post-tool-use",
+  "status": 0
+}
+{
+  "event": "post-tool-use",
+  "status": 0
+}
+{
+  "event": "pre-tool-use",
+  "status": 0
+}
+{
+  "event": "pre-tool-use",
+  "status": 0
+}
+{
+  "event": "pre-tool-use",
+  "status": 0
+}
+{
+  "event": "post-tool-use",
+  "status": 0
+}
+{
+  "event": "post-tool-use",
+  "status": 0
+}
+{
+  "event": "post-tool-use",
+  "status": 0
+}
+{
+  "event": "agent-stop",
+  "status": 0
+}
+{
+  "event": "session-end",
+  "status": 0
+}
