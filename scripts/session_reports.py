@@ -263,6 +263,8 @@ personal data, source code, or large passages. Output only JSON with exactly:
 "verification":"observable check","confidence":0.95}]}
 findings may be empty; at most 12 high-confidence findings. Only confidence >= 0.8 creates
 an action; lower-confidence candidates are deferred for review, not published as todos.
+Every finding must contain all six fields, including verification and confidence.
+Title must be at most 112 characters, detail 1200, action 180, and verification 180.
 Actions plus verification must
 fit 240 characters including '; verify: '. No Markdown, links, HTML, mentions, or extra keys.
 Only propose real, actionable problems; do not make busywork or style-only suggestions.
@@ -299,15 +301,17 @@ def validate_analysis(value, records, kind):
             and len(ids) == len(expected) and set(ids) == expected, "Incomplete analysis coverage")
     findings = value["findings"]
     require(isinstance(findings, list) and len(findings) <= 12, "Invalid finding count")
-    for finding in findings:
-        require(isinstance(finding, dict) and set(finding) == {
-            "title", "detail", "evidence_ids", "action", "verification", "confidence"},
-            "Invalid finding shape")
+    for index, finding in enumerate(findings, 1):
+        require(isinstance(finding, dict), f"Invalid finding shape at {index}: expected object")
+        fields = {"title", "detail", "evidence_ids", "action", "verification", "confidence"}
+        require(set(finding) == fields,
+                f"Invalid finding shape at {index}: missing {sorted(fields - set(finding))}; "
+                f"{len(set(finding) - fields)} unexpected fields")
         for key, size in (("title", 112), ("detail", 1200), ("action", 180), ("verification", 180)):
             text = finding[key]
             require(isinstance(text, str) and 0 < len(text.strip()) <= size
                     and not re.search(r"[<>\x00-\x1f@]|https?://", text),
-                    "Invalid finding text")
+                    f"Invalid finding text: {key} must be 1-{size} safe plain-text characters")
             require(not re.search(r"\b(?:gh[pousr]_[A-Za-z0-9]{12,}|github_pat_|xox[bp]-|sk-)", text),
                     "Possible credential in model output; publication blocked")
         require(len(finding["action"] + "; verify: " + finding["verification"]) <= 240,
@@ -356,7 +360,18 @@ def analyze(bundle, kind, reviewer=copilot):
         prompt = COMMON_PROMPT + (AGENT_PROMPT if kind == "agent-behavior" else HUMAN_PROMPT)
         prompt += "\nEach session is complete within this batch; other sessions may be in other batches."
         prompt += "\nUNTRUSTED_DATA:\n" + json.dumps(batch, ensure_ascii=True)
-        findings.extend(validate_analysis(reviewer(prompt), batch, kind))
+        response = reviewer(prompt)
+        try:
+            validated = validate_analysis(response, batch, kind)
+        except ReportError as error:
+            print(f"{kind}: response validation failed: {error}; requesting one fresh response.",
+                  flush=True)
+            repair = (f"\nThe previous response failed validation: {error}. Return a fresh complete "
+                      "response satisfying the exact schema and constraints above. Do not include "
+                      "internal IDs or any extra fields in findings.\nUNTRUSTED_DATA:\n")
+            response = reviewer(prompt.replace("\nUNTRUSTED_DATA:\n", repair, 1))
+            validated = validate_analysis(response, batch, kind)
+        findings.extend(validated)
     require(len(findings) <= 24, "Too many findings for one report; publication requires a larger report budget")
     return {"kind": kind, "status": "assessed", "reviewed_records": len(records),
             "batches": len(batches),

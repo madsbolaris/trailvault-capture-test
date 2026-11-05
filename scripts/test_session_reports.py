@@ -53,6 +53,35 @@ def bot(body, identity=10):
 
 
 class AnalysisTests(unittest.TestCase):
+    def test_invalid_model_shape_gets_one_explicit_schema_repair(self):
+        responses = [
+            {"reviewed_ids": ["one", "assistant"],
+             "findings": [{**finding(), "unexpected": "must not be logged"}]},
+            {"reviewed_ids": ["one", "assistant"], "findings": [finding()]},
+        ]
+        prompts = []
+        def review(prompt):
+            prompts.append(prompt)
+            return responses.pop(0)
+        with patch("builtins.print") as log:
+            result = r.analyze(bundle(), "agent-behavior", review)
+        self.assertEqual(len(result["findings"]), 1)
+        self.assertEqual(len(prompts), 2)
+        self.assertIn("1 unexpected fields", prompts[1])
+        self.assertNotIn("must not be logged", str(log.call_args_list))
+        self.assertEqual(json.loads(prompts[1].split("UNTRUSTED_DATA:\n")[1]), bundle()["records"])
+        log.assert_called_once()
+
+    def test_invalid_model_response_still_blocks_after_one_repair(self):
+        calls = []
+        def review(_):
+            calls.append(True)
+            return {"reviewed_ids": ["one", "assistant"], "findings": [{}]}
+        with patch("builtins.print"):
+            with self.assertRaisesRegex(r.ReportError, "Invalid finding shape"):
+                r.analyze(bundle(), "agent-behavior", review)
+        self.assertEqual(len(calls), 2)
+
     def test_only_user_messages_reach_human_decisions(self):
         prompts = []
         def review(prompt):
