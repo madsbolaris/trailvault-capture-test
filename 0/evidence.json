@@ -1,0 +1,557 @@
+{
+  "api_history": {
+    "basis": "persisted item projections, not streamed lifecycle hooks; provider compaction/output limits may apply",
+    "environments": [
+      {
+        "environmentConfigId": "4ee7d41d-5e8b-4ea4-a263-ed502f90db05~asenvcfg_c392ab98850081918e0f81ce4ce9428a",
+        "environmentId": "ccarenv_b64_Y2NhcmVudl8zZGEwOTNkODNhMjA4MTkxYjI2Y2JiMjgyNWExOGVjNA"
+      }
+    ],
+    "incomplete_preview_chains": 0,
+    "item_count": 12,
+    "original_history_complete": false,
+    "pagination": "available_history_fully_paged",
+    "pagination_scope": "whole_thread",
+    "provider_reported_status": {
+      "type": "idle"
+    },
+    "thread_id": "01a1abe6-b115-75aa-a8b3-2a098e633044",
+    "turn_count": 1
+  },
+  "branch": "work",
+  "dirty_files": [],
+  "hosted": {
+    "collected_at": "2026-11-05T13:37:26.841Z",
+    "collection": "codex-app-server",
+    "completeness": "available-persisted-history",
+    "identity_basis": "collector_asserted",
+    "remote_session_id": "01a1abe6-b115-75aa-a8b3-2a098e633044",
+    "repository": "madsbolaris/trailvault-capture-test",
+    "source_branch": "work",
+    "source_commit": "a06e1366269924dbfb674e820af7e351dff5c4ee",
+    "transcript_cwd": "/workspace",
+    "transcript_scope": "available persisted app-server history; not original streaming events"
+  },
+  "lifecycle": {
+    "background_jobs": "unverified",
+    "basis": "persisted API history; provider-reported thread/turn status is not a live lease or proof of remote termination",
+    "boundary": "cloud-import",
+    "live_lease": false,
+    "pending_calls_are_historical": true,
+    "pending_tool_calls": [],
+    "presence": "historical_snapshot",
+    "state": "unknown",
+    "task_completion": "unverified"
+  },
+  "native_sha256": "87cd3b4d9dd73f101af7cff12a5262862d722dbee19a6213479d636cff259bdb",
+  "observations": [
+    {
+      "completed_at_ms": 1793885387972,
+      "event": {
+        "completedAtMs": 1793885387972,
+        "item": {
+          "clientId": "d60bb559-7fc8-4473-82c9-1e183fa58fe4",
+          "completedAtMs": 1793885387972,
+          "content": [
+            {
+              "text": "Review [https://github.com/madsbolaris/trailvault-capture-test/pull/1](https://github.com/madsbolaris/trailvault-capture-test/pull/1). This is a genuine CODEX CLOUD read-only session for the authorized synthetic participant-metadata end-to-end test, marker PR1_PARTICIPANTS_20261105_CODEX_CLOUD. The user explicitly establishes madsbolaris as this session's human participant; the approved collector configuration supplies that claim independently of collector credentials. Use only this repository and actual read-only tools. First run pwd, git rev-parse HEAD, and git symbolic-ref --short HEAD to record genuine source provenance. Then inspect git diff 65d87c681546f7e72076e0179457a1e702af98df..d5f5d78366c5710bf5a3de9cd8161ee0465a8588 -- src/lib.rs src/main.rs tests/cli_search.rs README.md. Return up to three observations with source citations and a clear read-only scope statement. Do not edit files, commit, push, modify PRs, inspect credentials/environment/settings/history, use subagents/background jobs, or access other repositories. Preserve approved capture/logging. Do not claim tests ran unless actually run. If objects or tools are unavailable, honestly report the failure instead of claiming a successful review.\n",
+              "text_elements": [],
+              "type": "text"
+            }
+          ],
+          "id": "01a1abe6-bcc4-7046-95ee-025cfb3441f7",
+          "startedAtMs": 1793885387972,
+          "type": "userMessage"
+        },
+        "startedAtMs": 1793885387972,
+        "turnId": "01a1abe6-bb4e-74a8-b33c-8e6b6167ecba"
+      },
+      "execution_location": "provider_recorded; tool environment not independently authenticated",
+      "item_id": "01a1abe6-bcc4-7046-95ee-025cfb3441f7",
+      "kind": "native.api_item",
+      "native_line": 1,
+      "native_type": "userMessage",
+      "started_at_ms": 1793885387972,
+      "turn_id": "01a1abe6-bb4e-74a8-b33c-8e6b6167ecba"
+    },
+    {
+      "completed_at_ms": 1793885392277,
+      "event": {
+        "completedAtMs": 1793885392277,
+        "item": {
+          "completedAtMs": 1793885392277,
+          "delivery": null,
+          "id": "msg_0862e3d8aba4d810016aec84cf4fac87d288bd3f81a2db0ab6",
+          "memoryCitation": null,
+          "phase": "commentary",
+          "questions": null,
+          "startedAtMs": 1793885391321,
+          "text": "I’ll record the requested Git provenance, then inspect the diff and return up to three observations. I’ll keep the review read-only and limited to this repository.\n",
+          "type": "agentMessage"
+        },
+        "startedAtMs": 1793885391321,
+        "turnId": "01a1abe6-bb4e-74a8-b33c-8e6b6167ecba"
+      },
+      "execution_location": "provider_recorded; tool environment not independently authenticated",
+      "item_id": "msg_0862e3d8aba4d810016aec84cf4fac87d288bd3f81a2db0ab6",
+      "kind": "native.api_item",
+      "native_line": 2,
+      "native_type": "agentMessage",
+      "started_at_ms": 1793885391321,
+      "turn_id": "01a1abe6-bb4e-74a8-b33c-8e6b6167ecba"
+    },
+    {
+      "completed_at_ms": 1793885396727,
+      "event": {
+        "completedAtMs": 1793885396727,
+        "item": {
+          "completedAtMs": 1793885396727,
+          "content": [],
+          "id": "rs_0862e3d8aba4d810016aec84d4ad5087d2b0d2fb67e7ad618c",
+          "startedAtMs": 1793885396727,
+          "summary": [],
+          "type": "reasoning"
+        },
+        "startedAtMs": 1793885396727,
+        "turnId": "01a1abe6-bb4e-74a8-b33c-8e6b6167ecba"
+      },
+      "execution_location": "provider_recorded; tool environment not independently authenticated",
+      "item_id": "rs_0862e3d8aba4d810016aec84d4ad5087d2b0d2fb67e7ad618c",
+      "kind": "native.api_item",
+      "native_line": 3,
+      "native_type": "reasoning",
+      "started_at_ms": 1793885396727,
+      "turn_id": "01a1abe6-bb4e-74a8-b33c-8e6b6167ecba"
+    },
+    {
+      "completed_at_ms": 1793885397549,
+      "event": {
+        "completedAtMs": 1793885397549,
+        "item": {
+          "completedAtMs": 1793885397549,
+          "delivery": null,
+          "id": "msg_0862e3d8aba4d810016aec84d4d15887d29c5e25668c97e7d9",
+          "memoryCitation": null,
+          "phase": "commentary",
+          "questions": null,
+          "startedAtMs": 1793885396860,
+          "text": "I’ve read the cloud runtime skill. I’ll follow your restriction against inspecting credentials, environment settings, or history.\n",
+          "type": "agentMessage"
+        },
+        "startedAtMs": 1793885396860,
+        "turnId": "01a1abe6-bb4e-74a8-b33c-8e6b6167ecba"
+      },
+      "execution_location": "provider_recorded; tool environment not independently authenticated",
+      "item_id": "msg_0862e3d8aba4d810016aec84d4d15887d29c5e25668c97e7d9",
+      "kind": "native.api_item",
+      "native_line": 4,
+      "native_type": "agentMessage",
+      "started_at_ms": 1793885396860,
+      "turn_id": "01a1abe6-bb4e-74a8-b33c-8e6b6167ecba"
+    },
+    {
+      "arguments": {
+        "command": "/bin/bash -c 'pwd\ngit rev-parse HEAD\ngit symbolic-ref --short HEAD'",
+        "cwd": "/workspace"
+      },
+      "call_id": "exec-9af91e13-eb27-41a0-a800-9bff1fa7b4e9",
+      "execution_location": "provider_recorded; tool environment not independently authenticated",
+      "kind": "tool.started",
+      "native_line": 5,
+      "tool": "commandExecution"
+    },
+    {
+      "call_id": "exec-9af91e13-eb27-41a0-a800-9bff1fa7b4e9",
+      "child_results": [],
+      "execution_location": "provider_recorded; tool environment not independently authenticated",
+      "kind": "tool.finished",
+      "native_line": 5,
+      "note": "A returned wrapper is not proof every nested action succeeded",
+      "output": {
+        "exit_code": 128,
+        "output": "/workspace\nfatal: not a git repository (or any of the parent directories): .git\nfatal: not a git repository (or any of the parent directories): .git\n",
+        "status": "failed"
+      },
+      "status": "failed"
+    },
+    {
+      "completed_at_ms": 1793885427414,
+      "event": {
+        "completedAtMs": 1793885427414,
+        "item": {
+          "aggregatedOutput": "/workspace\nfatal: not a git repository (or any of the parent directories): .git\nfatal: not a git repository (or any of the parent directories): .git\n",
+          "command": "/bin/bash -c 'pwd\ngit rev-parse HEAD\ngit symbolic-ref --short HEAD'",
+          "commandActions": [
+            {
+              "command": "pwd\ngit rev-parse HEAD\ngit symbolic-ref --short HEAD",
+              "type": "unknown"
+            }
+          ],
+          "completedAtMs": 1793885427414,
+          "cwd": "/workspace",
+          "durationMs": 0,
+          "exitCode": 128,
+          "id": "exec-9af91e13-eb27-41a0-a800-9bff1fa7b4e9",
+          "pluginId": null,
+          "processId": "1432",
+          "scriptPath": null,
+          "source": "unifiedExecStartup",
+          "startedAtMs": 1793885427414,
+          "status": "failed",
+          "type": "commandExecution"
+        },
+        "startedAtMs": 1793885427414,
+        "turnId": "01a1abe6-bb4e-74a8-b33c-8e6b6167ecba"
+      },
+      "execution_location": "provider_recorded; tool environment not independently authenticated",
+      "item_id": "exec-9af91e13-eb27-41a0-a800-9bff1fa7b4e9",
+      "kind": "native.api_item",
+      "native_line": 5,
+      "native_type": "commandExecution",
+      "started_at_ms": 1793885427414,
+      "turn_id": "01a1abe6-bb4e-74a8-b33c-8e6b6167ecba"
+    },
+    {
+      "completed_at_ms": 1793885430510,
+      "event": {
+        "completedAtMs": 1793885430510,
+        "item": {
+          "completedAtMs": 1793885430510,
+          "content": [],
+          "id": "rs_0862e3d8aba4d810016aec84f680e087d29b046bb0f4de2e22",
+          "startedAtMs": 1793885430510,
+          "summary": [],
+          "type": "reasoning"
+        },
+        "startedAtMs": 1793885430510,
+        "turnId": "01a1abe6-bb4e-74a8-b33c-8e6b6167ecba"
+      },
+      "execution_location": "provider_recorded; tool environment not independently authenticated",
+      "item_id": "rs_0862e3d8aba4d810016aec84f680e087d29b046bb0f4de2e22",
+      "kind": "native.api_item",
+      "native_line": 6,
+      "native_type": "reasoning",
+      "started_at_ms": 1793885430510,
+      "turn_id": "01a1abe6-bb4e-74a8-b33c-8e6b6167ecba"
+    },
+    {
+      "arguments": {
+        "command": "/bin/bash -c \"printf '%s\\\\n' /workspace/*/ /workspace/.[\"'!.]*/'",
+        "cwd": "/workspace"
+      },
+      "call_id": "exec-5d0cef60-0bb4-41a2-9be5-3f92101122bc",
+      "execution_location": "provider_recorded; tool environment not independently authenticated",
+      "kind": "tool.started",
+      "native_line": 7,
+      "tool": "commandExecution"
+    },
+    {
+      "call_id": "exec-5d0cef60-0bb4-41a2-9be5-3f92101122bc",
+      "child_results": [],
+      "execution_location": "provider_recorded; tool environment not independently authenticated",
+      "kind": "tool.finished",
+      "native_line": 7,
+      "note": "A returned wrapper is not proof every nested action succeeded",
+      "output": {
+        "exit_code": 0,
+        "output": "/workspace/library-files/\n/workspace/scratch/\n/workspace/shared/\n/workspace/trailvault-capture-test/\n/workspace/.agents/\n/workspace/.aws/\n/workspace/.codex/\n/workspace/.git/\n/workspace/.trailvault-tools/\n",
+        "status": "completed"
+      },
+      "status": "returned"
+    },
+    {
+      "completed_at_ms": 1793885431622,
+      "event": {
+        "completedAtMs": 1793885431622,
+        "item": {
+          "aggregatedOutput": "/workspace/library-files/\n/workspace/scratch/\n/workspace/shared/\n/workspace/trailvault-capture-test/\n/workspace/.agents/\n/workspace/.aws/\n/workspace/.codex/\n/workspace/.git/\n/workspace/.trailvault-tools/\n",
+          "command": "/bin/bash -c \"printf '%s\\\\n' /workspace/*/ /workspace/.[\"'!.]*/'",
+          "commandActions": [
+            {
+              "command": "printf '%s\\n' /workspace/*/ /workspace/.[!.]*/",
+              "type": "unknown"
+            }
+          ],
+          "completedAtMs": 1793885431622,
+          "cwd": "/workspace",
+          "durationMs": 0,
+          "exitCode": 0,
+          "id": "exec-5d0cef60-0bb4-41a2-9be5-3f92101122bc",
+          "pluginId": null,
+          "processId": "64539",
+          "scriptPath": null,
+          "source": "unifiedExecStartup",
+          "startedAtMs": 1793885431622,
+          "status": "completed",
+          "type": "commandExecution"
+        },
+        "startedAtMs": 1793885431622,
+        "turnId": "01a1abe6-bb4e-74a8-b33c-8e6b6167ecba"
+      },
+      "execution_location": "provider_recorded; tool environment not independently authenticated",
+      "item_id": "exec-5d0cef60-0bb4-41a2-9be5-3f92101122bc",
+      "kind": "native.api_item",
+      "native_line": 7,
+      "native_type": "commandExecution",
+      "started_at_ms": 1793885431622,
+      "turn_id": "01a1abe6-bb4e-74a8-b33c-8e6b6167ecba"
+    },
+    {
+      "arguments": {
+        "command": "/bin/bash -c 'pwd\ngit rev-parse HEAD\ngit symbolic-ref --short HEAD'",
+        "cwd": "/workspace/trailvault-capture-test"
+      },
+      "call_id": "exec-fbf289fa-2586-4ad1-9a13-05812c97c904",
+      "execution_location": "provider_recorded; tool environment not independently authenticated",
+      "kind": "tool.started",
+      "native_line": 8,
+      "tool": "commandExecution"
+    },
+    {
+      "call_id": "exec-fbf289fa-2586-4ad1-9a13-05812c97c904",
+      "child_results": [],
+      "execution_location": "provider_recorded; tool environment not independently authenticated",
+      "kind": "tool.finished",
+      "native_line": 8,
+      "note": "A returned wrapper is not proof every nested action succeeded",
+      "output": {
+        "exit_code": 0,
+        "output": "/workspace/trailvault-capture-test\na06e1366269924dbfb674e820af7e351dff5c4ee\nwork\n",
+        "status": "completed"
+      },
+      "status": "returned"
+    },
+    {
+      "completed_at_ms": 1793885436146,
+      "event": {
+        "completedAtMs": 1793885436146,
+        "item": {
+          "aggregatedOutput": "/workspace/trailvault-capture-test\na06e1366269924dbfb674e820af7e351dff5c4ee\nwork\n",
+          "command": "/bin/bash -c 'pwd\ngit rev-parse HEAD\ngit symbolic-ref --short HEAD'",
+          "commandActions": [
+            {
+              "command": "pwd\ngit rev-parse HEAD\ngit symbolic-ref --short HEAD",
+              "type": "unknown"
+            }
+          ],
+          "completedAtMs": 1793885436146,
+          "cwd": "/workspace/trailvault-capture-test",
+          "durationMs": 0,
+          "exitCode": 0,
+          "id": "exec-fbf289fa-2586-4ad1-9a13-05812c97c904",
+          "pluginId": null,
+          "processId": "47453",
+          "scriptPath": null,
+          "source": "unifiedExecStartup",
+          "startedAtMs": 1793885436145,
+          "status": "completed",
+          "type": "commandExecution"
+        },
+        "startedAtMs": 1793885436145,
+        "turnId": "01a1abe6-bb4e-74a8-b33c-8e6b6167ecba"
+      },
+      "execution_location": "provider_recorded; tool environment not independently authenticated",
+      "item_id": "exec-fbf289fa-2586-4ad1-9a13-05812c97c904",
+      "kind": "native.api_item",
+      "native_line": 8,
+      "native_type": "commandExecution",
+      "started_at_ms": 1793885436145,
+      "turn_id": "01a1abe6-bb4e-74a8-b33c-8e6b6167ecba"
+    },
+    {
+      "arguments": {
+        "command": "/bin/bash -c 'git diff 65d87c681546f7e72076e0179457a1e702af98df..d5f5d78366c5710bf5a3de9cd8161ee0465a8588 -- src/lib.rs src/main.rs tests/cli_search.rs README.md'",
+        "cwd": "/workspace/trailvault-capture-test"
+      },
+      "call_id": "exec-2e8ed52d-cc42-4c7b-a51a-3f3456803f50",
+      "execution_location": "provider_recorded; tool environment not independently authenticated",
+      "kind": "tool.started",
+      "native_line": 9,
+      "tool": "commandExecution"
+    },
+    {
+      "call_id": "exec-2e8ed52d-cc42-4c7b-a51a-3f3456803f50",
+      "child_results": [],
+      "execution_location": "provider_recorded; tool environment not independently authenticated",
+      "kind": "tool.finished",
+      "native_line": 9,
+      "note": "A returned wrapper is not proof every nested action succeeded",
+      "output": {
+        "exit_code": 128,
+        "output": "fatal: Invalid revision range 65d87c681546f7e72076e0179457a1e702af98df..d5f5d78366c5710bf5a3de9cd8161ee0465a8588\n",
+        "status": "failed"
+      },
+      "status": "failed"
+    },
+    {
+      "completed_at_ms": 1793885436449,
+      "event": {
+        "completedAtMs": 1793885436449,
+        "item": {
+          "aggregatedOutput": "fatal: Invalid revision range 65d87c681546f7e72076e0179457a1e702af98df..d5f5d78366c5710bf5a3de9cd8161ee0465a8588\n",
+          "command": "/bin/bash -c 'git diff 65d87c681546f7e72076e0179457a1e702af98df..d5f5d78366c5710bf5a3de9cd8161ee0465a8588 -- src/lib.rs src/main.rs tests/cli_search.rs README.md'",
+          "commandActions": [
+            {
+              "command": "git diff 65d87c681546f7e72076e0179457a1e702af98df..d5f5d78366c5710bf5a3de9cd8161ee0465a8588 -- src/lib.rs src/main.rs tests/cli_search.rs README.md",
+              "type": "unknown"
+            }
+          ],
+          "completedAtMs": 1793885436449,
+          "cwd": "/workspace/trailvault-capture-test",
+          "durationMs": 0,
+          "exitCode": 128,
+          "id": "exec-2e8ed52d-cc42-4c7b-a51a-3f3456803f50",
+          "pluginId": null,
+          "processId": "26049",
+          "scriptPath": null,
+          "source": "unifiedExecStartup",
+          "startedAtMs": 1793885436448,
+          "status": "failed",
+          "type": "commandExecution"
+        },
+        "startedAtMs": 1793885436448,
+        "turnId": "01a1abe6-bb4e-74a8-b33c-8e6b6167ecba"
+      },
+      "execution_location": "provider_recorded; tool environment not independently authenticated",
+      "item_id": "exec-2e8ed52d-cc42-4c7b-a51a-3f3456803f50",
+      "kind": "native.api_item",
+      "native_line": 9,
+      "native_type": "commandExecution",
+      "started_at_ms": 1793885436448,
+      "turn_id": "01a1abe6-bb4e-74a8-b33c-8e6b6167ecba"
+    },
+    {
+      "completed_at_ms": 1793885440169,
+      "event": {
+        "completedAtMs": 1793885440169,
+        "item": {
+          "completedAtMs": 1793885440169,
+          "content": [],
+          "id": "rs_0862e3d8aba4d810016aec84ffc79487d296ffb5020bb50066",
+          "startedAtMs": 1793885440169,
+          "summary": [],
+          "type": "reasoning"
+        },
+        "startedAtMs": 1793885440169,
+        "turnId": "01a1abe6-bb4e-74a8-b33c-8e6b6167ecba"
+      },
+      "execution_location": "provider_recorded; tool environment not independently authenticated",
+      "item_id": "rs_0862e3d8aba4d810016aec84ffc79487d296ffb5020bb50066",
+      "kind": "native.api_item",
+      "native_line": 10,
+      "native_type": "reasoning",
+      "started_at_ms": 1793885440169,
+      "turn_id": "01a1abe6-bb4e-74a8-b33c-8e6b6167ecba"
+    },
+    {
+      "arguments": {
+        "command": "/bin/bash -c 'git cat-file -t 65d87c681546f7e72076e0179457a1e702af98df\ngit cat-file -t d5f5d78366c5710bf5a3de9cd8161ee0465a8588'",
+        "cwd": "/workspace/trailvault-capture-test"
+      },
+      "call_id": "exec-9dac0cb9-a40f-4a53-a771-03228fdaadbc",
+      "execution_location": "provider_recorded; tool environment not independently authenticated",
+      "kind": "tool.started",
+      "native_line": 11,
+      "tool": "commandExecution"
+    },
+    {
+      "call_id": "exec-9dac0cb9-a40f-4a53-a771-03228fdaadbc",
+      "child_results": [],
+      "execution_location": "provider_recorded; tool environment not independently authenticated",
+      "kind": "tool.finished",
+      "native_line": 11,
+      "note": "A returned wrapper is not proof every nested action succeeded",
+      "output": {
+        "exit_code": 128,
+        "output": "fatal: git cat-file: could not get object info\nfatal: git cat-file: could not get object info\n",
+        "status": "failed"
+      },
+      "status": "failed"
+    },
+    {
+      "completed_at_ms": 1793885441995,
+      "event": {
+        "completedAtMs": 1793885441995,
+        "item": {
+          "aggregatedOutput": "fatal: git cat-file: could not get object info\nfatal: git cat-file: could not get object info\n",
+          "command": "/bin/bash -c 'git cat-file -t 65d87c681546f7e72076e0179457a1e702af98df\ngit cat-file -t d5f5d78366c5710bf5a3de9cd8161ee0465a8588'",
+          "commandActions": [
+            {
+              "command": "git cat-file -t 65d87c681546f7e72076e0179457a1e702af98df\ngit cat-file -t d5f5d78366c5710bf5a3de9cd8161ee0465a8588",
+              "type": "unknown"
+            }
+          ],
+          "completedAtMs": 1793885441995,
+          "cwd": "/workspace/trailvault-capture-test",
+          "durationMs": 0,
+          "exitCode": 128,
+          "id": "exec-9dac0cb9-a40f-4a53-a771-03228fdaadbc",
+          "pluginId": null,
+          "processId": "74925",
+          "scriptPath": null,
+          "source": "unifiedExecStartup",
+          "startedAtMs": 1793885441995,
+          "status": "failed",
+          "type": "commandExecution"
+        },
+        "startedAtMs": 1793885441995,
+        "turnId": "01a1abe6-bb4e-74a8-b33c-8e6b6167ecba"
+      },
+      "execution_location": "provider_recorded; tool environment not independently authenticated",
+      "item_id": "exec-9dac0cb9-a40f-4a53-a771-03228fdaadbc",
+      "kind": "native.api_item",
+      "native_line": 11,
+      "native_type": "commandExecution",
+      "started_at_ms": 1793885441995,
+      "turn_id": "01a1abe6-bb4e-74a8-b33c-8e6b6167ecba"
+    },
+    {
+      "completed_at_ms": 1793885447432,
+      "event": {
+        "completedAtMs": 1793885447432,
+        "item": {
+          "completedAtMs": 1793885447432,
+          "delivery": null,
+          "id": "msg_0862e3d8aba4d810016aec8504953487d2b5aa5c79a0bafb13",
+          "memoryCitation": null,
+          "phase": "final_answer",
+          "questions": null,
+          "startedAtMs": 1793885444593,
+          "text": "Review blocked: both requested Git objects are unavailable locally.\n\nRecorded provenance:\n- Directory: `/workspace/trailvault-capture-test`\n- HEAD: `a06e1366269924dbfb674e820af7e351dff5c4ee`\n- Branch: `work`\n\nThe exact requested `git diff` failed with `fatal: Invalid revision range`. Separate `git cat-file -t` checks failed for both commits. I therefore have no source-backed observations or source citations to report.\n\nRead-only scope: no files edited, commits, pushes, PR changes, credential/settings/history inspection, subagents, or background jobs. Tests were not run. Capture/logging was left unchanged.",
+          "type": "agentMessage"
+        },
+        "startedAtMs": 1793885444593,
+        "turnId": "01a1abe6-bb4e-74a8-b33c-8e6b6167ecba"
+      },
+      "execution_location": "provider_recorded; tool environment not independently authenticated",
+      "item_id": "msg_0862e3d8aba4d810016aec8504953487d2b5aa5c79a0bafb13",
+      "kind": "native.api_item",
+      "native_line": 12,
+      "native_type": "agentMessage",
+      "started_at_ms": 1793885444593,
+      "turn_id": "01a1abe6-bb4e-74a8-b33c-8e6b6167ecba"
+    }
+  ],
+  "observed_at": "2026-11-05T13:37:26.841Z",
+  "pr_references": [
+    {
+      "contribution_verified": false,
+      "host": "github.com",
+      "native_line": 1,
+      "number": 1,
+      "relationship": "mentioned",
+      "repository": "madsbolaris/trailvault-capture-test",
+      "retrieval_verified": false,
+      "source_role": "user",
+      "url": "https://github.com/madsbolaris/trailvault-capture-test/pull/1"
+    }
+  ],
+  "provider": "codex",
+  "publication": {
+    "contribution_verified": false,
+    "kind": "session-snapshot"
+  },
+  "session_id": "01a1abe6-b115-75aa-a8b3-2a098e633044",
+  "source_head_sha": "a06e1366269924dbfb674e820af7e351dff5c4ee",
+  "version": 1
+}

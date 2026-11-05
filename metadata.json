@@ -1,0 +1,23 @@
+{
+  "branch": "work",
+  "checkpoint_id": "01M6NYXQH7Y8RFT5N4QG2YT6V4",
+  "checkpoints_count": 1,
+  "cli_version": "0.2.0",
+  "files_touched": [],
+  "publication": {
+    "contribution_verified": false,
+    "kind": "session-snapshot",
+    "source_commit": "a06e1366269924dbfb674e820af7e351dff5c4ee"
+  },
+  "sessions": [
+    {
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "evidence": "/0/evidence.json",
+      "metadata": "/0/metadata.json",
+      "prompt": "/0/prompt.txt",
+      "transcript": "/0/full.jsonl"
+    }
+  ],
+  "strategy": "session-snapshot"
+}

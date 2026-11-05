@@ -1,0 +1,351 @@
+{
+  "agent": "Codex Cloud",
+  "branch": "work",
+  "capture_coverage": {
+    "count_unit": "observed_values_not_unique_events; native_and_compact_counts_are_not_percentages",
+    "fields": {
+      "agent_coordination": {
+        "native": {
+          "basis": "not_observed; absence_does_not_establish_provider_unavailability",
+          "observed_values": 0,
+          "status": "unverified"
+        },
+        "native_values_changed_by_redaction": 0,
+        "standardized": {
+          "basis": "not_observed; absence_does_not_establish_provider_unavailability",
+          "observed_values": 0,
+          "status": "unverified"
+        }
+      },
+      "assistant_messages": {
+        "native": {
+          "basis": "observed_in_this_snapshot; completeness_not_established",
+          "observed_values": 10,
+          "status": "captured"
+        },
+        "native_values_changed_by_redaction": 0,
+        "standardized": {
+          "basis": "observed_in_this_snapshot; completeness_not_established",
+          "observed_values": 3,
+          "status": "captured"
+        }
+      },
+      "attachment_payloads": {
+        "native": {
+          "basis": "not_observed; absence_does_not_establish_provider_unavailability",
+          "observed_values": 0,
+          "status": "unverified"
+        },
+        "native_values_changed_by_redaction": 0,
+        "standardized": {
+          "basis": "not_observed; absence_does_not_establish_provider_unavailability",
+          "observed_values": 0,
+          "status": "unverified"
+        }
+      },
+      "attachment_references": {
+        "native": {
+          "basis": "not_observed; absence_does_not_establish_provider_unavailability",
+          "observed_values": 0,
+          "status": "unverified"
+        },
+        "native_values_changed_by_redaction": 0,
+        "standardized": {
+          "basis": "not_observed; absence_does_not_establish_provider_unavailability",
+          "observed_values": 0,
+          "status": "unverified"
+        }
+      },
+      "compaction_events": {
+        "native": {
+          "basis": "not_observed; absence_does_not_establish_provider_unavailability",
+          "observed_values": 0,
+          "status": "unverified"
+        },
+        "native_values_changed_by_redaction": 0,
+        "standardized": {
+          "basis": "not_observed; absence_does_not_establish_provider_unavailability",
+          "observed_values": 0,
+          "status": "unverified"
+        }
+      },
+      "cost": {
+        "native": {
+          "basis": "not_observed; absence_does_not_establish_provider_unavailability",
+          "observed_values": 0,
+          "status": "unverified"
+        },
+        "native_values_changed_by_redaction": 0,
+        "standardized": {
+          "basis": "not_observed; absence_does_not_establish_provider_unavailability",
+          "observed_values": 0,
+          "status": "unverified"
+        }
+      },
+      "event_ids": {
+        "native": {
+          "basis": "observed_in_this_snapshot; completeness_not_established",
+          "observed_values": 38,
+          "status": "captured"
+        },
+        "native_values_changed_by_redaction": 0,
+        "standardized": {
+          "basis": "not_projected_into_compact_schema",
+          "observed_values": 0,
+          "status": "unavailable"
+        }
+      },
+      "instructions_memory": {
+        "native": {
+          "basis": "not_observed; absence_does_not_establish_provider_unavailability",
+          "observed_values": 0,
+          "status": "unverified"
+        },
+        "native_values_changed_by_redaction": 0,
+        "standardized": {
+          "basis": "not_observed; absence_does_not_establish_provider_unavailability",
+          "observed_values": 0,
+          "status": "unverified"
+        }
+      },
+      "model": {
+        "native": {
+          "basis": "not_observed; absence_does_not_establish_provider_unavailability",
+          "observed_values": 0,
+          "status": "unverified"
+        },
+        "native_values_changed_by_redaction": 0,
+        "standardized": {
+          "basis": "not_observed; absence_does_not_establish_provider_unavailability",
+          "observed_values": 0,
+          "status": "unverified"
+        }
+      },
+      "native_records": {
+        "native": {
+          "basis": "source_field_redacted; projection_may_reduce_further",
+          "observed_values": 8,
+          "status": "redacted"
+        },
+        "native_values_changed_by_redaction": 4,
+        "standardized": {
+          "basis": "not_projected_into_compact_schema",
+          "observed_values": 0,
+          "status": "unavailable"
+        }
+      },
+      "parent_links": {
+        "native": {
+          "basis": "not_observed; absence_does_not_establish_provider_unavailability",
+          "observed_values": 0,
+          "status": "unverified"
+        },
+        "native_values_changed_by_redaction": 0,
+        "standardized": {
+          "basis": "not_observed; absence_does_not_establish_provider_unavailability",
+          "observed_values": 0,
+          "status": "unverified"
+        }
+      },
+      "reasoning": {
+        "native": {
+          "basis": "not_observed; absence_does_not_establish_provider_unavailability",
+          "observed_values": 0,
+          "status": "unverified"
+        },
+        "native_values_changed_by_redaction": 0,
+        "standardized": {
+          "basis": "not_observed; absence_does_not_establish_provider_unavailability",
+          "observed_values": 0,
+          "status": "unverified"
+        }
+      },
+      "session_identity": {
+        "native": {
+          "basis": "observed_in_this_snapshot; completeness_not_established",
+          "observed_values": 3,
+          "status": "captured"
+        },
+        "native_values_changed_by_redaction": 0,
+        "standardized": {
+          "basis": "not_projected_into_compact_schema",
+          "observed_values": 0,
+          "status": "unavailable"
+        }
+      },
+      "skills_tools": {
+        "native": {
+          "basis": "not_observed; absence_does_not_establish_provider_unavailability",
+          "observed_values": 0,
+          "status": "unverified"
+        },
+        "native_values_changed_by_redaction": 0,
+        "standardized": {
+          "basis": "not_observed; absence_does_not_establish_provider_unavailability",
+          "observed_values": 0,
+          "status": "unverified"
+        }
+      },
+      "timestamps": {
+        "native": {
+          "basis": "observed_in_this_snapshot; completeness_not_established",
+          "observed_values": 76,
+          "status": "captured"
+        },
+        "native_values_changed_by_redaction": 0,
+        "standardized": {
+          "basis": "not_projected_into_compact_schema",
+          "observed_values": 0,
+          "status": "unavailable"
+        }
+      },
+      "tool_calls": {
+        "native": {
+          "basis": "observed_in_this_snapshot; completeness_not_established",
+          "observed_values": 15,
+          "status": "captured"
+        },
+        "native_values_changed_by_redaction": 0,
+        "standardized": {
+          "basis": "observed_in_this_snapshot; completeness_not_established",
+          "observed_values": 5,
+          "status": "captured"
+        }
+      },
+      "tool_results": {
+        "native": {
+          "basis": "observed_in_this_snapshot; completeness_not_established",
+          "observed_values": 15,
+          "status": "captured"
+        },
+        "native_values_changed_by_redaction": 0,
+        "standardized": {
+          "basis": "observed_in_this_snapshot; completeness_not_established",
+          "observed_values": 5,
+          "status": "captured"
+        }
+      },
+      "usage": {
+        "native": {
+          "basis": "not_observed; absence_does_not_establish_provider_unavailability",
+          "observed_values": 0,
+          "status": "unverified"
+        },
+        "native_values_changed_by_redaction": 0,
+        "standardized": {
+          "basis": "not_observed; absence_does_not_establish_provider_unavailability",
+          "observed_values": 0,
+          "status": "unverified"
+        }
+      },
+      "user_messages": {
+        "native": {
+          "basis": "observed_in_this_snapshot; completeness_not_established",
+          "observed_values": 4,
+          "status": "captured"
+        },
+        "native_values_changed_by_redaction": 0,
+        "standardized": {
+          "basis": "observed_in_this_snapshot; completeness_not_established",
+          "observed_values": 1,
+          "status": "captured"
+        }
+      }
+    },
+    "guarantees": {
+      "attachments_complete": {
+        "basis": "inline_payloads_or_references_do_not_prove_all_attachment_bytes_collected",
+        "status": "unverified"
+      },
+      "background_jobs_complete": {
+        "basis": "background_processes_not_independently_observed",
+        "status": "unverified"
+      },
+      "child_transcripts_complete": {
+        "basis": "coordination_or_task_references_do_not_prove_child_transcript_collection",
+        "status": "unverified"
+      },
+      "continuous_collection": {
+        "basis": "one_snapshot_does_not_establish_gap_free_collection",
+        "status": "unverified"
+      },
+      "execution_origin_authenticated": {
+        "basis": "collector_or_provider_reported_not_per_event_attestation",
+        "status": "unverified"
+      },
+      "hidden_model_state": {
+        "basis": "not_exposed_by_capture_contract",
+        "status": "unavailable"
+      },
+      "live_presence": {
+        "basis": "snapshot_has_no_renewable_presence_lease",
+        "status": "unavailable"
+      },
+      "original_history_complete": {
+        "basis": "provider_compaction_or_output_limits_may_apply",
+        "status": "unverified"
+      },
+      "runtime_termination": {
+        "basis": "client_exit_or_completed_records_do_not_prove_runtime_termination",
+        "status": "unverified"
+      }
+    },
+    "native_sha256": "87cd3b4d9dd73f101af7cff12a5262862d722dbee19a6213479d636cff259bdb",
+    "source": "codex_cloud",
+    "source_basis": "collector_context_not_runtime_attestation",
+    "standardized_scope": "compact_transcript_only; session_metadata_and_native_evidence_are_separate",
+    "standardized_sha256": "a865867507e6f36bca1b0cc2743b9158798963abb86649f0ef4c9511b73ddfa2",
+    "version": 1
+  },
+  "checkpoint_id": "01M6NYXQH7Y8RFT5N4QG2YT6V4",
+  "checkpoints_count": 1,
+  "cli_version": "0.2.0",
+  "client": {
+    "app": "codex",
+    "environment": "cloud"
+  },
+  "compact_transcript_start": 0,
+  "created_at": "2026-11-05T13:38:40.858517+00:00",
+  "files_touched": [],
+  "participant_identity_basis": "capture_input",
+  "participants": [
+    {
+      "github_login": "madsbolaris"
+    }
+  ],
+  "pr_relationships": {
+    "context_repository": "madsbolaris/trailvault-capture-test",
+    "relationships": [
+      {
+        "contribution_verified": false,
+        "evidence": [
+          {
+            "kind": "mention",
+            "record": 1,
+            "role": "user"
+          }
+        ],
+        "relationship": "mentioned",
+        "retrieval_verified": false,
+        "target": {
+          "host": "github.com",
+          "number": 1,
+          "repository": "madsbolaris/trailvault-capture-test"
+        },
+        "url": "https://github.com/madsbolaris/trailvault-capture-test/pull/1"
+      }
+    ],
+    "version": 1
+  },
+  "publication": {
+    "contribution_verified": false,
+    "kind": "session-snapshot",
+    "source_commit": "a06e1366269924dbfb674e820af7e351dff5c4ee"
+  },
+  "redaction": {
+    "replacements": 5
+  },
+  "save_step_count": 0,
+  "session_id": "01a1abe6-b115-75aa-a8b3-2a098e633044",
+  "strategy": "session-snapshot"
+}
