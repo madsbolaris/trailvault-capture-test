@@ -1,0 +1,48 @@
+{
+  "branch": "add-bouncing-ball-visualization",
+  "checkpoint_id": "01M6PXAFHRWCD80955APRS1RZ5",
+  "checkpoints_count": 1,
+  "cli_version": "0.2.0",
+  "files_touched": [
+    ".github/workflows/bounce-lab.yml",
+    "README.md",
+    "package.json",
+    "site/favicon.svg",
+    "site/index.html",
+    "site/js/main.js",
+    "site/js/palette.js",
+    "site/js/physics.js",
+    "site/js/renderer.js",
+    "site/js/settings.js",
+    "site/styles.css",
+    "tests/palette.test.js",
+    "tests/physics.test.js",
+    "tests/settings.test.js",
+    "tools/serve.js",
+    "visualizations/bouncing-balls.html"
+  ],
+  "publication": {
+    "contribution_verified": false,
+    "kind": "manual-commit",
+    "source_commit": "66b2d9b5d9ded24dbdeff4d2a439d6b15e11bef2"
+  },
+  "sessions": [
+    {
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "evidence": "/0/evidence.json",
+      "metadata": "/0/metadata.json",
+      "prompt": "/0/prompt.txt",
+      "transcript": "/0/full.jsonl"
+    },
+    {
+      "compact_transcript": "/1/transcript.jsonl",
+      "content_hash": "/1/content_hash.txt",
+      "evidence": "/1/evidence.json",
+      "metadata": "/1/metadata.json",
+      "prompt": "/1/prompt.txt",
+      "transcript": "/1/full.jsonl"
+    }
+  ],
+  "strategy": "manual-commit"
+}
