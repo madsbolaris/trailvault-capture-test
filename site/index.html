@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <title>Bounce Lab · Bouncing ball physics playground</title>
+  <meta name="description" content="Drop, drag and throw balls under the real gravity of the Moon, Mars, Earth or Jupiter. A fast, accessible physics playground that runs in your browser.">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#f6f7f9" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#101319" media="(prefers-color-scheme: dark)">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Bounce Lab">
+  <meta property="og:description" content="Drop, drag and throw balls under the real gravity of the Moon, Mars, Earth or Jupiter.">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+  <script type="module" src="js/main.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#controls">Skip to controls</a>
+
+  <header class="site-header">
+    <a class="brand" href="./" aria-label="Bounce Lab home">
+      <img src="favicon.svg" alt="" width="28" height="28">
+      <span class="brand-name">Bounce Lab</span>
+    </a>
+    <p class="tagline">Bouncing balls under real planetary gravity</p>
+    <nav class="header-actions" aria-label="Page actions">
+      <button type="button" class="btn btn-ghost" id="shortcuts-btn" aria-haspopup="dialog">Shortcuts</button>
+      <button type="button" class="btn btn-primary" id="share-btn">Share</button>
+    </nav>
+  </header>
+
+  <main class="layout">
+    <section class="stage" aria-label="Simulation">
+      <canvas id="canvas" tabindex="0" role="img"
+        aria-label="Bouncing balls simulation. Click or press Enter to drop a ball; drag a ball to throw it."></canvas>
+      <p class="stage-hint" id="hint">Click to drop a ball · Drag one to throw it</p>
+      <p class="stage-badge" id="paused-badge" hidden>Paused</p>
+      <noscript><p class="stage-noscript">Bounce Lab needs JavaScript to run the simulation.</p></noscript>
+    </section>
+
+    <aside class="panel" id="controls" aria-label="Simulation controls">
+      <section class="group" aria-labelledby="gravity-heading">
+        <h2 id="gravity-heading">Gravity</h2>
+        <div class="presets" role="group" aria-label="Gravity presets" id="presets"></div>
+        <div class="field">
+          <div class="field-head">
+            <label for="gravity">Strength</label>
+            <output for="gravity" id="gravity-out"></output>
+          </div>
+          <input type="range" id="gravity" data-setting="gravity">
+        </div>
+      </section>
+
+      <section class="group" aria-labelledby="motion-heading">
+        <h2 id="motion-heading">Motion</h2>
+        <div class="field">
+          <div class="field-head">
+            <label for="bounciness">Bounciness</label>
+            <output for="bounciness" id="bounciness-out"></output>
+          </div>
+          <input type="range" id="bounciness" data-setting="bounciness">
+        </div>
+        <div class="field">
+          <div class="field-head">
+            <label for="airDrag">Air resistance</label>
+            <output for="airDrag" id="airDrag-out"></output>
+          </div>
+          <input type="range" id="airDrag" data-setting="airDrag">
+        </div>
+      </section>
+
+      <section class="group" aria-labelledby="balls-heading">
+        <h2 id="balls-heading">Balls</h2>
+        <div class="field">
+          <div class="field-head">
+            <label for="ballSize">Size of new balls</label>
+            <output for="ballSize" id="ballSize-out"></output>
+          </div>
+          <input type="range" id="ballSize" data-setting="ballSize">
+        </div>
+        <div class="field">
+          <div class="field-head">
+            <label for="startCount">Balls on reset</label>
+            <output for="startCount" id="startCount-out"></output>
+          </div>
+          <input type="range" id="startCount" data-setting="startCount">
+        </div>
+        <div class="button-row">
+          <button type="button" class="btn" id="add-btn">Add 10</button>
+          <button type="button" class="btn" id="shake-btn">Shake</button>
+          <button type="button" class="btn" id="clear-btn">Clear</button>
+        </div>
+      </section>
+
+      <section class="group group-actions" aria-label="Playback">
+        <div class="button-row">
+          <button type="button" class="btn btn-primary" id="pause-btn" aria-pressed="false">Pause</button>
+          <button type="button" class="btn" id="reset-btn">Reset</button>
+        </div>
+        <button type="button" class="btn btn-link" id="defaults-btn">Restore default settings</button>
+      </section>
+
+      <dl class="stats" aria-label="Statistics">
+        <div><dt>Balls</dt><dd id="stat-balls">0</dd></div>
+        <div><dt>Frame rate</dt><dd id="stat-fps">–</dd></div>
+      </dl>
+    </aside>
+  </main>
+
+  <footer class="site-footer">
+    <p>Gravity presets use real surface gravity in m/s². Settings are saved in the link, so <strong>Share</strong> sends exactly what you see.</p>
+  </footer>
+
+  <dialog id="shortcuts" aria-labelledby="shortcuts-title">
+    <form method="dialog">
+      <h2 id="shortcuts-title">Keyboard shortcuts</h2>
+      <dl class="shortcut-list">
+        <div><dt><kbd>Space</kbd></dt><dd>Pause or resume</dd></div>
+        <div><dt><kbd>Enter</kbd></dt><dd>Drop a ball (when the simulation has focus)</dd></div>
+        <div><dt><kbd>A</kbd></dt><dd>Add 10 balls</dd></div>
+        <div><dt><kbd>S</kbd></dt><dd>Shake</dd></div>
+        <div><dt><kbd>R</kbd></dt><dd>Reset</dd></div>
+        <div><dt><kbd>1</kbd>–<kbd>5</kbd></dt><dd>Zero-G, Moon, Mars, Earth, Jupiter</dd></div>
+        <div><dt><kbd>?</kbd></dt><dd>Show this list</dd></div>
+      </dl>
+      <button class="btn btn-primary" value="close">Close</button>
+    </form>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
