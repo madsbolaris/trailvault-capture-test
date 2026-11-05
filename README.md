@@ -2,6 +2,34 @@
 
 Fabricated test data only.
 
+## HTML page previews
+
+**Preview HTML pages** runs after each same-repository PR push through **Request
+session reports**, or manually with `pull_request`. Merge its trusted workflow
+and scripts into the default branch to activate it. It copies changed HTML pages
+and static assets below their directories from immutable head-commit blobs;
+it never checks out, installs dependencies for, builds, or executes PR code.
+Forks, symlinks, hidden paths, non-static files, incomplete file/tree evidence,
+changed heads, and invalid blob contents are rejected or excluded.
+
+The archive is named `html-page-preview-pr-<PR number>-<40-character head SHA>`
+and retains the original repository paths at the archive root. Limits are
+400 files, 1 MiB per file, 20 MiB total, and 14-day retention. No changed HTML
+means no preview artifact. Supporting assets must be in the HTML directory or
+its descendants; remote services and build-time frameworks are not supported.
+
+The prototype discovers this exact-head artifact even when the trusted workflow
+runs on the default branch. HTML opens in the existing browser preview with
+device controls, reload, and fullscreen, using an isolated iframe with no parent
+credentials or external network access. Other report artifacts keep their
+existing layout.
+
+```sh
+gh workflow run html-page-preview.yml --repo madsbolaris/trailvault-capture-test \
+  -f pull_request=36
+python3 -m unittest discover -s scripts -p 'test_html_previews.py' -v
+```
+
 ## PR smart labels
 
 **Assess PR smart labels** uses the existing **Request session reports** push
