@@ -77,7 +77,10 @@ def api(path, method="GET", body=None):
     args = ["gh", "api", "--method", method, path]
     if body is not None:
         args += ["--input", "-"]
-    result = execute(args, data=json.dumps(body).encode() if body is not None else None)
+    try:
+        result = execute(args, data=json.dumps(body).encode() if body is not None else None)
+    except ReportError:
+        raise ReportError(f"GitHub {method} {path} failed; raw diagnostics withheld") from None
     return unique_json(result) if result.strip() else None
 
 
