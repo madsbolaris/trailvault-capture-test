@@ -1,0 +1,3 @@
+Private synthetic Claude-hosted session capture fixture.
+No customer data or credentials.
+This draft PR isolates hosted capture from completed local CLI experiments.

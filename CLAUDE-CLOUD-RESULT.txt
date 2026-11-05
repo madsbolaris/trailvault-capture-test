@@ -1,0 +1,8 @@
+Claude hosted capture result (fabricated test data only).
+
+Branch membership alone does not prove PR contribution. A commit can sit on a
+PR's head branch because the branch was created from, rebased onto, or merged
+with other history, or because someone else pushed it there. Contribution to a
+PR has to be established from the commits the PR actually introduces (the
+range from the merge base to the head), and from each commit's own authorship
+and trailers, not from the fact that a commit is reachable from the branch.
