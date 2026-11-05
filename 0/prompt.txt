@@ -1,0 +1,9 @@
+tell me about this PR
+
+based on the conversation that created the PR, what was the rational for the colors and gravity?
+
+hello
+
+Streaming validation only. Do not use tools or change files. Reply with five short lines explaining incremental text streaming.
+
+tell me a joke
