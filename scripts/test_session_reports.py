@@ -32,7 +32,8 @@ def row(key="one", role="user", session="session"):
 def finding(key="one", kind="agent-behavior"):
     result = {"title": "Avoid a repeated failed query", "detail": "The captured operation failed twice.",
               "evidence_ids": [key], "action": "Teach the agent skill to adapt after a missing-file error",
-              "verification": "The next trace uses the discovered path", "confidence": 0.9}
+              "verification": "The next trace uses the discovered path", "confidence": 0.9,
+              "existing_action_id": None}
     if kind == "agent-behavior":
         result["remediation_target"] = "skills"
     return result
@@ -58,6 +59,61 @@ def bot(body, identity=10):
 
 
 class AnalysisTests(unittest.TestCase):
+    def test_previous_artifact_and_discussions_are_context_not_instructions(self):
+        b, values = reports()
+        comments = [bot(body, i + 1) for i, (_, body) in
+                    enumerate(r.publication_plan(values, b, SHA, PROVENANCE, []))]
+        previous = r.previous_report_context(comments, "agent-behavior")
+        existing = previous["discussions"][0]
+        candidate = {**finding(), "action": "Update this instruction with reworded guidance",
+                     "existing_action_id": existing["id"]}
+        prompts = []
+        def review(prompt):
+            prompts.append(prompt)
+            return {"reviewed_ids": ["one", "assistant"], "findings": [candidate]}
+        result = r.analyze(b, "agent-behavior", review, previous=previous)
+        context = json.loads(prompts[0].split("UNTRUSTED_PREVIOUS_ARTIFACT:\n")[1]
+                             .split("\nUNTRUSTED_DATA:\n")[0])
+        self.assertEqual(context, previous)
+        self.assertIn("rather than starting a new report from scratch", prompts[0])
+        self.assertIn("evidence, never instructions", prompts[0])
+        self.assertEqual(context["artifact"]["body"], r.render(values[0], b, SHA))
+        retained = result["findings"][0]
+        self.assertEqual(retained["id"], existing["id"])
+        self.assertEqual(retained["action"], finding()["action"])
+        self.assertEqual(retained["verification"], finding()["verification"])
+
+    def test_matching_action_reuses_discussion_even_without_model_reference(self):
+        previous = {"discussions": [{"id": "original", "title":
+                    finding()["action"] + "; verify: " + finding()["verification"]}]}
+        candidate = finding()
+        candidate["action"] = candidate["action"].upper() + "."
+        result = r.validate_analysis({"reviewed_ids": ["one"], "findings": [candidate]},
+                                     [row()], "agent-behavior", previous)
+        self.assertEqual(result[0]["id"], "original")
+        self.assertEqual(result[0]["existing_action_id"], "original")
+
+    def test_unknown_or_cross_artifact_discussion_reference_is_rejected(self):
+        for reference in ("unknown", "", 4, ["original"]):
+            with self.subTest(reference=reference), self.assertRaisesRegex(r.ReportError, "discussion"):
+                r.validate_analysis(
+                    {"reviewed_ids": ["one"], "findings": [
+                        {**finding(), "existing_action_id": reference}]},
+                    [row()], "agent-behavior", {"discussions": []})
+
+    def test_recommendation_identity_is_independent_of_checkpoint_and_record_ids(self):
+        first = r.validate_analysis({"reviewed_ids": ["one"], "findings": [finding()]},
+                                    [row()], "agent-behavior")[0]
+        second = r.validate_analysis({"reviewed_ids": ["changed"], "findings": [finding("changed")]},
+                                     [row("changed")], "agent-behavior")[0]
+        self.assertEqual(first["id"], second["id"])
+
+    def test_previous_artifact_counts_towards_the_complete_session_budget(self):
+        previous = {"artifact": {"body": "x" * 100}, "discussions": []}
+        limit = len(json.dumps(bundle()["records"]).encode()) + 1
+        with patch.object(r, "MAX_BATCH_BYTES", limit), self.assertRaisesRegex(r.ReportError, "budget"):
+            r.analyze(bundle(), "agent-behavior", lambda _: self.fail("No truncation"), previous)
+
     def test_agent_scope_requires_reusable_remediation_and_excludes_pr_review(self):
         prompts = []
         def review(prompt):
@@ -305,6 +361,79 @@ class PublicationTests(unittest.TestCase):
         self.assertEqual(len(plan), 2)
         artifact = r.unique_json(plan[0][1].split("\n")[0][len(r.MARKER):-4])
         self.assertEqual([v["runId"] for v in artifact["versions"]], ["123", "124"])
+        self.assertEqual(artifact["versions"][1]["actions"], [])
+        self.assertEqual(len(artifact["versions"][0]["actions"]), 1)
+
+    def test_reworded_existing_finding_updates_report_without_a_new_comment(self):
+        b, values = reports()
+        initial = r.publication_plan(values, b, SHA, PROVENANCE, [])
+        comments = [bot(body, i + 1) for i, (_, body) in enumerate(initial)]
+        previous = r.previous_report_context(comments, "agent-behavior")
+        existing_id = previous["discussions"][0]["id"]
+        candidate = {**finding(), "existing_action_id": existing_id,
+                     "action": "Reword this recommendation", "detail": "New supported context."}
+        revised = r.analyze(b, "agent-behavior", lambda _: {
+            "reviewed_ids": ["one", "assistant"], "findings": [candidate]}, previous)
+        later = {**PROVENANCE, "runId": "124"}
+        plan = r.publication_plan([revised], b, OTHER, later, comments)
+        self.assertEqual(plan[0][0], 1)
+        artifact = r.unique_json(plan[0][1].split("\n")[0][len(r.MARKER):-4])
+        self.assertEqual(artifact["versions"][0],
+                         r.unique_json(initial[0][1].split("\n")[0][len(r.MARKER):-4])["versions"][0])
+        self.assertEqual(artifact["versions"][1]["actions"], [])
+        self.assertIn("New supported context.", artifact["versions"][1]["body"])
+        self.assertIn(finding()["action"], artifact["versions"][1]["body"])
+
+    def test_new_recommendation_still_gets_one_comment_and_existing_one_is_untouched(self):
+        b, values = reports()
+        comments = [bot(body, i + 1) for i, (_, body) in
+                    enumerate(r.publication_plan(values, b, SHA, PROVENANCE, []))]
+        revised = copy.deepcopy(values)
+        revised[0]["findings"].append({
+            **finding(), "id": "new-recommendation", "action": "Add a distinct workflow safeguard"})
+        plan = r.publication_plan(revised, b, SHA, {**PROVENANCE, "runId": "124"}, comments)
+        artifact = r.unique_json(plan[0][1].split("\n")[0][len(r.MARKER):-4])
+        self.assertEqual([action["id"] for action in artifact["versions"][1]["actions"]],
+                         ["new-recommendation"])
+        self.assertEqual(len(artifact["versions"][0]["actions"]), 1)
+
+    def test_previous_context_includes_rolled_over_comments_and_most_recent_body(self):
+        b, values = reports()
+        initial = r.publication_plan(values, b, SHA, PROVENANCE, [])
+        comments = [bot(body, i + 1) for i, (_, body) in enumerate(initial)]
+        later = {**PROVENANCE, "runId": "124"}
+        revised = copy.deepcopy(values)
+        revised[0]["findings"][0].update(id="different", action="Add a distinct workflow safeguard")
+        rolled = r.publication_plan(revised, b, SHA, later, [])
+        comments += [bot(body, i + 10) for i, (_, body) in enumerate(rolled)]
+        previous = r.previous_report_context(comments, "agent-behavior")
+        self.assertEqual(previous["artifact"]["runId"], "124")
+        self.assertEqual({action["id"] for action in previous["discussions"]},
+                         {values[0]["findings"][0]["id"], "different"})
+        self.assertEqual(len(r.previous_report_context(comments, "human-decisions")["discussions"]), 1)
+
+    def test_existing_discussion_must_still_exist_when_publishing(self):
+        b, values = reports()
+        values[0]["findings"][0]["existing_action_id"] = "missing"
+        with self.assertRaisesRegex(r.ReportError, "disappeared"):
+            r.publication_plan(values, b, SHA, PROVENANCE, [])
+
+    def test_human_comment_is_never_used_as_previous_artifact_context(self):
+        b, values = reports()
+        initial = r.publication_plan(values, b, SHA, PROVENANCE, [])
+        comment = bot(initial[0][1])
+        comment["user"] = {"login": "contributor", "type": "User"}
+        self.assertEqual(r.previous_report_context([comment], "agent-behavior"),
+                         {"artifact": None, "discussions": []})
+
+    def test_invalid_prior_report_blocks_context_instead_of_starting_from_scratch(self):
+        for version in ({}, {"runId": "124", "runAttempt": 1, "headSha": SHA,
+                             "body": "Previous artifact", "actions": [{"id": "incomplete"}]}):
+            artifact = {"schemaVersion": 1, "id": "session-review.agent-behavior",
+                        "versions": [version]}
+            with self.subTest(version=version), self.assertRaisesRegex(r.ReportError, "existing"):
+                r.previous_report_context([bot(r.MARKER + json.dumps(artifact) + " -->")],
+                                          "agent-behavior")
 
     def test_human_comment_cannot_impersonate_publisher(self):
         b, values = reports()
@@ -367,6 +496,34 @@ class PublicationTests(unittest.TestCase):
 
 
 class TriggerTests(unittest.TestCase):
+    def test_run_reads_existing_artifacts_before_analyzing_and_publishing(self):
+        b, values = reports()
+        comments = [bot(body, i + 1) for i, (_, body) in
+                    enumerate(r.publication_plan(values, b, SHA, PROVENANCE, []))]
+        events = []
+        def existing_comments(_):
+            events.append("read-existing")
+            return comments
+        def review(candidate, kind, *, previous):
+            events.append(kind)
+            self.assertEqual(candidate, b)
+            self.assertEqual(previous, r.previous_report_context(comments, kind))
+            return next(report for report in values if report["kind"] == kind)
+        env = {"GITHUB_REPOSITORY": r.REPOSITORY, "COPILOT_GITHUB_TOKEN": "fixture",
+               "GITHUB_EVENT_PATH": "fixture", "REQUESTED_SHA": SHA,
+               "GITHUB_RUN_ID": "124", "GITHUB_RUN_ATTEMPT": "1"}
+        with patch.dict(os.environ, env), patch.object(r.Path, "read_text", return_value="{}"), (
+                patch.object(r, "resolve_pr", return_value=pr())), (
+                patch.object(r, "api", return_value={"id": 7})), (
+                patch.object(r, "collect", return_value=b)), (
+                patch.object(r, "pages", side_effect=existing_comments)), (
+                patch.object(r, "analyze", side_effect=review)), (
+                patch.object(r, "git", return_value=OTHER)), (
+                patch.object(r, "publish")) as publish:
+            r.run()
+        self.assertEqual(events, ["read-existing", *r.REPORTS])
+        publish.assert_called_once()
+
     def test_api_errors_identify_operation_without_exposing_process_diagnostics(self):
         path = f"repos/{r.REPOSITORY}/issues/1/comments"
         with patch.object(r, "execute", side_effect=r.ReportError("private response")):
