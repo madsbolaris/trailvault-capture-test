@@ -21,6 +21,7 @@ SHA = re.compile(r"[a-f0-9]{40}")
 CHECKPOINT = re.compile(r"[0-9A-HJKMNP-TV-Z]{26}")
 CLI_VERSION = "1.0.98"
 MODEL = "gpt-5.3-codex"
+MODEL_TIMEOUT = 600
 MAX_BYTES = 2 * 1024 * 1024
 MAX_RECORDS = 10000
 MAX_BATCH_BYTES = 300000
@@ -244,10 +245,11 @@ def copilot(prompt):
                     "COPILOT_GITHUB_TOKEN": credential, "GH_HOST": "github.com", "CI": "true"})
         output = execute([
             binary, "--silent", "--stream=off", "--output-format=json", "--model", MODEL,
+            "--reasoning-effort", "medium",
             "--available-tools=", "--disable-builtin-mcps", "--no-custom-instructions",
             "--no-ask-user", "--no-auto-update", "--no-remote-export", "--no-bash-env",
             "--log-level=none",
-        ], cwd=home, env=env, data=prompt.encode(), timeout=120)
+        ], cwd=home, env=env, data=prompt.encode(), timeout=MODEL_TIMEOUT)
         events = [unique_json(line) for line in output.splitlines() if line.strip()]
         require(not any(event.get("type") in ("session.error", "tool.execution_start") or
                         event.get("data", {}).get("toolRequests") for event in events),

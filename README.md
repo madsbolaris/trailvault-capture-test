@@ -188,6 +188,8 @@ as Actions artifacts.
 Each successful model response is checked for provider `copilot` and the pinned
 GPT model `gpt-5.3-codex`. Non-GPT configurations and responses from a different
 model/provider are rejected; there is no Claude or other-model fallback.
+GPT uses explicit medium reasoning with a ten-minute per-response deadline and
+a 45-minute workflow deadline; a timeout fails the run without replacing reports.
 CI logs the verified provider/model/CLI version and
 batch progress without exposing transcript or response contents.
 

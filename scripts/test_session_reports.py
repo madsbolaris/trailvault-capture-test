@@ -394,6 +394,8 @@ class CopilotTests(unittest.TestCase):
         self.assertIn("--available-tools=", command)
         self.assertIn("--no-custom-instructions", command)
         self.assertEqual(command[command.index("--model") + 1], r.MODEL)
+        self.assertEqual(command[command.index("--reasoning-effort") + 1], "medium")
+        self.assertEqual(execute.call_args_list[1].kwargs["timeout"], 600)
         self.assertIn("provider=copilot", log.call_args.args[0])
         self.assertIn(r.MODEL, log.call_args.args[0])
         self.assertNotIn("fixture", log.call_args.args[0])
