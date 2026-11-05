@@ -1,0 +1,6 @@
+Synthetic current Codex Cloud capture fixture.
+Repository: madsbolaris/trailvault-capture-test
+Branch: test/pr-attribution-codex-cloud-20261104
+This is a deliberately small, private draft-PR test.
+Only CODEX-CLOUD-RESULT.txt may be added by the hosted task.
+Do not read credentials or unrelated local/session history.
