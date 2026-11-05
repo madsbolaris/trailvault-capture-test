@@ -21,16 +21,23 @@ The workflow publishes two CI-versioned PR comment artifacts, using the same
   the proposal before adopting a rule. No memories or instructions are changed
   automatically.
 
-Each actionable finding creates a todo in its report's version metadata and one
-ordinary PR comment for discussion, with immutable transcript-line evidence.
+Reports lead with their conclusion, summary cards, and actionable findings,
+not workflow metadata or snapshot inventories. Immutable run/head provenance
+remains in the version envelope rather than in the visible report body.
+Each actionable finding publishes one anchored `actions` record in its report's
+version metadata, with immutable transcript-line evidence. The prototype
+assembles this into the shared report highlight, native Comments thread, and
+todo with one identity. Clicking a finding heading opens its discussion and
+completion/ownership controls. There is no separate standalone finding comment
+or independently editable duplicate task list. CI actions survive reload;
+local replies and task edits remain prototype-local.
 Findings below the 0.8 uncalibrated-confidence threshold appear as deferred
 candidates in the report without creating todos.
-The discussion references that same task ID and does not create an independent
-completion checkbox. Native GitHub displays the report and action text; the
-prototype additionally consumes the structured todo metadata. Local todo
-completion, discussion replies, and verification outcomes are distinct.
-Rerunning the same report publication does not duplicate its version or finding
-discussion. New pushes retain old report versions with their original head/run
+Native GitHub displays the report and action text; the prototype additionally
+consumes the anchored action metadata. Local todo completion, discussion replies,
+and verification outcomes are distinct. Rerunning the same report publication
+does not duplicate its version or anchored action.
+New pushes retain old report versions with their original head/run
 provenance. Long histories roll into another comment without deleting history.
 
 ### Credentials and operation
@@ -60,7 +67,9 @@ using the trusted Trailvault `related` command for PR references and exact
 `Trailvault-Checkpoint` trailers for contributor sessions. Mere mentions are not
 proof of contribution. Prefix-overlapping snapshots are deduplicated; divergent
 histories remain separate. Child transcripts and local-only sessions are not
-assessed. Every report states these coverage boundaries.
+assessed. A short scope note states this limitation without a separate technical
+coverage section. The publisher removes its old detached finding comments only
+after successfully retaining the new reports; old report versions are preserved.
 
 There is a 2 MiB / 10,000-record evidence budget. Each model batch preserves
 complete sessions, up to 300,000 serialized bytes, with at most eight batches per

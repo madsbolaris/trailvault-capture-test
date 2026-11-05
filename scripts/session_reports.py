@@ -303,7 +303,7 @@ def validate_analysis(value, records, kind):
         require(isinstance(finding, dict) and set(finding) == {
             "title", "detail", "evidence_ids", "action", "verification", "confidence"},
             "Invalid finding shape")
-        for key, size in (("title", 120), ("detail", 1200), ("action", 180), ("verification", 180)):
+        for key, size in (("title", 112), ("detail", 1200), ("action", 180), ("verification", 180)):
             text = finding[key]
             require(isinstance(text, str) and 0 < len(text.strip()) <= size
                     and not re.search(r"[<>\x00-\x1f@]|https?://", text),
@@ -369,28 +369,43 @@ def markdown(text):
 
 
 def render(report, bundle, sha):
-    lines = [f"# {REPORTS[report['kind']]}", "",
-             f"PR head: `{sha}`. Copilot `{CLI_VERSION}`, model `{MODEL}`.",
-             f"Status: **{report['status']}**. Reviewed records: {report['reviewed_records']}.",
-             f"Captured session snapshots: {len(bundle['sessions'])}. Slack excluded by request.", "",
-             "AI-generated findings require maintainer review. Confidence is uncalibrated.",
-             "User-role messages are not proof of human authorship. No rules are adopted automatically.",
-             "", "## Coverage boundaries", ""]
-    lines += [f"- {line}" for line in bundle["limitations"]]
-    for session in bundle["sessions"]:
-        lines += [f"- Snapshot `{session['checkpoint']}` session `{session['session_id']}`; "
-                  f"capture coverage metadata {'present' if session['coverage'] else 'unavailable'}."]
+    human = report["kind"] == "human-decisions"
+    count = len(report["findings"])
     if report["status"] != "assessed":
-        lines += ["", "**Not assessed:** no eligible captured records. This is not a clean review."]
-    elif not report["findings"]:
-        lines += ["", "No actionable findings identified in the assessed records."]
+        return (f"# {REPORTS[report['kind']]}\n\n"
+                "**Not assessed.** No eligible captured messages were available. "
+                "Publish the session captures and rerun this report; this is not a clean review.\n")
+    summary = (
+        f"**{count} {'repository decision' if count == 1 else 'repository decisions'} to confirm.** "
+        "Review the proposed rules below before adopting them."
+        if human and count else
+        "**No reusable repository decisions identified.** The reviewed user messages did not "
+        "establish a durable rule to propose."
+        if human else
+        f"**{count} {'follow-up' if count == 1 else 'follow-ups'} from the captured agent sessions.** "
+        "Each finding below includes the observed behavior, a recommended change, and verification."
+        if count else
+        "**No actionable agent-behavior findings.** No follow-up was identified in the reviewed captures."
+    )
+    lines = [f"# {REPORTS[report['kind']]}", "", summary, "",
+             '<Inline id={"session-review-summary"} columns={3} variant={"cards"}>']
+    for identifier, label, value in [
+        ("follow-ups", "Decisions to confirm" if human else "Follow-ups", count),
+        ("sessions", "Captured sessions", len({session["session_id"] for session in bundle["sessions"]})),
+        ("records", "User messages reviewed" if human else "Records reviewed", report["reviewed_records"]),
+    ]:
+        lines += [f'<Stat id={{{json.dumps(identifier)}}} label={{{json.dumps(label)}}} value={{{value}}} />']
+    lines += ["</Inline>", ""]
+    if human:
+        lines += ["User-role messages are proposals, not proof of human authorship. "
+                  "Maintainer confirmation is required; no rules or memories are saved automatically.", ""]
     by_id = {row["id"]: row for row in bundle["records"]}
-    for finding in report["findings"]:
-        lines += ["", f"## {markdown(finding['title'])}", "", markdown(finding["detail"]), "",
-                  f"Action: {markdown(finding['action'])}",
-                  f"Verification: {markdown(finding['verification'])}", "",
-                  "Evidence: " + ", ".join(f"[record]({by_id[key]['url']})"
-                                          for key in finding["evidence_ids"])]
+    for index, finding in enumerate(report["findings"], 1):
+        lines += [f"## {index}. {markdown(finding['title'])}", "", markdown(finding["detail"]), "",
+                  f"**{'Proposed rule' if human else 'Recommended change'}:** {markdown(finding['action'])}",
+                  "", f"**Verify:** {markdown(finding['verification'])}", "",
+                  "Evidence: " + ", ".join(f"[Session record {number}]({by_id[key]['url']})"
+                                          for number, key in enumerate(finding["evidence_ids"], 1)), ""]
     if report.get("observations"):
         lines += ["", "## Deferred candidates", "",
                   "These observations are below the 0.8 action threshold. No todos were created."]
@@ -399,6 +414,8 @@ def render(report, bundle, sha):
                       f"Confidence: {finding['confidence']}.",
                       "Evidence: " + ", ".join(f"[record]({by_id[key]['url']})"
                                               for key in finding["evidence_ids"])]
+    lines += ["", "Based on published session captures, not a complete audit. Slack and uncaptured child "
+              "sessions are not included."]
     return "\n".join(lines) + "\n"
 
 
@@ -415,10 +432,12 @@ def publication_plan(reports, bundle, sha, provenance, comments):
     for report in reports:
         kind = report["kind"]
         artifact_id = f"session-review.{kind}"
-        tasks = [{"id": finding["id"],
+        actions = [{"id": finding["id"],
                   "title": finding["action"] + "; verify: " + finding["verification"],
-                  "status": "todo"} for finding in report["findings"]]
-        version = {**provenance, "headSha": sha, "body": render(report, bundle, sha), "tasks": tasks}
+                  "status": "todo", "quote": f"{index}. {finding['title']}",
+                  "sourceHeading": f"{index}. {finding['title']}"}
+                   for index, finding in enumerate(report["findings"], 1)]
+        version = {**provenance, "headSha": sha, "body": render(report, bundle, sha), "actions": actions}
         previous = []
         for comment in comments:
             if comment.get("user", {}).get("login") != "github-actions[bot]" or (
@@ -452,25 +471,6 @@ def publication_plan(reports, bundle, sha, provenance, comments):
                 comment_id = None
                 body = serialize(artifact)
             plans.append((comment_id, body))
-        for finding in report["findings"]:
-            association = {"headSha": sha, "artifactId": artifact_id, "taskId": finding["id"]}
-            marker = FINDING_MARKER + json.dumps(association, separators=(",", ":")) + " -->"
-            found = [comment for comment in comments
-                     if comment.get("user", {}).get("login") == "github-actions[bot]"
-                     and comment.get("user", {}).get("type") == "Bot"
-                     and marker in (comment.get("body") or "")]
-            require(len(found) <= 1, "Duplicate finding discussions")
-            if not found:
-                by_id = {row["id"]: row for row in bundle["records"]}
-                body = (f"### {REPORTS[kind]}: {markdown(finding['title'])}\n\n"
-                        f"{markdown(finding['detail'])}\n\n"
-                        f"{markdown(finding['action'])}; verify: {markdown(finding['verification'])}\n\n"
-                        "Evidence: " + ", ".join(f"[record]({by_id[eid]['url']})"
-                                                for eid in finding["evidence_ids"]) +
-                        f"\n\nTodo `{finding['id']}` belongs to **{REPORTS[kind]}** for head `{sha}`. "
-                        "This comment is its discussion, not a second completion checkbox. "
-                        "No memory/rule has been saved.\n\n" + marker)
-                plans.append((None, body))
     return plans
 
 
@@ -482,6 +482,20 @@ def publish(number, sha, reports, bundle, provenance, request=api):
         path = (f"repos/{REPOSITORY}/issues/comments/{comment_id}" if comment_id else
                 f"repos/{REPOSITORY}/issues/{number}/comments")
         request(path, "PATCH" if comment_id else "POST", {"body": body})
+    # Migrate the first publisher's detached discussions only after both reports are retained.
+    for comment in comments:
+        if (comment.get("user", {}).get("login") != "github-actions[bot]"
+                or comment.get("user", {}).get("type") != "Bot"):
+            continue
+        markers = [line for line in (comment.get("body") or "").splitlines()
+                   if line.startswith(FINDING_MARKER) and line.endswith(" -->")]
+        if len(markers) != 1:
+            continue
+        association = unique_json(markers[0][len(FINDING_MARKER):-4])
+        if (association.get("headSha") == sha and association.get("artifactId") in
+                {f"session-review.{kind}" for kind in REPORTS}):
+            current_pr(number, sha, request)
+            request(f"repos/{REPOSITORY}/issues/comments/{comment['id']}", "DELETE")
 
 
 def refresh_published(branch, default_branch, request=api):
