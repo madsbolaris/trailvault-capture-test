@@ -98,8 +98,18 @@
   const countEl = document.getElementById('count');
 
   const MAX_BALLS = 60;
-  // Microsoft logo colors: red, green, blue, yellow
-  const palette = ['#F25022', '#7FBA00', '#00A4EF', '#FFB900'];
+  // Microsoft logo colors (#F25022, #7FBA00, #00A4EF, #FFB900), each with 10 shades
+  // whose RGB channels are scaled by -5%..+5% (capped at 255), so balls aren't identical.
+  const palette = [
+    // red
+    '#E64C20', '#E94D21', '#EB4E21', '#EE4F21', '#F15022', '#F35022', '#F65123', '#F95223', '#FB5323', '#FE5424',
+    // green
+    '#79B100', '#7AB300', '#7BB500', '#7DB700', '#7EB900', '#80BB00', '#81BD00', '#83BF00', '#84C100', '#85C300',
+    // blue
+    '#009CE3', '#009EE6', '#009FE8', '#00A1EB', '#00A3EE', '#00A5F0', '#00A7F3', '#00A9F6', '#00AAF8', '#00ACFB',
+    // yellow
+    '#F2B000', '#F5B200', '#F8B400', '#FBB600', '#FEB800', '#FFBA00', '#FFBC00', '#FFBE00', '#FFC000', '#FFC200',
+  ];
   // Gravity is set in m/s²; this scale turns meters into on-screen pixels
   const PX_PER_METER = 140;
   let balls = [];
@@ -131,7 +141,7 @@
       vy: -Math.random() * 300,
       r,
       m: r * r,
-      color: palette[balls.length % palette.length],
+      color: palette[Math.floor(Math.random() * palette.length)],
     });
     if (balls.length > MAX_BALLS) balls.shift();
     updateCount();
