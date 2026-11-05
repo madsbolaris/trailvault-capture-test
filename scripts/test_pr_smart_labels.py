@@ -116,6 +116,23 @@ class SmartLabelTests(unittest.TestCase):
                      "25 words and 180 visible characters", "ONE main reason"):
             self.assertIn(rule, labels.PROMPT)
 
+    def test_scoring_request_includes_delivery_gaps_and_legitimate_static_feature_exceptions(self):
+        prompts = []
+
+        def reviewer(prompt):
+            prompts.append(prompt)
+            return scores()
+
+        self.assertEqual(labels.assess("bounded diff evidence", reviewer), scores())
+        scoring = prompts[0]
+        for rule in ("IMPLEMENTATION COMPLETENESS", "independently of low regression Risk",
+                     "substantial Slop (60-79)", "integration is not shown in this diff",
+                     "supporting example alongside an implemented feature",
+                     "integrated static page can be complete without a backend",
+                     "Do not penalize an HTML file", "ONLY the supplied PR diff"):
+            self.assertIn(rule, scoring)
+        self.assertNotIn("IMPLEMENTATION COMPLETENESS", prompts[1])
+
     def collect(self, files=None, changed_files=1, stale_base=False):
         calls = 0
 
@@ -237,6 +254,7 @@ class SmartLabelTests(unittest.TestCase):
                     else:
                         labels.run(request, lambda _: scores())
                         self.assertEqual(publish.call_args.args[2]["risk"]["score"], 35)
+                        self.assertEqual(publish.call_args.args[2]["rubricVersion"], 2)
                 self.assertEqual(writes[-1]["conclusion"],
                                  "success" if failure is None else
                                  "neutral" if isinstance(failure, labels.IncompleteDiff) else "failure")

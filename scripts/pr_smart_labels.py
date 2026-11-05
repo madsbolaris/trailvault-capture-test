@@ -14,6 +14,7 @@ from session_reports import (
 
 MARKER = "<!-- prototype-pr-scores:"
 MAX_DIFF_BYTES = 200000
+RUBRIC_VERSION = 2
 WRITING_SOURCES = {
     "aidr": "https://github.com/JasonMore/ai-skills/blob/"
             "9960f13e2892b675787552ed867bb9f9728211bd/skills/aidr/SKILL.md",
@@ -56,7 +57,26 @@ Each score is an integer 0 through 100; lower is better. These are review estima
 not measured probabilities. Risk estimates likelihood and impact of correctness,
 security, compatibility, data-loss, and regression problems visible in the diff.
 Slop estimates avoidable duplication, unnecessary complexity, boilerplate, dead code,
-and inadequate tests visible in the diff; it does NOT detect AI authorship.
+inadequate tests, and incomplete feature delivery visible in the diff; it does NOT
+detect AI authorship.
+IMPLEMENTATION COMPLETENESS is part of Slop, independently of low regression Risk.
+For UI feature delivery, distinguish a standalone demo from an integrated page.
+A self-contained file with inline UI/behavior, opened directly in a browser, is not
+evidence of application routing, navigation, shared components, real data/state,
+or end-to-end feature coverage. Working animation, attractive styling, no dependencies,
+and isolation from existing code do not compensate for missing integration.
+When the main UI deliverable in the complete diff is only such a demo, with no
+application entry-point integration or feature tests added, treat the delivery gap
+as substantial Slop (60-79), even if the demo itself works and Risk is low.
+Reserve severe Slop (80-100) for stronger evidence such as mostly placeholder
+behavior, fake controls/data presented as real functionality, or a missing core flow.
+Do not demand a backend for a genuinely static feature, or invent an existing app,
+unseen requirements, or failed tests. Say integration is not shown in this diff,
+not that an unseen application definitely lacks it.
+Do not penalize an HTML file, demo/example name, small diff, or intentionally isolated
+test fixture by itself. A supporting example alongside an implemented feature is not
+demo-only delivery; an integrated static page can be complete without a backend.
+Assess the actual delivery gap, not the author's identity or presumed AI authorship.
 Use 0-19 for little visible concern, 20-39 for limited localized concern, 40-59 for
 material concern, 60-79 for substantial concern, and 80-100 for severe concern.
 Calibrate to specific evidence, not diff size alone; lack of execution is uncertainty,
@@ -215,6 +235,7 @@ def run(request=api, reviewer=copilot):
             "createdAt": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
             "runUrl": run_url, **scores,
             "writingSources": WRITING_SOURCES,
+            "rubricVersion": RUBRIC_VERSION,
         }
         print("Publishing the head-bound smart-label comment.")
         publish(number, sha, assessment, request)
