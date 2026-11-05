@@ -215,8 +215,10 @@ empty success-shaped report. Each batch
 allows up to 300,000 serialized bytes including previous-report context, with at
 most eight batches per report. An oversized individual record or excessive total
 evidence fails explicitly, never silently truncates. Invalid
-model responses log safe validation diagnostics and receive one fresh-response
-attempt with the schema requirements restated. A second invalid response blocks
+model responses log safe validation diagnostics and receive one format-repair
+attempt with the schema requirements, rejected response, and source-ID manifest,
+without resending raw transcripts. Repair must preserve supported conclusions
+and evidence. A second invalid response blocks
 publication without replacing the existing reports. No eligible
 records produces **not assessed**, not a clean result. A successful check means
 analysis completed, not that agent behavior or a proposed rule was approved.

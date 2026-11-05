@@ -181,7 +181,7 @@ class AnalysisTests(unittest.TestCase):
             result = r.analyze(bundle(), "agent-behavior", review, previous)
         self.assertEqual(result["findings"][0]["existing_action_id"], "original")
         self.assertIn("expected null or one of discussion-1", prompts[1])
-        self.assertNotIn("invented-reference", prompts[1])
+        self.assertNotIn("invented-reference", prompts[1].split("\nUNTRUSTED_DATA:\n")[0])
 
     def test_matching_action_reuses_discussion_even_without_model_reference(self):
         previous = {"discussions": [{"id": "original", "title":
@@ -243,7 +243,11 @@ class AnalysisTests(unittest.TestCase):
         self.assertEqual(len(prompts), 2)
         self.assertIn("1 unexpected fields", prompts[1])
         self.assertNotIn("must not be logged", str(log.call_args_list))
-        self.assertEqual(json.loads(prompts[1].split("UNTRUSTED_DATA:\n")[1]), bundle()["records"])
+        repair = json.loads(prompts[1].split("UNTRUSTED_DATA:\n")[1])
+        self.assertEqual(repair["source_records"], [{"id": "one"}, {"id": "assistant"}])
+        self.assertIn("rejected_response", repair)
+        self.assertNotIn("Synthetic fixture only.", prompts[1])
+        self.assertIn("Only repair format, lengths, and references", prompts[1])
         self.assertEqual(sum("response validation failed" in call.args[0]
                              for call in log.call_args_list), 1)
 
@@ -371,6 +375,21 @@ class AnalysisTests(unittest.TestCase):
 
 
 class CopilotTests(unittest.TestCase):
+    def test_service_errors_are_classified_without_disclosing_raw_diagnostics(self):
+        for message, category in (("Request exceeds context window limit", "context-limit"),
+                                  ("429 rate limit exceeded", "rate-or-quota-limit"),
+                                  ("401 Unauthorized", "authentication-or-access"),
+                                  ("Request timed out", "upstream-timeout"),
+                                  ("Unknown sensitive detail", "unclassified-session-error")):
+            events = json.dumps({"type": "session.error", "data": {"message": message}})
+            with self.subTest(category=category), (
+                    patch.dict(os.environ, {"COPILOT_GITHUB_TOKEN": "fixture"})), (
+                    patch.object(r, "execute", side_effect=[r.CLI_VERSION, events])), (
+                    self.assertRaises(r.ReportError)) as caught:
+                r.copilot("Synthetic preflight")
+            self.assertIn(category, str(caught.exception))
+            self.assertNotIn(message, str(caught.exception))
+
     def test_non_gpt_configuration_is_rejected_before_invoking_copilot(self):
         self.assertTrue(r.MODEL.startswith("gpt-"))
         with patch.object(r, "MODEL", "claude-sonnet-5.5"), (
