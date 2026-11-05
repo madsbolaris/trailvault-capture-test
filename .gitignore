@@ -4,3 +4,5 @@
 .trailvault/tmp/
 .trailvault/settings.local.json
 .github/actions/trailvault-export/trailvault
+session-review-runtime/node_modules/
+scripts/__pycache__/
