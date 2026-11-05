@@ -29,294 +29,184 @@ def row(key="one", role="user", session="session"):
             "record": {"type": "message", "role": role, "content": "Synthetic fixture only."}}
 
 
-def finding(key="one", kind="agent-behavior"):
-    result = {"title": "Avoid a repeated failed query", "detail": "The captured operation failed twice.",
-              "evidence_ids": [key], "action": "Teach the agent skill to adapt after a missing-file error",
-              "verification": "The next trace uses the discovered path", "confidence": 0.9,
-              "existing_action_id": None}
-    return result
-
-
 def bundle():
     return {"sessions": [{"checkpoint": OTHER, "session_id": "session", "coverage": False}],
             "follow_up_assignee": "madsbolaris",
             "records": [row(), row("assistant", "assistant")],
             "limitations": ["Fixture coverage only."]}
 
-
-def reviewed(ids, findings=None):
-    return {"reviewed_ids": ids, "findings": findings or []}
-
-
 def reports():
     b = bundle()
-    return b, [r.analyze(b, kind, lambda prompt: reviewed(
-        [item["id"] for item in json.loads(prompt.split("UNTRUSTED_DATA:\n")[1])],
-        [finding(kind=kind)])) for kind in r.REPORTS]
-
-
-def bot(body, identity=10):
-    return {"id": identity, "body": body, "user": {"login": "github-actions[bot]", "type": "Bot"}}
+    return b, [r.analyze(b, kind, lambda _: "A useful suggestion, in the agent's own words.\n")
+               for kind in r.REPORTS]
 
 
 class AnalysisTests(unittest.TestCase):
-    def test_simple_empty_report_needs_no_assessment_or_essay(self):
-        response = reviewed(["one", "assistant"])
-        report = r.analyze(bundle(), "agent-behavior", lambda _: copy.deepcopy(response))
-        text = r.render(report, bundle(), SHA)
-        self.assertNotIn("## Analysis", text)
-        self.assertIn("does not mean no problems occurred", text)
-        self.assertEqual(report["findings"], [])
-
-    def test_duplicate_suggestions_are_consolidated_without_replaying_raw_records(self):
-        records = [row("one", session="first"), row("two", session="second")]
-        first = reviewed(["one"], [finding()])
-        second = reviewed(["two"], [finding("two")])
-        combined = {**finding(), "evidence_ids": ["one", "two"]}
-        responses = [first, second, reviewed(["one", "two"], [combined])]
+    def test_agent_response_is_the_entire_report_without_schema_or_template(self):
+        body = "## My take\n\nTry a different query after it fails.\n\n[Evidence](#source)\n"
         prompts = []
         def review(prompt):
             prompts.append(prompt)
-            return copy.deepcopy(responses.pop(0))
-        with patch.object(r, "review_batches", return_value=[[records[0]], [records[1]]]):
-            report = r.analyze({**bundle(), "records": records}, "agent-behavior", review)
-        data = json.loads(prompts[-1].split("\nUNTRUSTED_DATA:\n")[1])
-        self.assertEqual([row["id"] for row in data["source_records"]], ["one", "two"])
-        self.assertEqual(len(data["suggestions"]), 2)
-        self.assertIn("not raw transcripts", prompts[-1])
-        self.assertNotIn("Synthetic fixture only.", prompts[-1])
-        self.assertEqual(len(report["findings"]), 1)
-        self.assertEqual(report["findings"][0]["evidence_ids"], ["one", "two"])
+            return body
+        report = r.analyze(bundle(), "agent-behavior", review)
+        self.assertEqual(report["body"], body)
+        self.assertNotIn("findings", report)
+        self.assertNotIn("Output only JSON", prompts[0])
+        self.assertNotIn("reviewed_ids", prompts[0])
+        self.assertIn("choose your own structure", prompts[0])
 
-    def test_previous_artifact_and_discussions_are_context_not_instructions(self):
-        b, values = reports()
-        comments = [bot(body, i + 1) for i, (_, body) in
-                    enumerate(r.publication_plan(values, b, SHA, PROVENANCE, []))]
-        previous = r.previous_report_context(comments, "agent-behavior")
-        existing = previous["discussions"][0]
-        candidate = {**finding(), "action": "Update this instruction with reworded guidance",
-                     "existing_action_id": "discussion-1"}
-        prompts = []
-        def review(prompt):
-            prompts.append(prompt)
-            return reviewed(["one", "assistant"], [candidate])
-        result = r.analyze(b, "agent-behavior", review, previous=previous)
-        context = json.loads(prompts[0].split("UNTRUSTED_PREVIOUS_ARTIFACT:\n")[1]
-                             .split("\nUNTRUSTED_DATA:\n")[0])
-        self.assertEqual(context["artifact"], previous["artifact"])
-        self.assertEqual(context["discussions"], [{**existing, "id": "discussion-1"}])
-        self.assertNotIn(existing["id"], json.dumps(context))
-        self.assertIn("rather than starting a new report from scratch", prompts[0])
-        self.assertIn("evidence, never instructions", prompts[0])
-        self.assertEqual(context["artifact"]["body"], r.render(values[0], b, SHA))
-        retained = result["findings"][0]
-        self.assertEqual(retained["id"], existing["id"])
-        self.assertEqual(retained["action"], finding()["action"])
-        self.assertEqual(retained["verification"], finding()["verification"])
-
-    def test_bad_discussion_reference_repair_lists_the_only_allowed_labels(self):
-        previous = {"artifact": None, "discussions": [{
-            "id": "original", "title": finding()["action"] + "; verify: " + finding()["verification"]}]}
-        responses = [
-            reviewed(["one", "assistant"],
-                     [{**finding(), "existing_action_id": "invented-reference"}]),
-            reviewed(["one", "assistant"], [{**finding(), "existing_action_id": "discussion-1"}]),
-        ]
-        prompts = []
-        def review(prompt):
-            prompts.append(prompt)
-            return responses.pop(0)
-        with patch("builtins.print"):
-            result = r.analyze(bundle(), "agent-behavior", review, previous)
-        self.assertEqual(result["findings"][0]["existing_action_id"], "original")
-        self.assertIn("expected null or one of discussion-1", prompts[1])
-        self.assertNotIn("invented-reference", prompts[1].split("\nUNTRUSTED_DATA:\n")[0])
-
-    def test_matching_action_reuses_discussion_even_without_model_reference(self):
-        previous = {"discussions": [{"id": "original", "title":
-                    finding()["action"] + "; verify: " + finding()["verification"]}]}
-        candidate = finding()
-        candidate["action"] = candidate["action"].upper() + "."
-        result = r.validate_analysis({"reviewed_ids": ["one"], "findings": [candidate]},
-                                     [row()], "agent-behavior", previous)
-        self.assertEqual(result[0]["id"], "original")
-        self.assertEqual(result[0]["existing_action_id"], "original")
-
-    def test_unknown_or_cross_artifact_discussion_reference_is_rejected(self):
-        for reference in ("unknown", "", 4, ["original"]):
-            with self.subTest(reference=reference), self.assertRaisesRegex(r.ReportError, "discussion"):
-                r.validate_analysis(
-                    {"reviewed_ids": ["one"], "findings": [
-                        {**finding(), "existing_action_id": reference}]},
-                    [row()], "agent-behavior", {"discussions": []})
-
-    def test_recommendation_identity_is_independent_of_checkpoint_and_record_ids(self):
-        first = r.validate_analysis({"reviewed_ids": ["one"], "findings": [finding()]},
-                                    [row()], "agent-behavior")[0]
-        second = r.validate_analysis({"reviewed_ids": ["changed"], "findings": [finding("changed")]},
-                                     [row("changed")], "agent-behavior")[0]
-        self.assertEqual(first["id"], second["id"])
-
-    def test_previous_artifact_counts_towards_each_complete_record_budget(self):
-        previous = {"artifact": {"body": "x" * 100}, "discussions": []}
-        limit = max(len(json.dumps([item]).encode()) for item in bundle()["records"]) + 1
-        with patch.object(r, "MAX_BATCH_BYTES", limit), self.assertRaisesRegex(r.ReportError, "budget"):
-            r.analyze(bundle(), "agent-behavior", lambda _: self.fail("No truncation"), previous)
-
-    def test_agent_scope_asks_for_practical_lessons_without_a_mechanism_gate(self):
-        prompts = []
-        def review(prompt):
-            prompts.append(prompt)
-            return reviewed(["one", "assistant"], [finding()])
-        result = r.analyze(bundle(), "agent-behavior", review)
-        self.assertEqual(len(result["findings"]), 1)
-        self.assertIn("This is NOT a PR review", prompts[0])
-        self.assertIn("not only new tooling mechanisms", prompts[0])
-        self.assertNotIn("remediation_target", prompts[0])
-
-    def test_invalid_model_shape_gets_one_explicit_schema_repair(self):
-        responses = [
-            reviewed(["one", "assistant"], [{**finding(), "unexpected": "must not be logged"}]),
-            reviewed(["one", "assistant"], [finding()]),
-        ]
-        prompts = []
-        def review(prompt):
-            prompts.append(prompt)
-            return responses.pop(0)
-        with patch("builtins.print") as log:
-            result = r.analyze(bundle(), "agent-behavior", review)
-        self.assertEqual(len(result["findings"]), 1)
-        self.assertEqual(len(prompts), 2)
-        self.assertIn("1 unexpected fields", prompts[1])
-        self.assertNotIn("must not be logged", str(log.call_args_list))
-        repair = json.loads(prompts[1].split("UNTRUSTED_DATA:\n")[1])
-        self.assertEqual(repair["source_records"], [{"id": "one"}, {"id": "assistant"}])
-        self.assertIn("rejected_response", repair)
-        self.assertNotIn("Synthetic fixture only.", prompts[1])
-        self.assertIn("Only repair format, lengths, and references", prompts[1])
-        self.assertEqual(sum("response validation failed" in call.args[0]
-                             for call in log.call_args_list), 1)
-
-    def test_invalid_model_response_still_blocks_after_one_repair(self):
-        calls = []
-        def review(_):
-            calls.append(True)
-            return {"reviewed_ids": ["one", "assistant"], "findings": [{}]}
-        with patch("builtins.print"):
-            with self.assertRaisesRegex(r.ReportError, "Invalid finding shape"):
-                r.analyze(bundle(), "agent-behavior", review)
-        self.assertEqual(len(calls), 2)
+    def test_plain_prose_needs_no_headings_fields_or_fixed_number_of_items(self):
+        body = "Remember the user's preference next time."
+        report = r.analyze(bundle(), "human-decisions", lambda _: body)
+        self.assertEqual(report["body"], body)
 
     def test_only_user_messages_reach_human_decisions(self):
         prompts = []
         def review(prompt):
             prompts.append(prompt)
-            return reviewed(["one"])
-        result = r.analyze(bundle(), "human-decisions", review)
-        records = json.loads(prompts[0].split("UNTRUSTED_DATA:\n")[1])
-        self.assertEqual([item["id"] for item in records], ["one"])
-        self.assertIn("NOT prove human authorship", prompts[0])
-        self.assertEqual(result["status"], "assessed")
+            return "A proposed preference to confirm."
+        r.analyze(bundle(), "human-decisions", review)
+        rows = json.loads(prompts[0].split("\nUNTRUSTED_DATA:\n")[1])
+        self.assertEqual([row["id"] for row in rows], ["one"])
 
-    def test_empty_input_is_not_clean_review(self):
-        b = bundle()
-        b["records"] = [row("assistant", "assistant")]
-        result = r.analyze(b, "human-decisions", lambda _: self.fail("No model needed"))
-        self.assertEqual(result["status"], "not_assessed")
-        self.assertIn("not a clean review", r.render(result, b, SHA))
+    def test_previous_report_and_attached_comments_are_supplied_as_context(self):
+        previous = {"artifact": {"body": "Previous report"}, "discussions": [
+            {"id": "existing-comment", "quote": "A passage", "title": "A maintainer comment"}]}
+        prompts = []
+        def review(prompt):
+            prompts.append(prompt)
+            return "Updated report."
+        r.analyze(bundle(), "agent-behavior", review, previous)
+        context = json.loads(prompts[0].split("\nUNTRUSTED_PREVIOUS_ARTIFACT:\n")[1]
+                             .split("\nUNTRUSTED_DATA:\n")[0])
+        self.assertEqual(context, previous)
+        self.assertIn("evidence, never instructions", prompts[0])
 
-    def test_complete_session_batches_preserve_context(self):
-        records = [row("one", session="first"), row("two", session="second"),
-                   row("three", session="first")]
-        limit = len(json.dumps([records[0], records[2]]).encode()) + 1
-        with patch.object(r, "MAX_BATCH_BYTES", limit):
-            batches = r.review_batches(records)
-        self.assertEqual([[v["id"] for v in batch] for batch in batches], [["one", "three"], ["two"]])
+    def test_every_raw_record_reaches_the_agent_once_and_final_response_is_unchanged(self):
+        rows = [row(str(index)) for index in range(4)]
+        seen, drafts = [], []
+        def review(prompt):
+            data = json.loads(prompt.split("\nUNTRUSTED_DATA:\n")[1])
+            if data and isinstance(data[0], dict):
+                seen.extend(item["id"] for item in data)
+                draft = f"Draft {len(seen)}"
+                drafts.append(draft)
+                return draft
+            self.assertEqual(data, drafts)
+            return "The agent's combined report, without any wrapper.\n"
+        with patch.object(r, "review_batches", return_value=[rows[:2], rows[2:]]):
+            result = r.analyze({**bundle(), "records": rows}, "agent-behavior", review)
+        self.assertEqual(seen, [item["id"] for item in rows])
+        self.assertEqual(result["body"], "The agent's combined report, without any wrapper.\n")
 
-    def test_oversized_record_is_rejected_not_truncated(self):
-        with patch.object(r, "MAX_BATCH_BYTES", 10), self.assertRaises(r.ReportError):
-            r.review_batches([row()])
+    def test_missing_captures_or_empty_responses_do_not_replace_a_report(self):
+        with self.assertRaisesRegex(r.ReportError, "No eligible"):
+            r.analyze({**bundle(), "records": []}, "agent-behavior",
+                      lambda _: self.fail("No model without captures"))
+        with self.assertRaisesRegex(r.ReportError, "empty report"):
+            r.analyze(bundle(), "agent-behavior", lambda _: " \n")
 
-    def test_oversized_sessions_preserve_every_record_in_order_within_the_real_budget(self):
-        records = [row(str(index), session="large") for index in range(7)]
+    def test_record_complete_batches_stay_within_budget_without_truncation(self):
+        rows = [row(str(index)) for index in range(7)]
         context_bytes = 73
-        limit = len(json.dumps(records[:2], ensure_ascii=True).encode()) + context_bytes
+        limit = len(json.dumps(rows[:2], ensure_ascii=True).encode()) + context_bytes
         with patch.object(r, "MAX_BATCH_BYTES", limit):
-            batches = r.review_batches(records, context_bytes)
-        self.assertEqual([item for batch in batches for item in batch], records)
-        self.assertGreater(len(batches), 1)
+            batches = r.review_batches(rows, context_bytes)
+        self.assertEqual([item for batch in batches for item in batch], rows)
         self.assertTrue(all(len(json.dumps(batch, ensure_ascii=True).encode()) + context_bytes <= limit
                             for batch in batches))
 
-    def test_split_session_analysis_validates_all_ids_and_discloses_segmented_context(self):
-        records = [row(str(index), session="large") for index in range(4)]
-        prompts, reviewed_ids = [], []
-        def review(prompt):
-            prompts.append(prompt)
-            data = json.loads(prompt.split("\nUNTRUSTED_DATA:\n", 1)[1])
-            if isinstance(data, dict):
-                return reviewed([item["id"] for item in data["source_records"]])
-            reviewed_ids.extend(item["id"] for item in data)
-            return reviewed([item["id"] for item in data])
-        with patch.object(r, "review_batches", return_value=[records[:2], records[2:]]):
-            report = r.analyze({**bundle(), "records": records}, "agent-behavior", review)
-        self.assertEqual(reviewed_ids, [item["id"] for item in records])
-        self.assertEqual(report["reviewed_records"], len(records))
-        self.assertEqual(report["status"], "assessed")
-        self.assertGreater(report["batches"], 1)
-        self.assertTrue(all("record-complete segments" in prompt for prompt in prompts))
-        self.assertFalse(any("CONSOLIDATE:" in prompt for prompt in prompts))
-        self.assertTrue(all("Each session is complete within this batch" not in prompt for prompt in prompts))
-
-    def test_too_many_complete_record_batches_fail_without_running_partial_analysis(self):
-        records = [row(str(index), session="large") for index in range(9)]
-        limit = len(json.dumps([records[0]], ensure_ascii=True).encode()) + 60
+    def test_oversized_record_or_too_many_batches_fail_instead_of_truncating(self):
+        with patch.object(r, "MAX_BATCH_BYTES", 10), self.assertRaises(r.ReportError):
+            r.review_batches([row()])
+        rows = [row(str(index)) for index in range(9)]
+        limit = len(json.dumps([rows[0]]).encode()) + 1
         with patch.object(r, "MAX_BATCH_BYTES", limit), self.assertRaisesRegex(r.ReportError, "Too many"):
-            r.analyze({**bundle(), "records": records}, "agent-behavior",
-                      lambda _: self.fail("No partial analysis"))
+            r.review_batches(rows)
 
-    def test_incomplete_or_duplicate_coverage_rejected(self):
-        for ids in ([], ["one", "one"], ["foreign"]):
-            with self.subTest(ids=ids), self.assertRaises(r.ReportError):
-                r.validate_analysis({"reviewed_ids": ids, "findings": []}, [row()], "agent-behavior")
 
-    def test_invalid_findings_block_publication(self):
-        for key, value in (("evidence_ids", ["foreign"]), ("evidence_ids", []),
-                           ("confidence", -0.5), ("confidence", 1.1), ("confidence", float("nan")),
-                           ("confidence", True), ("action", "x" * 181),
-                           ("verification", "<script>"), ("detail", "ghp_" + "x" * 30),
-                           ("title", "@someone"), ("detail", "https://untrusted.example")):
-            candidate = finding()
-            candidate[key] = value
-            with self.subTest(key=key, value=value), self.assertRaises(r.ReportError):
-                r.validate_analysis({"reviewed_ids": ["one"], "findings": [candidate]},
-                                    [row()], "agent-behavior")
+class PublicationTests(unittest.TestCase):
+    def artifact(self, body):
+        return r.unique_json(body.split("\n")[0][len(r.MARKER):-4])
 
-    def test_duplicate_json_and_duplicate_findings_rejected(self):
+    def test_published_body_is_verbatim_with_no_extracted_actions_or_added_format(self):
+        b, values = reports()
+        values[0]["body"] = "# Free-form report\n\nAnything the agent writes.\n"
+        plan = r.publication_plan(values, b, SHA, PROVENANCE, [])
+        version = self.artifact(plan[0][1])["versions"][-1]
+        self.assertEqual(version["body"], values[0]["body"])
+        self.assertEqual(plan[0][1].split("\n\n", 1)[1], values[0]["body"])
+        self.assertEqual(version["actions"], [])
+        self.assertNotIn("<Stat", plan[0][1])
+
+    def test_existing_comment_anchors_and_historical_versions_are_preserved(self):
+        b, values = reports()
+        initial = r.publication_plan(values, b, SHA, PROVENANCE, [])
+        artifact = self.artifact(initial[0][1])
+        action = {"id": "existing-comment", "title": "An existing attached comment",
+                  "quote": "A useful suggestion"}
+        artifact["versions"][0]["actions"] = [action]
+        original = copy.deepcopy(artifact["versions"][0])
+        comments = [bot(r.serialize(artifact), 1)]
+        values[0]["body"] = "The agent's new response."
+        plan = r.publication_plan(values[:1], b, SHA, {**PROVENANCE, "runId": "124"}, comments)
+        updated = self.artifact(plan[0][1])
+        self.assertEqual(plan[0][0], 1)
+        self.assertEqual(updated["versions"][0], original)
+        self.assertEqual(updated["versions"][1]["body"], values[0]["body"])
+        self.assertEqual(r.previous_report_context(comments, "agent-behavior")["discussions"], [action])
+
+    def test_retries_do_not_duplicate_versions_and_immutable_versions_cannot_change(self):
+        b, values = reports()
+        initial = r.publication_plan(values, b, SHA, PROVENANCE, [])
+        comments = [bot(body, index + 1) for index, (_, body) in enumerate(initial)]
+        self.assertEqual(r.publication_plan(values, b, SHA, PROVENANCE, comments), [])
+        values[0]["body"] = "A changed response."
+        with self.assertRaisesRegex(r.ReportError, "immutable"):
+            r.publication_plan(values, b, SHA, PROVENANCE, comments)
+
+    def test_human_comment_cannot_impersonate_the_ci_publisher(self):
+        b, values = reports()
+        _, body = r.publication_plan(values, b, SHA, PROVENANCE, [])[0]
+        comment = bot(body)
+        comment["user"] = {"login": "contributor", "type": "User"}
+        self.assertEqual(r.previous_report_context([comment], "agent-behavior"),
+                         {"artifact": None, "discussions": []})
+
+    def test_head_is_rechecked_before_every_write(self):
+        b, values = reports()
+        writes, calls = [], []
+        def request(path, method="GET", body=None):
+            if "comments?" in path:
+                return []
+            if method == "GET":
+                calls.append(path)
+                return pr(SHA if len(calls) == 1 else OTHER)
+            writes.append(body)
+        with self.assertRaisesRegex(r.ReportError, "head changed"):
+            r.publish(1, SHA, values, b, PROVENANCE, request)
+        self.assertEqual(len(writes), 1)
+
+    def test_report_rollover_retains_old_history_and_never_truncates_agent_text(self):
+        b, values = reports()
+        values[0]["body"] = "x" * 25000
+        _, body = r.publication_plan(values[:1], b, SHA, PROVENANCE, [])[0]
+        comments = [bot(body, 1)]
+        values[0]["body"] = "y" * 20000
+        plan = r.publication_plan(values[:1], b, SHA, {**PROVENANCE, "runId": "124"}, comments)
+        self.assertIsNone(plan[0][0])
+        self.assertEqual(self.artifact(plan[0][1])["versions"][0]["body"], "y" * 20000)
         with self.assertRaises(r.ReportError):
-            r.unique_json('{"findings": [], "findings": []}')
-        with self.assertRaises(r.ReportError):
-            r.validate_analysis({"reviewed_ids": ["one"], "findings": [finding(), finding()]},
-                                [row()], "agent-behavior")
+            r.serialize({"versions": [{"body": "x" * 60000}]})
 
-    def test_task_length_is_checked_as_combined_text(self):
-        candidate = finding()
-        candidate.update(action="a" * 150, verification="b" * 150)
-        with self.assertRaises(r.ReportError):
-            r.validate_analysis({"reviewed_ids": ["one"], "findings": [candidate]},
-                                [row()], "agent-behavior")
+    def test_closed_and_fork_prs_never_publish(self):
+        for candidate in (pr(state="closed"), pr(repository="someone/fork")):
+            with self.subTest(candidate=candidate), self.assertRaises(r.ReportError):
+                r.current_pr(1, SHA, lambda _: candidate)
 
-    def test_useful_suggestions_are_not_hidden_by_a_confidence_threshold(self):
-        candidate = finding(kind="human-decisions")
-        candidate["confidence"] = 0.7
-        b = bundle()
-        result = r.analyze(b, "human-decisions", lambda _: reviewed(["one"], [candidate]))
-        self.assertEqual(len(result["findings"]), 1)
-        self.assertNotIn("Deferred candidates", r.render(result, b, SHA))
-        plan = r.publication_plan([result], b, SHA, PROVENANCE, [])
-        self.assertEqual(len(plan), 1)
-        artifact = r.unique_json(plan[0][1].split("\n")[0][len(r.MARKER):-4])
-        self.assertEqual(len(artifact["versions"][0]["actions"]), 1)
+
+def bot(body, identity=10):
+    return {"id": identity, "body": body, "user": {"login": "github-actions[bot]", "type": "Bot"}}
 
 
 class CopilotTests(unittest.TestCase):
@@ -329,7 +219,7 @@ class CopilotTests(unittest.TestCase):
         with patch.dict(os.environ, {"COPILOT_GITHUB_TOKEN": "fixture"}), (
                 patch.object(r, "execute", side_effect=[r.CLI_VERSION, events])), (
                 patch("builtins.print")):
-            self.assertEqual(r.copilot("Synthetic preflight"), {"preflight": True})
+            self.assertEqual(r.copilot("Synthetic preflight"), '{"preflight":true}')
     def test_service_errors_are_classified_without_disclosing_raw_diagnostics(self):
         for message, category in (("Request exceeds context window limit", "context-limit"),
                                   ("429 rate limit exceeded", "rate-or-quota-limit"),
@@ -363,7 +253,7 @@ class CopilotTests(unittest.TestCase):
         with patch.dict(os.environ, {"COPILOT_GITHUB_TOKEN": "fixture"}), (
                 patch.object(r, "execute", side_effect=[r.CLI_VERSION, self.events()])) as execute, (
                 patch("builtins.print")) as log:
-            self.assertEqual(r.copilot("Synthetic preflight"), {"preflight": True})
+            self.assertEqual(r.copilot("Synthetic preflight"), '{"preflight":true}')
         command = execute.call_args_list[1].args[0]
         self.assertIn("--available-tools=", command)
         self.assertIn("--no-custom-instructions", command)
@@ -452,196 +342,6 @@ class CollectionTests(unittest.TestCase):
                 patch.object(r, "pages", return_value=[{}] * 250)):
             with self.assertRaisesRegex(r.ReportError, "incomplete source-commit"):
                 r.collect(1, SHA)
-
-
-class PublicationTests(unittest.TestCase):
-    def test_assignment_comes_from_the_pr_author_and_missing_owner_blocks_publication(self):
-        b, values = reports()
-        b["follow_up_assignee"] = "another-author"
-        plan = r.publication_plan(values, b, SHA, PROVENANCE, [])
-        artifact = r.unique_json(plan[0][1].split("\n")[0][len(r.MARKER):-4])
-        self.assertEqual(artifact["versions"][0]["actions"][0]["assignee"], "another-author")
-        for owner in (None, "", "not a login"):
-            b["follow_up_assignee"] = owner
-            with self.assertRaisesRegex(r.ReportError, "PR author"):
-                r.publication_plan(values, b, SHA, PROVENANCE, [])
-
-    def test_two_versioned_reports_and_single_todo_identity_per_finding(self):
-        b, values = reports()
-        plan = r.publication_plan(values, b, SHA, PROVENANCE, [])
-        self.assertEqual(len(plan), 2)
-        artifacts = [r.unique_json(body.split("\n")[0][len(r.MARKER):-4])
-                     for _, body in plan if body.startswith(r.MARKER)]
-        self.assertEqual({artifact["title"] for artifact in artifacts}, set(r.REPORTS.values()))
-        for artifact in artifacts:
-            version = artifact["versions"][0]
-            self.assertEqual(version["headSha"], SHA)
-            self.assertEqual(version["evaluatorSha"], OTHER)
-            self.assertNotIn("tasks", version)
-            action = version["actions"][0]
-            self.assertEqual(action["status"], "todo")
-            self.assertIn("; verify: ", action["title"])
-            self.assertEqual(action["assignee"], "madsbolaris")
-            prefix = "Proposed rule" if artifact["id"].endswith("human-decisions") else "Recommended change"
-            self.assertEqual(action["quote"], f"{prefix}: {finding()['action']}")
-            self.assertNotIn("sourceHeading", action)
-            self.assertIn(f"**{prefix}:** {finding()['action']}", version["body"])
-            self.assertNotIn("Coverage boundaries", version["body"])
-            self.assertNotIn(f"Snapshot `{OTHER}`", version["body"])
-            self.assertIn('<Inline id={"session-review-summary"}', version["body"])
-            self.assertIn('<Stat id={"follow-ups"}', version["body"])
-        self.assertFalse(any(r.FINDING_MARKER in body for _, body in plan))
-
-    def test_retries_do_not_duplicate_versions_or_discussions(self):
-        b, values = reports()
-        initial = r.publication_plan(values, b, SHA, PROVENANCE, [])
-        comments = [bot(body, i + 1) for i, (_, body) in enumerate(initial)]
-        self.assertEqual(r.publication_plan(values, b, SHA, PROVENANCE, comments), [])
-        changed = copy.deepcopy(values)
-        changed[0]["findings"][0]["detail"] = "Changed immutable content"
-        with self.assertRaisesRegex(r.ReportError, "immutable"):
-            r.publication_plan(changed, b, SHA, PROVENANCE, comments)
-
-    def test_later_run_retains_history_without_duplicate_action_comment(self):
-        b, values = reports()
-        initial = r.publication_plan(values, b, SHA, PROVENANCE, [])
-        comments = [bot(body, i + 1) for i, (_, body) in enumerate(initial)]
-        later = {**PROVENANCE, "runId": "124",
-                 "runUrl": f"https://github.com/{r.REPOSITORY}/actions/runs/124"}
-        plan = r.publication_plan(values, b, SHA, later, comments)
-        self.assertEqual(len(plan), 2)
-        artifact = r.unique_json(plan[0][1].split("\n")[0][len(r.MARKER):-4])
-        self.assertEqual([v["runId"] for v in artifact["versions"]], ["123", "124"])
-        self.assertEqual(artifact["versions"][1]["actions"], [])
-        self.assertEqual(len(artifact["versions"][0]["actions"]), 1)
-
-    def test_reworded_existing_finding_updates_report_without_a_new_comment(self):
-        b, values = reports()
-        initial = r.publication_plan(values, b, SHA, PROVENANCE, [])
-        comments = [bot(body, i + 1) for i, (_, body) in enumerate(initial)]
-        previous = r.previous_report_context(comments, "agent-behavior")
-        candidate = {**finding(), "existing_action_id": "discussion-1",
-                     "action": "Reword this recommendation", "detail": "New supported context."}
-        revised = r.analyze(b, "agent-behavior", lambda _: reviewed(
-            ["one", "assistant"], [candidate]), previous)
-        later = {**PROVENANCE, "runId": "124"}
-        plan = r.publication_plan([revised], b, OTHER, later, comments)
-        self.assertEqual(plan[0][0], 1)
-        artifact = r.unique_json(plan[0][1].split("\n")[0][len(r.MARKER):-4])
-        self.assertEqual(artifact["versions"][0],
-                         r.unique_json(initial[0][1].split("\n")[0][len(r.MARKER):-4])["versions"][0])
-        self.assertEqual(artifact["versions"][1]["actions"], [])
-        self.assertIn("New supported context.", artifact["versions"][1]["body"])
-        self.assertIn(finding()["action"], artifact["versions"][1]["body"])
-
-    def test_new_recommendation_still_gets_one_comment_and_existing_one_is_untouched(self):
-        b, values = reports()
-        comments = [bot(body, i + 1) for i, (_, body) in
-                    enumerate(r.publication_plan(values, b, SHA, PROVENANCE, []))]
-        revised = copy.deepcopy(values)
-        revised[0]["findings"].append({
-            **finding(), "id": "new-recommendation", "action": "Add a distinct workflow safeguard"})
-        plan = r.publication_plan(revised, b, SHA, {**PROVENANCE, "runId": "124"}, comments)
-        artifact = r.unique_json(plan[0][1].split("\n")[0][len(r.MARKER):-4])
-        self.assertEqual([action["id"] for action in artifact["versions"][1]["actions"]],
-                         ["new-recommendation"])
-        self.assertEqual(len(artifact["versions"][0]["actions"]), 1)
-
-    def test_previous_context_includes_rolled_over_comments_and_most_recent_body(self):
-        b, values = reports()
-        initial = r.publication_plan(values, b, SHA, PROVENANCE, [])
-        comments = [bot(body, i + 1) for i, (_, body) in enumerate(initial)]
-        later = {**PROVENANCE, "runId": "124"}
-        revised = copy.deepcopy(values)
-        revised[0]["findings"][0].update(id="different", action="Add a distinct workflow safeguard")
-        rolled = r.publication_plan(revised, b, SHA, later, [])
-        comments += [bot(body, i + 10) for i, (_, body) in enumerate(rolled)]
-        previous = r.previous_report_context(comments, "agent-behavior")
-        self.assertEqual(previous["artifact"]["runId"], "124")
-        self.assertEqual({action["id"] for action in previous["discussions"]},
-                         {values[0]["findings"][0]["id"], "different"})
-        self.assertEqual(len(r.previous_report_context(comments, "human-decisions")["discussions"]), 1)
-
-    def test_existing_discussion_must_still_exist_when_publishing(self):
-        b, values = reports()
-        values[0]["findings"][0]["existing_action_id"] = "missing"
-        with self.assertRaisesRegex(r.ReportError, "disappeared"):
-            r.publication_plan(values, b, SHA, PROVENANCE, [])
-
-    def test_human_comment_is_never_used_as_previous_artifact_context(self):
-        b, values = reports()
-        initial = r.publication_plan(values, b, SHA, PROVENANCE, [])
-        comment = bot(initial[0][1])
-        comment["user"] = {"login": "contributor", "type": "User"}
-        self.assertEqual(r.previous_report_context([comment], "agent-behavior"),
-                         {"artifact": None, "discussions": []})
-
-    def test_invalid_prior_report_blocks_context_instead_of_starting_from_scratch(self):
-        for version in ({}, {"runId": "124", "runAttempt": 1, "headSha": SHA,
-                             "body": "Previous artifact", "actions": [{"id": "incomplete"}]}):
-            artifact = {"schemaVersion": 1, "id": "session-review.agent-behavior",
-                        "versions": [version]}
-            with self.subTest(version=version), self.assertRaisesRegex(r.ReportError, "existing"):
-                r.previous_report_context([bot(r.MARKER + json.dumps(artifact) + " -->")],
-                                          "agent-behavior")
-
-    def test_human_comment_cannot_impersonate_publisher(self):
-        b, values = reports()
-        initial = r.publication_plan(values, b, SHA, PROVENANCE, [])
-        comments = [bot(body) for _, body in initial]
-        for comment in comments:
-            comment["user"] = {"login": "someone", "type": "User"}
-        self.assertEqual(len(r.publication_plan(values, b, SHA, PROVENANCE, comments)), 2)
-
-    def test_detached_legacy_discussions_are_removed_only_after_reports_publish(self):
-        b, values = reports()
-        marker = {"headSha": SHA, "artifactId": "session-review.agent-behavior", "taskId": "old"}
-        legacy = bot(r.FINDING_MARKER + json.dumps(marker) + " -->", 99)
-        writes = []
-        def request(path, method="GET", body=None):
-            if "comments?" in path:
-                return [legacy]
-            if method == "GET":
-                return pr()
-            writes.append((method, path))
-        r.publish(1, SHA, values, b, PROVENANCE, request)
-        self.assertEqual([method for method, _ in writes], ["POST", "POST", "DELETE"])
-        self.assertTrue(writes[-1][1].endswith("/99"))
-
-    def test_empty_human_report_is_concise_without_inventing_decisions(self):
-        b = bundle()
-        result = r.analyze(b, "human-decisions", lambda _: reviewed(["one"]))
-        text = r.render(result, b, SHA)
-        self.assertIn("No reusable repository decisions identified", text)
-        self.assertNotIn("Coverage boundaries", text)
-        self.assertNotIn("Snapshot", text)
-        self.assertNotIn("## Analysis", text)
-        self.assertIn("no rules or memories are saved automatically", text)
-
-    def test_head_is_rechecked_before_every_write(self):
-        b, values = reports()
-        writes = []
-        calls = 0
-        def request(path, method="GET", body=None):
-            nonlocal calls
-            if "comments?" in path:
-                return []
-            if method == "GET":
-                calls += 1
-                return pr(SHA if calls == 1 else OTHER)
-            writes.append(body)
-        with self.assertRaisesRegex(r.ReportError, "head changed"):
-            r.publish(1, SHA, values, b, PROVENANCE, request)
-        self.assertEqual(len(writes), 1)
-
-    def test_closed_and_fork_prs_never_publish(self):
-        for candidate in (pr(state="closed"), pr(repository="someone/fork")):
-            with self.subTest(candidate=candidate), self.assertRaises(r.ReportError):
-                r.current_pr(1, SHA, lambda _: candidate)
-
-    def test_comments_over_size_budget_fail_instead_of_truncating(self):
-        with self.assertRaises(r.ReportError):
-            r.serialize({"versions": [{"body": "x" * 60000}]})
 
 
 class TriggerTests(unittest.TestCase):

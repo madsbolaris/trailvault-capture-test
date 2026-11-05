@@ -119,47 +119,18 @@ The workflow publishes two CI-versioned PR comment artifacts, using the same
   the proposal before adopting a rule. No memories or instructions are changed
   automatically.
 
-Each report lists at most five distinct, evidence-linked things to fix or
-remember, with a short explanation, next step, and verification. There is no
-mandatory essay, assessment taxonomy, remediation-target field, or confidence
-threshold that hides suggestions. Uncertainty belongs in the explanation.
-No minimum finding count is imposed and no problems or rules are fabricated.
-Reports lead with their conclusion and summary cards, followed by the suggestions,
-not workflow metadata or snapshot inventories. Immutable run/head provenance
-remains in the version envelope rather than in the visible report body.
-Each actionable finding publishes one anchored `actions` record in its report's
-version metadata, with immutable transcript-line evidence. The prototype
-assembles this into the shared report highlight, native Comments thread, and
-todo with one identity. The recommended-change paragraph (or proposed rule in
-Human decisions), not the section heading or explanation, is the text anchor;
-activating the highlighted passage reveals its existing discussion and
-completion/ownership controls without changing the comment's presentation.
-Follow-ups are assigned to
-the PR author from trusted GitHub PR metadata, not an identity invented by the
-model. There is no separate standalone finding comment
-or independently editable duplicate task list. CI actions survive reload;
-local replies and task edits remain prototype-local.
-Evidence links are relative prototype routes with a captured session ID,
-checkpoint commit, and one-based compact-transcript record. They open the Chat
-pane at that immutable record without replacing the report with a GitHub blob.
-Confidence is an internal self-rating, not a gate on publishing useful suggestions.
-Native GitHub displays the report and action text; the prototype additionally
-consumes the anchored action metadata. Local todo completion, discussion replies,
-and verification outcomes are distinct. Rerunning the same report publication
-does not duplicate its version or anchored action.
+The report body is the agent's response, published verbatim. The agent chooses
+its own wording and structure. There is no report-output schema, template,
+required headings, counters, confidence scoring, field extraction, or automatic
+conversion of prose into tasks or memories. People attach comments through the
+existing report-comment UI.
 Before analysis, CI reads the latest published artifact and all its existing
-anchored discussions, including earlier comments after history rollover. These
+attached discussions, including earlier comments after history rollover. These
 are explicitly untrusted context, not instructions. The agent updates the
 previous report against the current captures instead of writing independently
-from scratch. A recurring recommendation references its existing discussion
-even when its wording, evidence checkpoint, or PR head changes; the original
-action and verification wording remain stable so its text anchor still works.
-The publisher creates action records only for new recommendations. Repeated
-findings update the report explanation/evidence but do nothing to the existing
-comment: no duplicate root comment, repetitive reply, task reopening, or
-completion-state reset. Existing historical versions and local replies remain
-untouched. This prevents new duplicates; it does not delete historical duplicate
-discussions or synchronize prototype-local replies back into CI.
+from scratch. Existing historical versions, attached action/comment metadata,
+and prototype-local replies remain untouched. CI does not create, reopen, or
+delete discussion tasks from the report's prose.
 New pushes retain old report versions with their original head/run
 provenance. Long histories roll into another comment without deleting history.
 
@@ -187,7 +158,7 @@ as Actions artifacts.
 Each successful model response is checked for provider `copilot` and the pinned
 GPT model `gpt-5.3-codex`. Non-GPT configurations and responses from a different
 model/provider are rejected; there is no Claude or other-model fallback.
-The runner reads the final JSON response rather than rejecting CLI progress or
+The runner reads the final response text rather than rejecting CLI progress or
 tool-event metadata. Tools and built-in MCPs remain disabled in the model invocation.
 GPT uses explicit medium reasoning with a ten-minute per-response deadline and
 a 45-minute workflow deadline; a timeout fails the run without replacing reports.
@@ -199,25 +170,21 @@ using the trusted Trailvault `related` command for PR references and exact
 `Trailvault-Checkpoint` trailers for contributor sessions. Mere mentions are not
 proof of contribution. Prefix-overlapping snapshots are deduplicated; divergent
 histories remain separate. Child transcripts and local-only sessions are not
-assessed. A short scope note states this limitation without a separate technical
-coverage section. The publisher removes its old detached finding comments only
+assessed. The publisher removes its old detached finding comments only
 after successfully retaining the new reports; old report versions are preserved.
 
 There is a 2 MiB / 10,000-record evidence budget. Model batches keep small sessions
 together; oversized sessions use ordered, record-complete segments. Every raw record
-is reviewed exactly once, without inventing cross-segment context. When there
-is more than one suggestion, Copilot combines duplicates into at most five useful
-items using the suggestions and their source-ID manifest, not another transcript
-review. This consolidation has the same 300,000-byte input budget. Each batch
+is supplied exactly once, without inventing cross-segment context. For large
+captures, GPT writes segment drafts and then combines them into a single
+free-form response. That final response is published without alteration.
+Combining drafts has the same 300,000-byte input budget. Each batch
 allows up to 300,000 serialized bytes including previous-report context, with at
 most eight batches per report. An oversized individual record or excessive total
-evidence fails explicitly, never silently truncates. Invalid
-model responses log safe validation diagnostics and receive one format-repair
-attempt with the schema requirements, rejected response, and source-ID manifest,
-without resending raw transcripts. Repair must preserve supported conclusions
-and evidence. A second invalid response blocks
-publication without replacing the existing reports. No eligible
-records produces **not assessed**, not a clean result. A successful check means
+evidence fails explicitly, never silently truncates. No output-format validation
+or schema repair is applied to the agent's prose. Service failures, empty
+responses, and missing eligible captures fail without replacing existing reports.
+A successful check means
 analysis completed, not that agent behavior or a proposed rule was approved.
 Stale heads are rejected before every publication write.
 
