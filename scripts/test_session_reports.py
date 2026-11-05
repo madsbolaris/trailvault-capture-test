@@ -66,7 +66,7 @@ class AnalysisTests(unittest.TestCase):
         previous = r.previous_report_context(comments, "agent-behavior")
         existing = previous["discussions"][0]
         candidate = {**finding(), "action": "Update this instruction with reworded guidance",
-                     "existing_action_id": existing["id"]}
+                     "existing_action_id": "discussion-1"}
         prompts = []
         def review(prompt):
             prompts.append(prompt)
@@ -74,7 +74,9 @@ class AnalysisTests(unittest.TestCase):
         result = r.analyze(b, "agent-behavior", review, previous=previous)
         context = json.loads(prompts[0].split("UNTRUSTED_PREVIOUS_ARTIFACT:\n")[1]
                              .split("\nUNTRUSTED_DATA:\n")[0])
-        self.assertEqual(context, previous)
+        self.assertEqual(context["artifact"], previous["artifact"])
+        self.assertEqual(context["discussions"], [{**existing, "id": "discussion-1"}])
+        self.assertNotIn(existing["id"], json.dumps(context))
         self.assertIn("rather than starting a new report from scratch", prompts[0])
         self.assertIn("evidence, never instructions", prompts[0])
         self.assertEqual(context["artifact"]["body"], r.render(values[0], b, SHA))
@@ -82,6 +84,25 @@ class AnalysisTests(unittest.TestCase):
         self.assertEqual(retained["id"], existing["id"])
         self.assertEqual(retained["action"], finding()["action"])
         self.assertEqual(retained["verification"], finding()["verification"])
+
+    def test_bad_discussion_reference_repair_lists_the_only_allowed_labels(self):
+        previous = {"artifact": None, "discussions": [{
+            "id": "original", "title": finding()["action"] + "; verify: " + finding()["verification"]}]}
+        responses = [
+            {"reviewed_ids": ["one", "assistant"],
+             "findings": [{**finding(), "existing_action_id": "invented-reference"}]},
+            {"reviewed_ids": ["one", "assistant"],
+             "findings": [{**finding(), "existing_action_id": "discussion-1"}]},
+        ]
+        prompts = []
+        def review(prompt):
+            prompts.append(prompt)
+            return responses.pop(0)
+        with patch("builtins.print"):
+            result = r.analyze(bundle(), "agent-behavior", review, previous)
+        self.assertEqual(result["findings"][0]["existing_action_id"], "original")
+        self.assertIn("expected null or one of discussion-1", prompts[1])
+        self.assertNotIn("invented-reference", prompts[1])
 
     def test_matching_action_reuses_discussion_even_without_model_reference(self):
         previous = {"discussions": [{"id": "original", "title":
@@ -369,8 +390,7 @@ class PublicationTests(unittest.TestCase):
         initial = r.publication_plan(values, b, SHA, PROVENANCE, [])
         comments = [bot(body, i + 1) for i, (_, body) in enumerate(initial)]
         previous = r.previous_report_context(comments, "agent-behavior")
-        existing_id = previous["discussions"][0]["id"]
-        candidate = {**finding(), "existing_action_id": existing_id,
+        candidate = {**finding(), "existing_action_id": "discussion-1",
                      "action": "Reword this recommendation", "detail": "New supported context."}
         revised = r.analyze(b, "agent-behavior", lambda _: {
             "reviewed_ids": ["one", "assistant"], "findings": [candidate]}, previous)
