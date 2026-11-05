@@ -10,12 +10,26 @@ trigger and trusted default-branch workflow boundary to compute **Risk** and
 `COPILOT_REVIEW_TOKEN`. Merge the workflow and scripts into the default branch
 to activate it. Fork PRs and PR-head execution remain excluded.
 
-Both scores are integers from 0 to 100, lower is better, with one plain-text
+Both scores are integers from 0 to 100, lower is better, with one short
 sentence explaining **Why**. They are review estimates, not measured
 probabilities. Risk evaluates correctness/regression exposure; Slop evaluates
 avoidable duplication, complexity, boilerplate, dead code, and inadequate tests,
 not whether AI wrote the code. Only the PR diff is scored: sessions and Slack
 are excluded.
+
+The CI applies the simplified-English and repetition-removal principles from
+[aidr](https://github.com/JasonMore/ai-skills/blob/9960f13e2892b675787552ed867bb9f9728211bd/skills/aidr/SKILL.md)
+and the audience-focused copy guidance from
+[Impeccable clarify](https://github.com/pbakaus/impeccable/blob/c8891a9ae865d6ee311836ae5199bfce0fe115b1/.github/skills/impeccable/reference/clarify.md).
+The relevant guidance is adapted into trusted prompts, not downloaded or
+executed at runtime. After scoring, a focused Copilot copy-edit pass simplifies
+only the explanations; validation prevents it from changing either score.
+Each explanation gives one main reason in at most 25 words
+and 180 visible characters, without changing the evidence or its uncertainty.
+Plain text is preferred; optional inline Markdown is rendered by the prototype's
+sanitized Markdown renderer. HTML, links, block formatting, and line breaks are
+rejected. Assessment metadata retains the pinned writing-source URLs. Older
+published explanations remain readable in history.
 
 The analyzer verifies all changed files and additions/deletions, rejects binary,
 truncated, or over-200,000-byte diffs, and rechecks the head and base before

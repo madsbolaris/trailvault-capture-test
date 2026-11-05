@@ -61,12 +61,60 @@ class SmartLabelTests(unittest.TestCase):
             return {"secret": "must-not-be-echoed"} if len(prompts) == 1 else scores()
 
         self.assertEqual(labels.assess("[]", reviewer), scores())
-        self.assertEqual(len(prompts), 2)
+        self.assertEqual(len(prompts), 3)
         self.assertNotIn("must-not-be-echoed", prompts[1])
         self.assertIn("ONLY the supplied PR diff", prompts[0])
         self.assertIn("UNTRUSTED_DIFF", prompts[0])
         with self.assertRaises(ReportError):
             labels.assess("[]", lambda _: {})
+
+    def test_focused_copy_edit_preserves_scores_and_does_not_repeat_the_diff(self):
+        prompts = []
+        edited = scores()
+        edited["risk"]["why"] = "Bad input may fail because a test is missing."
+
+        def reviewer(prompt):
+            prompts.append(prompt)
+            return scores() if len(prompts) == 1 else edited
+
+        self.assertEqual(labels.assess("private diff evidence", reviewer), edited)
+        self.assertNotIn("private diff evidence", prompts[1])
+        self.assertIn("UNTRUSTED_ASSESSMENT", prompts[1])
+        self.assertIn("ONE concern", prompts[1])
+        self.assertIn("aidr", prompts[1])
+        self.assertIn("Impeccable clarify", prompts[1])
+        edited["risk"]["score"] = 99
+        prompts.clear()
+        with self.assertRaisesRegex(ReportError, "must not change scores"):
+            labels.assess("private diff evidence", reviewer)
+        self.assertEqual(len(prompts), 3)
+
+    def test_explanation_editing_is_bounded_and_supports_inline_markdown(self):
+        result = scores()
+        result["risk"]["why"] = "Older Rust versions may not support `is_none_or`."
+        result["slop"]["why"] = "**Several tests repeat the same checks.**"
+        self.assertEqual(labels.validate_scores(result), result)
+        self.assertEqual(labels.explanation_text(result["risk"]["why"]),
+                         "Older Rust versions may not support is_none_or.")
+        self.assertEqual(labels.explanation_text("Calls use is_none_or."),
+                         "Calls use is_none_or.")
+        for why in ["word " * 25 + "extra.",
+                    "x" * 180 + ".",
+                    "Tests cover bad data; other tests repeat those checks.",
+                    "# Several tests repeat the same checks.",
+                    "```Several tests repeat the same checks.```"]:
+            with self.subTest(why=why[:30]):
+                invalid = scores()
+                invalid["risk"]["why"] = why
+                with self.assertRaises(ReportError):
+                    labels.validate_scores(invalid)
+
+    def test_writing_guidance_is_pinned_and_preserves_assessment_meaning(self):
+        for url in labels.WRITING_SOURCES.values():
+            self.assertRegex(url, r"/blob/[a-f0-9]{40}/")
+        for rule in ("aidr", "Impeccable clarify", "uncertainty intact",
+                     "25 words and 180 visible characters", "ONE main reason"):
+            self.assertIn(rule, labels.PROMPT)
 
     def collect(self, files=None, changed_files=1, stale_base=False):
         calls = 0
