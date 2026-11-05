@@ -73,7 +73,10 @@ after successfully retaining the new reports; old report versions are preserved.
 
 There is a 2 MiB / 10,000-record evidence budget. Each model batch preserves
 complete sessions, up to 300,000 serialized bytes, with at most eight batches per
-report. Oversized evidence fails explicitly, never silently truncates. No eligible
+report. Oversized evidence fails explicitly, never silently truncates. Invalid
+model responses log safe validation diagnostics and receive one fresh-response
+attempt with the schema requirements restated. A second invalid response blocks
+publication without replacing the existing reports. No eligible
 records produces **not assessed**, not a clean result. A successful check means
 analysis completed, not that agent behavior or a proposed rule was approved.
 Stale heads are rejected before every publication write.
