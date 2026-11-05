@@ -87,6 +87,19 @@ Native GitHub displays the report and action text; the prototype additionally
 consumes the anchored action metadata. Local todo completion, discussion replies,
 and verification outcomes are distinct. Rerunning the same report publication
 does not duplicate its version or anchored action.
+Before analysis, CI reads the latest published artifact and all its existing
+anchored discussions, including earlier comments after history rollover. These
+are explicitly untrusted context, not instructions. The agent updates the
+previous report against the current captures instead of writing independently
+from scratch. A recurring recommendation references its existing discussion
+even when its wording, evidence checkpoint, or PR head changes; the original
+action and verification wording remain stable so its text anchor still works.
+The publisher creates action records only for new recommendations. Repeated
+findings update the report explanation/evidence but do nothing to the existing
+comment: no duplicate root comment, repetitive reply, task reopening, or
+completion-state reset. Existing historical versions and local replies remain
+untouched. This prevents new duplicates; it does not delete historical duplicate
+discussions or synchronize prototype-local replies back into CI.
 New pushes retain old report versions with their original head/run
 provenance. Long histories roll into another comment without deleting history.
 
