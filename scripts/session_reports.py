@@ -282,6 +282,7 @@ Retain still-supported findings, and update their explanation/evidence when warr
 the current capture. Do not treat old findings as proof: cite supplied current record IDs.
 Existing discussions are comments already attached to this artifact. If a finding concerns
 the same recommendation or section, set existing_action_id to that discussion's exact id,
+such as "discussion-1". Copy only one of these supplied discussion labels, never a record ID.
 even if wording, record IDs, checkpoint, or PR head changed. Prefer the most recent matching
 discussion when historical duplicates exist. Preserve its action and verification wording.
 Do not propose another root comment for it. The publisher leaves the existing discussion
@@ -370,8 +371,11 @@ def validate_analysis(value, records, kind, previous=None):
         existing_id = finding["existing_action_id"]
         require(existing_id is None or isinstance(existing_id, str),
                 "Invalid existing discussion reference")
-        existing = next((action for action in discussions if action["id"] == existing_id), None)
-        require(existing_id is None or existing is not None, "Unknown existing discussion reference")
+        references = {f"discussion-{index}": action for index, action in enumerate(discussions, 1)}
+        existing = references.get(existing_id) if isinstance(existing_id, str) else None
+        require(existing_id is None or existing is not None,
+                "Unknown existing discussion reference; expected null"
+                + (" or one of " + ", ".join(references) if references else ""))
         if existing is None:
             existing = next((action for action in discussions
                              if recommendation_key(action_text(action)) ==
@@ -417,7 +421,10 @@ def analyze(bundle, kind, reviewer=copilot, previous=None):
         return {"kind": kind, "status": "not_assessed", "reviewed_records": 0, "findings": []}
     findings = []
     previous = previous or {"artifact": None, "discussions": []}
-    context = json.dumps(previous, ensure_ascii=True)
+    model_previous = {**previous, "discussions": [
+        {**action, "id": f"discussion-{index}"}
+        for index, action in enumerate(previous["discussions"], 1)]}
+    context = json.dumps(model_previous, ensure_ascii=True)
     batches = review_batches(records, len(context.encode()))
     for batch in batches:
         prompt = COMMON_PROMPT + (AGENT_PROMPT if kind == "agent-behavior" else HUMAN_PROMPT)
