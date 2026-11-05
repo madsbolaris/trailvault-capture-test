@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bouncing Ball</title>
+  <style>
+    :root {
+      --bg: #f6f7f9;
+      --fg: #1d2330;
+      --muted: #5b6475;
+      --floor: #c9ced8;
+      --ball: #e4572e;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #12151c;
+        --fg: #e7eaf0;
+        --muted: #9aa3b5;
+        --floor: #2f3543;
+        --ball: #ff7a50;
+      }
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; }
+    body {
+      background: var(--bg);
+      color: var(--fg);
+      font: 14px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px 20px;
+      align-items: center;
+      padding: 12px 16px;
+    }
+    h1 { font-size: 16px; margin: 0; }
+    label { display: flex; align-items: center; gap: 6px; color: var(--muted); }
+    button {
+      font: inherit;
+      padding: 4px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--floor);
+      background: transparent;
+      color: var(--fg);
+      cursor: pointer;
+    }
+    canvas { flex: 1 1 0; min-height: 0; width: 100%; display: block; cursor: pointer; }
+    footer { padding: 8px 16px 12px; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Bouncing Ball</h1>
+    <label>Gravity <input id="gravity" type="range" min="0" max="3000" value="1500"></label>
+    <label>Bounciness <input id="bounce" type="range" min="0" max="100" value="85"></label>
+    <button id="toggle" type="button">Pause</button>
+    <button id="reset" type="button">Reset</button>
+  </header>
+  <canvas id="stage" aria-label="Animated ball bouncing inside the frame"></canvas>
+  <footer>Click anywhere on the canvas to throw the ball toward that point.</footer>
+
+  <script>
+    (() => {
+      const canvas = document.getElementById("stage");
+      const ctx = canvas.getContext("2d");
+      const gravityInput = document.getElementById("gravity");
+      const bounceInput = document.getElementById("bounce");
+      const toggleBtn = document.getElementById("toggle");
+      const resetBtn = document.getElementById("reset");
+
+      const RADIUS = 24;
+      const AIR_DRAG = 0.05;      // fraction of velocity lost per second
+      const FLOOR_FRICTION = 0.9; // horizontal speed kept on each floor hit
+      const TRAIL_LENGTH = 24;
+
+      let width = 0, height = 0;
+      let running = true;
+      let last = performance.now();
+      const ball = { x: 0, y: 0, vx: 0, vy: 0, squash: 0 };
+      const trail = [];
+
+      const css = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+
+      function resize() {
+        const dpr = window.devicePixelRatio || 1;
+        const rect = canvas.getBoundingClientRect();
+        width = rect.width;
+        height = rect.height;
+        canvas.width = Math.round(width * dpr);
+        canvas.height = Math.round(height * dpr);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        ball.x = Math.min(Math.max(ball.x, RADIUS), width - RADIUS);
+        ball.y = Math.min(Math.max(ball.y, RADIUS), height - RADIUS);
+      }
+
+      function reset() {
+        ball.x = RADIUS * 2;
+        ball.y = RADIUS * 2;
+        ball.vx = 320;
+        ball.vy = 0;
+        ball.squash = 0;
+        trail.length = 0;
+      }
+
+      function step(dt) {
+        const gravity = Number(gravityInput.value);
+        const restitution = Number(bounceInput.value) / 100;
+
+        ball.vy += gravity * dt;
+        const drag = Math.max(0, 1 - AIR_DRAG * dt);
+        ball.vx *= drag;
+        ball.vy *= drag;
+        ball.x += ball.vx * dt;
+        ball.y += ball.vy * dt;
+
+        if (ball.y + RADIUS > height) {
+          ball.y = height - RADIUS;
+          ball.squash = Math.min(0.35, Math.abs(ball.vy) / 4000);
+          ball.vy = -ball.vy * restitution;
+          ball.vx *= FLOOR_FRICTION;
+          if (Math.abs(ball.vy) < 30) ball.vy = 0; // come to rest
+        } else if (ball.y - RADIUS < 0) {
+          ball.y = RADIUS;
+          ball.vy = -ball.vy * restitution;
+        }
+        if (ball.x + RADIUS > width) {
+          ball.x = width - RADIUS;
+          ball.vx = -ball.vx * restitution;
+        } else if (ball.x - RADIUS < 0) {
+          ball.x = RADIUS;
+          ball.vx = -ball.vx * restitution;
+        }
+
+        ball.squash *= Math.pow(0.0005, dt); // ease squash back to round
+        trail.push({ x: ball.x, y: ball.y });
+        if (trail.length > TRAIL_LENGTH) trail.shift();
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, width, height);
+        const ballColor = css("--ball");
+
+        // floor line
+        ctx.strokeStyle = css("--floor");
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(0, height - 1);
+        ctx.lineTo(width, height - 1);
+        ctx.stroke();
+
+        // shadow, smaller and fainter the higher the ball is
+        const lift = Math.min(1, (height - RADIUS - ball.y) / Math.max(1, height));
+        ctx.fillStyle = "rgba(0,0,0,0.18)";
+        ctx.globalAlpha = 1 - lift * 0.8;
+        ctx.beginPath();
+        ctx.ellipse(ball.x, height - 4, RADIUS * (1 - lift * 0.6), 5, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // motion trail
+        ctx.fillStyle = ballColor;
+        trail.forEach((p, i) => {
+          const t = (i + 1) / trail.length;
+          ctx.globalAlpha = t * 0.25;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, RADIUS * t * 0.8, 0, Math.PI * 2);
+          ctx.fill();
+        });
+        ctx.globalAlpha = 1;
+
+        // ball, squashed on impact (anchored at its bottom)
+        const sx = 1 + ball.squash;
+        const sy = 1 - ball.squash;
+        ctx.save();
+        ctx.translate(ball.x, ball.y + RADIUS * (1 - sy));
+        ctx.scale(sx, sy);
+        ctx.beginPath();
+        ctx.arc(0, 0, RADIUS, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "rgba(255,255,255,0.35)";
+        ctx.beginPath();
+        ctx.arc(-RADIUS * 0.35, -RADIUS * 0.35, RADIUS * 0.3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+
+      function frame(now) {
+        const dt = Math.min(0.033, (now - last) / 1000); // clamp after tab switches
+        last = now;
+        if (running && width > 0 && height > 0) step(dt);
+        draw();
+        requestAnimationFrame(frame);
+      }
+
+      canvas.addEventListener("click", (e) => {
+        const rect = canvas.getBoundingClientRect();
+        ball.vx = (e.clientX - rect.left - ball.x) * 3;
+        ball.vy = (e.clientY - rect.top - ball.y) * 3 - 400;
+      });
+      toggleBtn.addEventListener("click", () => {
+        running = !running;
+        toggleBtn.textContent = running ? "Pause" : "Play";
+      });
+      resetBtn.addEventListener("click", reset);
+      new ResizeObserver(resize).observe(canvas);
+
+      resize();
+      reset();
+      requestAnimationFrame(frame);
+    })();
+  </script>
+</body>
+</html>
