@@ -56,9 +56,9 @@
     gap: 12px 24px;
     align-items: center;
   }
-  label { display: flex; align-items: center; gap: 8px; color: var(--muted); }
-  input[type=range] { accent-color: var(--accent); width: 140px; }
-  output { color: var(--text); font-variant-numeric: tabular-nums; min-width: 3ch; }
+  label { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; color: var(--muted); }
+  input[type=range] { accent-color: var(--accent); width: 140px; max-width: 35vw; }
+  output { color: var(--text); font-variant-numeric: tabular-nums; min-width: 3ch; white-space: nowrap; }
   button {
     font: inherit;
     padding: 6px 14px;
@@ -79,7 +79,7 @@
   <div class="stage"><canvas id="c"></canvas></div>
 
   <div class="controls">
-    <label>Gravity <input id="gravity" type="range" min="0" max="3000" step="50" value="1400"><output id="gravityOut"></output></label>
+    <label>Gravity <input id="gravity" type="range" min="0" max="25" step="0.01" value="1.62"><output id="gravityOut"></output></label>
     <label>Bounciness <input id="bounce" type="range" min="0.3" max="1" step="0.01" value="0.85"><output id="bounceOut"></output></label>
     <button id="pause">Pause</button>
     <button id="clear">Reset</button>
@@ -98,7 +98,10 @@
   const countEl = document.getElementById('count');
 
   const MAX_BALLS = 60;
-  const palette = ['#e4572e', '#3b6fe0', '#2bb673', '#f2a541', '#9b5de5', '#ef476f', '#17bebb'];
+  // Microsoft logo colors: red, green, blue, yellow
+  const palette = ['#F25022', '#7FBA00', '#00A4EF', '#FFB900'];
+  // Gravity is set in m/s²; this scale turns meters into on-screen pixels
+  const PX_PER_METER = 140;
   let balls = [];
   let paused = false;
   let width = 0, height = 0;
@@ -144,7 +147,7 @@
   }
 
   function step(dt) {
-    const g = +gravityEl.value;
+    const g = +gravityEl.value * PX_PER_METER;
     const e = +bounceEl.value;
 
     for (const b of balls) {
@@ -230,7 +233,7 @@
   }
 
   function syncOutputs() {
-    gravityOut.textContent = gravityEl.value;
+    gravityOut.textContent = (+gravityEl.value).toFixed(2) + ' m/s²' + (gravityEl.value === '1.62' ? ' (Moon)' : '');
     bounceOut.textContent = (+bounceEl.value).toFixed(2);
   }
 
