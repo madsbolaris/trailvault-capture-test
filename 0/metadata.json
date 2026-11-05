@@ -1,0 +1,448 @@
+{
+  "agent": "Copilot CLI",
+  "authenticated_actor": {
+    "github_login": "madsbolaris",
+    "identity_basis": "authenticated_initiator"
+  },
+  "automation": {
+    "initiated_by": "madsbolaris",
+    "kind": "prototype-test-or-chat"
+  },
+  "branch": "bouncing-ball-visualization-v2",
+  "capture_coverage": {
+    "count_unit": "observed_values_not_unique_events; native_and_compact_counts_are_not_percentages",
+    "fields": {
+      "agent_coordination": {
+        "native": {
+          "basis": "not_observed; absence_does_not_establish_provider_unavailability",
+          "observed_values": 0,
+          "status": "unverified"
+        },
+        "native_values_changed_by_redaction": 0,
+        "standardized": {
+          "basis": "not_observed; absence_does_not_establish_provider_unavailability",
+          "observed_values": 0,
+          "status": "unverified"
+        }
+      },
+      "assistant_messages": {
+        "native": {
+          "basis": "observed_in_this_snapshot; completeness_not_established",
+          "observed_values": 2,
+          "status": "captured"
+        },
+        "native_values_changed_by_redaction": 0,
+        "standardized": {
+          "basis": "observed_in_this_snapshot; completeness_not_established",
+          "observed_values": 2,
+          "status": "captured"
+        }
+      },
+      "attachment_payloads": {
+        "native": {
+          "basis": "not_observed; absence_does_not_establish_provider_unavailability",
+          "observed_values": 0,
+          "status": "unverified"
+        },
+        "native_values_changed_by_redaction": 0,
+        "standardized": {
+          "basis": "not_observed; absence_does_not_establish_provider_unavailability",
+          "observed_values": 0,
+          "status": "unverified"
+        }
+      },
+      "attachment_references": {
+        "native": {
+          "basis": "not_observed; absence_does_not_establish_provider_unavailability",
+          "observed_values": 0,
+          "status": "unverified"
+        },
+        "native_values_changed_by_redaction": 0,
+        "standardized": {
+          "basis": "not_observed; absence_does_not_establish_provider_unavailability",
+          "observed_values": 0,
+          "status": "unverified"
+        }
+      },
+      "compaction_events": {
+        "native": {
+          "basis": "not_observed; absence_does_not_establish_provider_unavailability",
+          "observed_values": 0,
+          "status": "unverified"
+        },
+        "native_values_changed_by_redaction": 0,
+        "standardized": {
+          "basis": "not_observed; absence_does_not_establish_provider_unavailability",
+          "observed_values": 0,
+          "status": "unverified"
+        }
+      },
+      "cost": {
+        "native": {
+          "basis": "observed_in_this_snapshot; completeness_not_established",
+          "observed_values": 2,
+          "status": "captured"
+        },
+        "native_values_changed_by_redaction": 0,
+        "standardized": {
+          "basis": "not_projected_into_compact_schema",
+          "observed_values": 0,
+          "status": "unavailable"
+        }
+      },
+      "event_ids": {
+        "native": {
+          "basis": "observed_in_this_snapshot; completeness_not_established",
+          "observed_values": 30,
+          "status": "captured"
+        },
+        "native_values_changed_by_redaction": 0,
+        "standardized": {
+          "basis": "not_projected_into_compact_schema",
+          "observed_values": 0,
+          "status": "unavailable"
+        }
+      },
+      "instructions_memory": {
+        "native": {
+          "basis": "observed_in_this_snapshot; completeness_not_established",
+          "observed_values": 1,
+          "status": "captured"
+        },
+        "native_values_changed_by_redaction": 0,
+        "standardized": {
+          "basis": "observed_in_this_snapshot; completeness_not_established",
+          "observed_values": 1,
+          "status": "captured"
+        }
+      },
+      "model": {
+        "native": {
+          "basis": "observed_in_this_snapshot; completeness_not_established",
+          "observed_values": 8,
+          "status": "captured"
+        },
+        "native_values_changed_by_redaction": 0,
+        "standardized": {
+          "basis": "not_projected_into_compact_schema",
+          "observed_values": 0,
+          "status": "unavailable"
+        }
+      },
+      "native_records": {
+        "native": {
+          "basis": "observed_in_this_snapshot; completeness_not_established",
+          "observed_values": 30,
+          "status": "captured"
+        },
+        "native_values_changed_by_redaction": 0,
+        "standardized": {
+          "basis": "not_projected_into_compact_schema",
+          "observed_values": 0,
+          "status": "unavailable"
+        }
+      },
+      "parent_links": {
+        "native": {
+          "basis": "observed_in_this_snapshot; completeness_not_established",
+          "observed_values": 30,
+          "status": "captured"
+        },
+        "native_values_changed_by_redaction": 0,
+        "standardized": {
+          "basis": "not_projected_into_compact_schema",
+          "observed_values": 0,
+          "status": "unavailable"
+        }
+      },
+      "reasoning": {
+        "native": {
+          "basis": "not_observed; absence_does_not_establish_provider_unavailability",
+          "observed_values": 0,
+          "status": "unverified"
+        },
+        "native_values_changed_by_redaction": 0,
+        "standardized": {
+          "basis": "not_observed; absence_does_not_establish_provider_unavailability",
+          "observed_values": 0,
+          "status": "unverified"
+        }
+      },
+      "session_identity": {
+        "native": {
+          "basis": "observed_in_this_snapshot; completeness_not_established",
+          "observed_values": 1,
+          "status": "captured"
+        },
+        "native_values_changed_by_redaction": 0,
+        "standardized": {
+          "basis": "not_projected_into_compact_schema",
+          "observed_values": 0,
+          "status": "unavailable"
+        }
+      },
+      "skills_tools": {
+        "native": {
+          "basis": "not_observed; absence_does_not_establish_provider_unavailability",
+          "observed_values": 0,
+          "status": "unverified"
+        },
+        "native_values_changed_by_redaction": 0,
+        "standardized": {
+          "basis": "not_observed; absence_does_not_establish_provider_unavailability",
+          "observed_values": 0,
+          "status": "unverified"
+        }
+      },
+      "timestamps": {
+        "native": {
+          "basis": "observed_in_this_snapshot; completeness_not_established",
+          "observed_values": 30,
+          "status": "captured"
+        },
+        "native_values_changed_by_redaction": 0,
+        "standardized": {
+          "basis": "not_projected_into_compact_schema",
+          "observed_values": 0,
+          "status": "unavailable"
+        }
+      },
+      "tool_calls": {
+        "native": {
+          "basis": "observed_in_this_snapshot; completeness_not_established",
+          "observed_values": 4,
+          "status": "captured"
+        },
+        "native_values_changed_by_redaction": 0,
+        "standardized": {
+          "basis": "observed_in_this_snapshot; completeness_not_established",
+          "observed_values": 2,
+          "status": "captured"
+        }
+      },
+      "tool_results": {
+        "native": {
+          "basis": "observed_in_this_snapshot; completeness_not_established",
+          "observed_values": 2,
+          "status": "captured"
+        },
+        "native_values_changed_by_redaction": 0,
+        "standardized": {
+          "basis": "observed_in_this_snapshot; completeness_not_established",
+          "observed_values": 2,
+          "status": "captured"
+        }
+      },
+      "usage": {
+        "native": {
+          "basis": "observed_in_this_snapshot; completeness_not_established",
+          "observed_values": 2,
+          "status": "captured"
+        },
+        "native_values_changed_by_redaction": 0,
+        "standardized": {
+          "basis": "not_projected_into_compact_schema",
+          "observed_values": 0,
+          "status": "unavailable"
+        }
+      },
+      "user_messages": {
+        "native": {
+          "basis": "observed_in_this_snapshot; completeness_not_established",
+          "observed_values": 1,
+          "status": "captured"
+        },
+        "native_values_changed_by_redaction": 0,
+        "standardized": {
+          "basis": "observed_in_this_snapshot; completeness_not_established",
+          "observed_values": 1,
+          "status": "captured"
+        }
+      }
+    },
+    "guarantees": {
+      "attachments_complete": {
+        "basis": "inline_payloads_or_references_do_not_prove_all_attachment_bytes_collected",
+        "status": "unverified"
+      },
+      "background_jobs_complete": {
+        "basis": "background_processes_not_independently_observed",
+        "status": "unverified"
+      },
+      "child_transcripts_complete": {
+        "basis": "coordination_or_task_references_do_not_prove_child_transcript_collection",
+        "status": "unverified"
+      },
+      "continuous_collection": {
+        "basis": "one_snapshot_does_not_establish_gap_free_collection",
+        "status": "unverified"
+      },
+      "execution_origin_authenticated": {
+        "basis": "collector_or_provider_reported_not_per_event_attestation",
+        "status": "unverified"
+      },
+      "hidden_model_state": {
+        "basis": "not_exposed_by_capture_contract",
+        "status": "unavailable"
+      },
+      "live_presence": {
+        "basis": "snapshot_has_no_renewable_presence_lease",
+        "status": "unavailable"
+      },
+      "original_history_complete": {
+        "basis": "provider_compaction_or_output_limits_may_apply",
+        "status": "unverified"
+      },
+      "runtime_termination": {
+        "basis": "client_exit_or_completed_records_do_not_prove_runtime_termination",
+        "status": "unverified"
+      }
+    },
+    "native_sha256": "ba1c3912f93675adfe1036bdd01efa32a866ecae231f5b10f678257179fa48db",
+    "source": "copilot_local",
+    "source_basis": "capture_client_context_not_runtime_attestation",
+    "standardized_scope": "compact_transcript_only; session_metadata_and_native_evidence_are_separate",
+    "standardized_sha256": "fcc681afc2eec02458f303e9130ede49f204b679b0a03e55af11d46b6d19fe24",
+    "version": 1
+  },
+  "capture_health": {
+    "hook_failures": [],
+    "state": "no_observed_hook_failures"
+  },
+  "captured_at": "2026-11-05T22:06:18.034440+00:00",
+  "checkpoint_id": "01M6PVZ6RJAN3HGD855XSHBTC6",
+  "checkpoints_count": 2,
+  "cli_version": "0.2.0",
+  "client": {
+    "app": "copilot-cli",
+    "environment": "local"
+  },
+  "compact_transcript_start": 0,
+  "created_at": "2026-11-05T22:06:18.034440+00:00",
+  "files_touched": [],
+  "last_activity_at": "2026-11-05T22:06:16.475Z",
+  "name": "tell me about this PR",
+  "participant_identity_basis": "authenticated_initiator",
+  "participant_source": "authenticated_launcher",
+  "participants": [
+    {
+      "github_login": "madsbolaris"
+    }
+  ],
+  "pr_activities": {
+    "relationships": [
+      {
+        "activities": [],
+        "evidence": [],
+        "target": {
+          "host": "github.com",
+          "number": 36,
+          "repository": "madsbolaris/trailvault-capture-test"
+        }
+      },
+      {
+        "activities": [],
+        "evidence": [],
+        "target": {
+          "host": "github.com",
+          "number": 39,
+          "repository": "madsbolaris/trailvault-capture-test"
+        }
+      }
+    ],
+    "version": 1
+  },
+  "pr_relationships": {
+    "context_repository": "madsbolaris/trailvault-capture-test",
+    "relationships": [
+      {
+        "contribution_verified": false,
+        "evidence": [
+          {
+            "kind": "mention",
+            "record": 6,
+            "role": "tool_output"
+          },
+          {
+            "kind": "mention",
+            "record": 8,
+            "role": "assistant"
+          }
+        ],
+        "relationship": "mentioned",
+        "retrieval_verified": false,
+        "target": {
+          "host": "github.com",
+          "number": 36,
+          "repository": "madsbolaris/trailvault-capture-test"
+        },
+        "url": "https://github.com/madsbolaris/trailvault-capture-test/pull/36"
+      },
+      {
+        "contribution_verified": false,
+        "evidence": [
+          {
+            "kind": "mention",
+            "record": 1,
+            "role": "user"
+          },
+          {
+            "kind": "mention",
+            "record": 8,
+            "role": "assistant"
+          }
+        ],
+        "relationship": "mentioned",
+        "retrieval_verified": false,
+        "target": {
+          "host": "github.com",
+          "number": 39,
+          "repository": "madsbolaris/trailvault-capture-test"
+        },
+        "url": "https://github.com/madsbolaris/trailvault-capture-test/pull/39"
+      }
+    ],
+    "version": 1
+  },
+  "publication": {
+    "contribution_verified": false,
+    "kind": "session-snapshot",
+    "source_commit": "4292b559662a4cb0036488ba521804b192aff5e7"
+  },
+  "redaction": {
+    "replacements": 0
+  },
+  "save_step_count": 2,
+  "session_id": "8947379d-7ba0-4da1-ada3-fb860929f1c7",
+  "session_metadata": {
+    "authenticated_actor": {
+      "github_login": "madsbolaris",
+      "identity_basis": "authenticated_initiator"
+    },
+    "capture_health": {
+      "hook_failures": [],
+      "state": "no_observed_hook_failures"
+    },
+    "last_activity_at": "2026-11-05T22:06:16.475Z",
+    "model": {
+      "record": 2,
+      "source": "copilot.session.model_change",
+      "timestamp": "2026-11-05T22:05:56.817Z",
+      "value": "claude-sonnet-5.5"
+    },
+    "name": "tell me about this PR",
+    "name_source": "launch_context",
+    "partial_history": false,
+    "participant_identity_basis": "authenticated_initiator",
+    "participant_source": "authenticated_launcher",
+    "participants": [
+      {
+        "github_login": "madsbolaris"
+      }
+    ],
+    "session_started_at": "2026-11-05T22:05:54.793Z",
+    "version": 1
+  },
+  "session_started_at": "2026-11-05T22:05:54.793Z",
+  "strategy": "session-snapshot"
+}
