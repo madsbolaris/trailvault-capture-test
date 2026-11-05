@@ -106,7 +106,7 @@ pub struct Participant {
     pub github_login: String,
 }
 
-pub(crate) fn validate_participants(participants: &[Participant]) -> Result<()> {
+pub fn validate_participants(participants: &[Participant]) -> Result<()> {
     ensure!(
         participants.len() <= 32,
         "At most 32 session participants are supported"
@@ -139,6 +139,18 @@ fn participants(input: &Value) -> Result<Option<Vec<Participant>>> {
         .map(|value| {
             let participants: Vec<Participant> =
                 serde_json::from_value(value.clone()).context("Invalid session participants")?;
+            validate_participants(&participants)?;
+            Ok(participants)
+        })
+        .transpose()
+}
+
+fn configured_participants(config: &Value) -> Result<Option<Vec<Participant>>> {
+    config
+        .get("capture_participants")
+        .map(|value| {
+            let participants: Vec<Participant> = serde_json::from_value(value.clone())
+                .context("Invalid capture_participants setting")?;
             validate_participants(&participants)?;
             Ok(participants)
         })
@@ -314,6 +326,7 @@ pub fn settings_with_defaults(repo: &Repo, mut result: Value) -> Result<Value> {
             "checkpoint_push_remote must be a remote name or URL"
         );
     }
+    configured_participants(&result)?;
     Redactor::new(&result)?;
     Ok(result)
 }
@@ -617,6 +630,11 @@ pub fn agent_hook(repo: &Repo, name: &str, input: &Value) -> Result<()> {
     }
     let _lock = repo.lock()?;
     let existing: Option<State> = git::optional(&path)?;
+    let participants = participants.or(if existing.is_none() {
+        configured_participants(&config)?
+    } else {
+        None
+    });
     ensure!(
         name != "subagent-stop" || existing.is_some(),
         "Subagent stop requires an existing parent session"
@@ -852,10 +870,8 @@ pub fn native_hook(
         "Native capture requires current repository consent"
     );
     crate::install::validate_repository_paths(repo)?;
-    ensure!(
-        settings(repo)?["enabled"] == true,
-        "Native capture is disabled"
-    );
+    let config = settings(repo)?;
+    ensure!(config["enabled"] == true, "Native capture is disabled");
     let id = input["sessionId"]
         .as_str()
         .context("sessionId is required")?;
@@ -865,6 +881,11 @@ pub fn native_hook(
     let path = state_path(repo, id)?;
     let _lock = repo.lock()?;
     let existing: Option<State> = git::optional(&path)?;
+    let participants = participants.or(if existing.is_none() {
+        configured_participants(&config)?
+    } else {
+        None
+    });
     ensure!(
         existing.is_some() || name == "session-start",
         "Start the native session before capturing updates"
@@ -1036,14 +1057,14 @@ pub fn hosted_checkpoint(repo: &Repo, input: &Value) -> Result<String> {
         "Hosted capture requires current repository consent"
     );
     crate::install::validate_repository_paths(repo)?;
-    ensure!(
-        settings(repo)?["enabled"] == true,
-        "Hosted capture is disabled"
-    );
+    let config = settings(repo)?;
+    ensure!(config["enabled"] == true, "Hosted capture is disabled");
     let (provenance, session, full) = crate::hosted::validate(repo, input)?;
     let _lock = repo.lock()?;
     let mut state = initial_state(repo, &session, provenance.label())?;
-    state.participants = participants(input)?.unwrap_or_default();
+    state.participants = participants(input)?
+        .or(configured_participants(&config)?)
+        .unwrap_or_default();
     state.client = client(input)?.or_else(|| {
         Some(Client::native(
             provenance.provider(),
