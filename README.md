@@ -109,23 +109,23 @@ The workflow publishes two CI-versioned PR comment artifacts, using the same
 
 - **Agent behavior**: evidence-backed mistakes, repeated unsuccessful queries,
   unnecessary tool use, and ignored constraints, considering subsequent recovery.
-  Findings must propose a reusable improvement to agent skills, instructions, or
-  tooling and declare that remediation target. PR defects, missing product tests,
+  Suggestions can be practical lessons, including mistakes that were corrected;
+  they do not have to justify a new skill or tooling mechanism. PR defects, missing product tests,
   merge readiness, and implementation requests are not agent-behavior findings.
-- **Human decisions**: explicit, durable repository-rule proposals from user-role
-  messages only. This fixture includes AI-orchestrated prompts, so a user role is
+- **Human decisions**: useful preferences, corrections, and decisions to remember,
+  with their proposed scope, from user-role messages only. This fixture includes
+  AI-orchestrated prompts, so a user role is
   not proof of human authorship. Maintainers must confirm authorship, scope, and
   the proposal before adopting a rule. No memories or instructions are changed
   automatically.
 
-Reports include substantive, evidence-linked analysis even when there are no
-actionable findings. The analysis explains observed outcomes, strengths,
-problems, recovery, and uncertainty; corrected mistakes are not erased simply
-because no further action is warranted. Human-decisions analysis distinguishes
-one-off requests and clarifications from durable repository-rule proposals.
+Each report lists at most five distinct, evidence-linked things to fix or
+remember, with a short explanation, next step, and verification. There is no
+mandatory essay, assessment taxonomy, remediation-target field, or confidence
+threshold that hides suggestions. Uncertainty belongs in the explanation.
 No minimum finding count is imposed and no problems or rules are fabricated.
-Reports lead with their conclusion and summary cards, followed by analysis and
-any actionable findings, not workflow metadata or snapshot inventories. Immutable run/head provenance
+Reports lead with their conclusion and summary cards, followed by the suggestions,
+not workflow metadata or snapshot inventories. Immutable run/head provenance
 remains in the version envelope rather than in the visible report body.
 Each actionable finding publishes one anchored `actions` record in its report's
 version metadata, with immutable transcript-line evidence. The prototype
@@ -142,8 +142,7 @@ local replies and task edits remain prototype-local.
 Evidence links are relative prototype routes with a captured session ID,
 checkpoint commit, and one-based compact-transcript record. They open the Chat
 pane at that immutable record without replacing the report with a GitHub blob.
-Findings below the 0.8 uncalibrated-confidence threshold appear as deferred
-candidates in the report without creating todos.
+Confidence is an internal self-rating, not a gate on publishing useful suggestions.
 Native GitHub displays the report and action text; the prototype additionally
 consumes the anchored action metadata. Local todo completion, discussion replies,
 and verification outcomes are distinct. Rerunning the same report publication
@@ -188,7 +187,8 @@ as Actions artifacts.
 Each successful model response is checked for provider `copilot` and the pinned
 GPT model `gpt-5.3-codex`. Non-GPT configurations and responses from a different
 model/provider are rejected; there is no Claude or other-model fallback.
-Any attempted tool action blocks publication.
+The runner reads the final JSON response rather than rejecting CLI progress or
+tool-event metadata. Tools and built-in MCPs remain disabled in the model invocation.
 GPT uses explicit medium reasoning with a ten-minute per-response deadline and
 a 45-minute workflow deadline; a timeout fails the run without replacing reports.
 CI logs the verified provider/model/CLI version and
@@ -205,14 +205,10 @@ after successfully retaining the new reports; old report versions are preserved.
 
 There is a 2 MiB / 10,000-record evidence budget. Model batches keep small sessions
 together; oversized sessions use ordered, record-complete segments. Every raw record
-is reviewed exactly once, without inventing cross-segment context. Multi-batch
-reports receive one additional Copilot synthesis of the validated batch analyses
-and their source-ID manifest, not another raw-transcript review. The synthesis
-connects supported cross-batch patterns while retaining observed problems,
-strengths, outcomes, limitations, and batch-level follow-ups. Its evidence must
-refer to the original cited records and it has the same 300,000-byte input budget.
-Missing or empty narrative analysis fails validation instead of publishing an
-empty success-shaped report. Each batch
+is reviewed exactly once, without inventing cross-segment context. When there
+is more than one suggestion, Copilot combines duplicates into at most five useful
+items using the suggestions and their source-ID manifest, not another transcript
+review. This consolidation has the same 300,000-byte input budget. Each batch
 allows up to 300,000 serialized bytes including previous-report context, with at
 most eight batches per report. An oversized individual record or excessive total
 evidence fails explicitly, never silently truncates. Invalid

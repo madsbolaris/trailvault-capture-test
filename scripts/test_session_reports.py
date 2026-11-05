@@ -34,8 +34,6 @@ def finding(key="one", kind="agent-behavior"):
               "evidence_ids": [key], "action": "Teach the agent skill to adapt after a missing-file error",
               "verification": "The next trace uses the discovered path", "confidence": 0.9,
               "existing_action_id": None}
-    if kind == "agent-behavior":
-        result["remediation_target"] = "skills"
     return result
 
 
@@ -47,12 +45,7 @@ def bundle():
 
 
 def reviewed(ids, findings=None):
-    return {"reviewed_ids": ids, "findings": findings or [], "assessment": [{
-        "category": "outcome", "title": "The captured request remains a one-off task",
-        "detail": "The supplied message requests a specific task rather than establishing a durable "
-                  "repository convention. The record does not support a reusable rule.",
-        "evidence_ids": ids[:1],
-    }]}
+    return {"reviewed_ids": ids, "findings": findings or []}
 
 
 def reports():
@@ -67,47 +60,20 @@ def bot(body, identity=10):
 
 
 class AnalysisTests(unittest.TestCase):
-    def test_zero_findings_requires_and_renders_evidence_backed_agent_analysis(self):
+    def test_simple_empty_report_needs_no_assessment_or_essay(self):
         response = reviewed(["one", "assistant"])
         report = r.analyze(bundle(), "agent-behavior", lambda _: copy.deepcopy(response))
         text = r.render(report, bundle(), SHA)
-        self.assertIn("## Analysis", text)
-        self.assertIn(response["assessment"][0]["detail"], text)
-        self.assertIn(bundle()["records"][0]["url"], text)
+        self.assertNotIn("## Analysis", text)
         self.assertIn("does not mean no problems occurred", text)
         self.assertEqual(report["findings"], [])
-        self.assertEqual(report["assessment"], response["assessment"])
 
-    def test_missing_assessment_is_retried_then_blocks_a_success_shaped_empty_report(self):
-        calls = []
-        def review(prompt):
-            calls.append(prompt)
-            return {"reviewed_ids": ["one", "assistant"], "findings": []}
-        with patch("builtins.print"), self.assertRaisesRegex(r.ReportError, "assessment"):
-            r.analyze(bundle(), "agent-behavior", review)
-        self.assertEqual(len(calls), 2)
-        self.assertIn("Include a substantive assessment even without findings", calls[1])
-
-    def test_assessment_rejects_empty_generic_unsafe_or_untraceable_output(self):
-        base = reviewed(["one"])
-        invalid = [[], [{}], base["assessment"] * 9]
-        for key, value in (("category", "recommendation"), ("detail", "Nothing found."),
-                           ("detail", "ghp_" + "x" * 70), ("title", "@someone"),
-                           ("evidence_ids", []), ("evidence_ids", ["foreign"]),
-                           ("evidence_ids", ["one", "one"])):
-            invalid.append([{**base["assessment"][0], key: value}])
-        for assessment in invalid:
-            with self.subTest(assessment=assessment), self.assertRaises(r.ReportError):
-                r.validate_review({**base, "assessment": assessment}, [row()], "agent-behavior")
-
-    def test_synthesis_connects_batches_without_losing_problems_or_existing_followups(self):
+    def test_duplicate_suggestions_are_consolidated_without_replaying_raw_records(self):
         records = [row("one", session="first"), row("two", session="second")]
         first = reviewed(["one"], [finding()])
-        first["assessment"][0]["category"] = "problem"
-        second = reviewed(["two"])
-        synthesis = reviewed(["one", "two"])
-        synthesis["assessment"] = [*first["assessment"], *second["assessment"]]
-        responses = [first, second, synthesis]
+        second = reviewed(["two"], [finding("two")])
+        combined = {**finding(), "evidence_ids": ["one", "two"]}
+        responses = [first, second, reviewed(["one", "two"], [combined])]
         prompts = []
         def review(prompt):
             prompts.append(prompt)
@@ -116,28 +82,11 @@ class AnalysisTests(unittest.TestCase):
             report = r.analyze({**bundle(), "records": records}, "agent-behavior", review)
         data = json.loads(prompts[-1].split("\nUNTRUSTED_DATA:\n")[1])
         self.assertEqual([row["id"] for row in data["source_records"]], ["one", "two"])
-        self.assertEqual(len(data["batch_analyses"]), 2)
+        self.assertEqual(len(data["suggestions"]), 2)
         self.assertIn("not raw transcripts", prompts[-1])
-        self.assertEqual({entry["category"] for entry in report["assessment"]}, {"problem", "outcome"})
+        self.assertNotIn("Synthetic fixture only.", prompts[-1])
         self.assertEqual(len(report["findings"]), 1)
-
-    def test_synthesis_cannot_hide_observed_problems(self):
-        records = [row("one"), row("two")]
-        first = reviewed(["one"])
-        first["assessment"][0]["category"] = "problem"
-        responses = [first, reviewed(["two"]), reviewed(["one", "two"])]
-        with patch.object(r, "review_batches", return_value=[[records[0]], [records[1]]]), (
-                self.assertRaisesRegex(r.ReportError, "omitted")):
-            r.analyze({**bundle(), "records": records}, "agent-behavior",
-                      lambda _: copy.deepcopy(responses.pop(0)))
-
-    def test_synthesis_budget_is_enforced_without_truncating_batch_evidence(self):
-        records = [row("one"), row("two")]
-        with patch.object(r, "review_batches", return_value=[[records[0]], [records[1]]]), (
-                patch.object(r, "MAX_BATCH_BYTES", 100)), (
-                self.assertRaisesRegex(r.ReportError, "synthesis exceeds")):
-            r.analyze({**bundle(), "records": records}, "agent-behavior", lambda prompt: reviewed(
-                [item["id"] for item in json.loads(prompt.split("\nUNTRUSTED_DATA:\n")[1])]))
+        self.assertEqual(report["findings"][0]["evidence_ids"], ["one", "two"])
 
     def test_previous_artifact_and_discussions_are_context_not_instructions(self):
         b, values = reports()
@@ -214,19 +163,16 @@ class AnalysisTests(unittest.TestCase):
         with patch.object(r, "MAX_BATCH_BYTES", limit), self.assertRaisesRegex(r.ReportError, "budget"):
             r.analyze(bundle(), "agent-behavior", lambda _: self.fail("No truncation"), previous)
 
-    def test_agent_scope_requires_reusable_remediation_and_excludes_pr_review(self):
+    def test_agent_scope_asks_for_practical_lessons_without_a_mechanism_gate(self):
         prompts = []
         def review(prompt):
             prompts.append(prompt)
             return reviewed(["one", "assistant"], [finding()])
         result = r.analyze(bundle(), "agent-behavior", review)
-        self.assertEqual(result["findings"][0]["remediation_target"], "skills")
+        self.assertEqual(len(result["findings"]), 1)
         self.assertIn("This is NOT a PR review", prompts[0])
-        self.assertIn("not fix the PR", prompts[0])
-        for target in ("implementation", "missing-tests", None):
-            candidate = {**finding(), "remediation_target": target}
-            with self.subTest(target=target), self.assertRaisesRegex(r.ReportError, "remediation"):
-                r.validate_analysis({"reviewed_ids": ["one"], "findings": [candidate]}, [row()], "agent-behavior")
+        self.assertIn("not only new tooling mechanisms", prompts[0])
+        self.assertNotIn("remediation_target", prompts[0])
 
     def test_invalid_model_shape_gets_one_explicit_schema_repair(self):
         responses = [
@@ -318,8 +264,8 @@ class AnalysisTests(unittest.TestCase):
         self.assertEqual(report["reviewed_records"], len(records))
         self.assertEqual(report["status"], "assessed")
         self.assertGreater(report["batches"], 1)
-        self.assertTrue(all("record-complete segments" in prompt for prompt in prompts[:-1]))
-        self.assertIn("SYNTHESIS:", prompts[-1])
+        self.assertTrue(all("record-complete segments" in prompt for prompt in prompts))
+        self.assertFalse(any("CONSOLIDATE:" in prompt for prompt in prompts))
         self.assertTrue(all("Each session is complete within this batch" not in prompt for prompt in prompts))
 
     def test_too_many_complete_record_batches_fail_without_running_partial_analysis(self):
@@ -360,21 +306,30 @@ class AnalysisTests(unittest.TestCase):
             r.validate_analysis({"reviewed_ids": ["one"], "findings": [candidate]},
                                 [row()], "agent-behavior")
 
-    def test_lower_confidence_candidates_are_visible_without_actionable_todos(self):
+    def test_useful_suggestions_are_not_hidden_by_a_confidence_threshold(self):
         candidate = finding(kind="human-decisions")
         candidate["confidence"] = 0.7
         b = bundle()
         result = r.analyze(b, "human-decisions", lambda _: reviewed(["one"], [candidate]))
-        self.assertEqual(result["findings"], [])
-        self.assertEqual(len(result["observations"]), 1)
-        self.assertIn("Deferred candidates", r.render(result, b, SHA))
+        self.assertEqual(len(result["findings"]), 1)
+        self.assertNotIn("Deferred candidates", r.render(result, b, SHA))
         plan = r.publication_plan([result], b, SHA, PROVENANCE, [])
         self.assertEqual(len(plan), 1)
         artifact = r.unique_json(plan[0][1].split("\n")[0][len(r.MARKER):-4])
-        self.assertEqual(artifact["versions"][0]["actions"], [])
+        self.assertEqual(len(artifact["versions"][0]["actions"]), 1)
 
 
 class CopilotTests(unittest.TestCase):
+    def test_cli_progress_and_tool_metadata_do_not_reject_the_final_report(self):
+        events = "\n".join([
+            json.dumps({"type": "assistant.message", "data": {"content": "Preparing the report"}}),
+            json.dumps({"type": "tool.execution_start", "data": {"toolName": "metadata"}}),
+            self.events(),
+        ])
+        with patch.dict(os.environ, {"COPILOT_GITHUB_TOKEN": "fixture"}), (
+                patch.object(r, "execute", side_effect=[r.CLI_VERSION, events])), (
+                patch("builtins.print")):
+            self.assertEqual(r.copilot("Synthetic preflight"), {"preflight": True})
     def test_service_errors_are_classified_without_disclosing_raw_diagnostics(self):
         for message, category in (("Request exceeds context window limit", "context-limit"),
                                   ("429 rate limit exceeded", "rate-or-quota-limit"),
@@ -653,16 +608,14 @@ class PublicationTests(unittest.TestCase):
         self.assertEqual([method for method, _ in writes], ["POST", "POST", "DELETE"])
         self.assertTrue(writes[-1][1].endswith("/99"))
 
-    def test_zero_findings_still_explains_user_requests_without_inventing_decisions(self):
+    def test_empty_human_report_is_concise_without_inventing_decisions(self):
         b = bundle()
         result = r.analyze(b, "human-decisions", lambda _: reviewed(["one"]))
         text = r.render(result, b, SHA)
         self.assertIn("No reusable repository decisions identified", text)
         self.assertNotIn("Coverage boundaries", text)
         self.assertNotIn("Snapshot", text)
-        self.assertIn("## Analysis", text)
-        self.assertIn("rather than establishing a durable", text)
-        self.assertIn("Evidence:", text)
+        self.assertNotIn("## Analysis", text)
         self.assertIn("no rules or memories are saved automatically", text)
 
     def test_head_is_rechecked_before_every_write(self):
