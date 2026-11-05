@@ -20,6 +20,29 @@ cargo run -- search --name fern --max-distance 8.5 --difficulty moderate
 cargo run -- search --difficulty hard --max-distance 12
 ```
 
+### Library API
+
+```rust
+use routebook::{catalogue, search, Difficulty, SearchFilter};
+
+let routes = catalogue();
+let filter = SearchFilter::new()
+    .name_contains("fern")
+    .max_distance_km(8.5)
+    .difficulty(Difficulty::Moderate);
+let found = search(&routes, &filter); // Vec<&Route>, borrowed, original order
+```
+
+Unset criteria match everything, so `SearchFilter::new()` returns every route.
+
+Invalid distance bounds are handled differently by the two interfaces:
+
+- Library: `max_distance_km` never fails. NaN, infinite and negative bounds
+  match no routes (so the result is empty). Zero and any finite
+  non-negative value, including `f64::MAX`, are valid inclusive bounds.
+- CLI: `--max-distance` rejects NaN, infinities, negatives and unparseable
+  values (including overflow such as `1e999`) with a usage error and exit 2.
+
 ### Output and exit codes
 
 - Success: matching routes are written to stdout, one per line, with exit 0
