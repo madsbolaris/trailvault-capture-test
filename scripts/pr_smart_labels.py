@@ -144,7 +144,9 @@ def run(request=api, reviewer=copilot):
                     {"name": "PR smart labels", "head_sha": sha,
                      "status": "in_progress", "details_url": run_url})
     try:
+        print("Collecting and validating the complete PR diff.")
         base, diff = collect_diff(number, sha, request)
+        print("Requesting tool-free Copilot Risk and Slop assessments.")
         scores = assess(diff, reviewer)
         assessment = {
             "repository": REPOSITORY, "pullRequest": number, "headSha": sha,
@@ -153,6 +155,7 @@ def run(request=api, reviewer=copilot):
             "createdAt": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
             "runUrl": run_url, **scores,
         }
+        print("Publishing the head-bound smart-label comment.")
         publish(number, sha, assessment, request)
         request(f"repos/{REPOSITORY}/check-runs/{check['id']}", "PATCH",
                 {"status": "completed", "conclusion": "success",

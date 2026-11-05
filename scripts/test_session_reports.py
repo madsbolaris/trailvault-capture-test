@@ -367,6 +367,14 @@ class PublicationTests(unittest.TestCase):
 
 
 class TriggerTests(unittest.TestCase):
+    def test_api_errors_identify_operation_without_exposing_process_diagnostics(self):
+        path = f"repos/{r.REPOSITORY}/issues/1/comments"
+        with patch.object(r, "execute", side_effect=r.ReportError("private response")):
+            with self.assertRaises(r.ReportError) as error:
+                r.api(path, "POST", {"body": "private request"})
+        self.assertIn(f"GitHub POST {path} failed", str(error.exception))
+        self.assertNotIn("private", str(error.exception))
+
     def test_cloud_publication_dispatches_only_matching_same_repo_pr(self):
         writes = []
         candidate = pr()

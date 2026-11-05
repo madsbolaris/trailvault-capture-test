@@ -200,6 +200,7 @@ class SmartLabelTests(unittest.TestCase):
         self.assertIn("ref: ${{ github.workflow_sha }}", workflow)
         self.assertIn("secrets.COPILOT_REVIEW_TOKEN", workflow)
         self.assertIn("permissions: {}", workflow)
+        self.assertIn("pull-requests: write", workflow.split("  assess:")[1])
         self.assertNotIn("head.sha }}", workflow)
         for action in re.findall(r"uses: ([^\n]+)", workflow):
             self.assertRegex(action, r"@[a-f0-9]{40} # v\d+\.\d+\.\d+$")
