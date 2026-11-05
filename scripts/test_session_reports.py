@@ -129,9 +129,9 @@ class AnalysisTests(unittest.TestCase):
                                      [row("changed")], "agent-behavior")[0]
         self.assertEqual(first["id"], second["id"])
 
-    def test_previous_artifact_counts_towards_the_complete_session_budget(self):
+    def test_previous_artifact_counts_towards_each_complete_record_budget(self):
         previous = {"artifact": {"body": "x" * 100}, "discussions": []}
-        limit = len(json.dumps(bundle()["records"]).encode()) + 1
+        limit = max(len(json.dumps([item]).encode()) for item in bundle()["records"]) + 1
         with patch.object(r, "MAX_BATCH_BYTES", limit), self.assertRaisesRegex(r.ReportError, "budget"):
             r.analyze(bundle(), "agent-behavior", lambda _: self.fail("No truncation"), previous)
 
@@ -204,9 +204,45 @@ class AnalysisTests(unittest.TestCase):
             batches = r.review_batches(records)
         self.assertEqual([[v["id"] for v in batch] for batch in batches], [["one", "three"], ["two"]])
 
-    def test_oversized_session_is_rejected_not_truncated(self):
+    def test_oversized_record_is_rejected_not_truncated(self):
         with patch.object(r, "MAX_BATCH_BYTES", 10), self.assertRaises(r.ReportError):
             r.review_batches([row()])
+
+    def test_oversized_sessions_preserve_every_record_in_order_within_the_real_budget(self):
+        records = [row(str(index), session="large") for index in range(7)]
+        context_bytes = 73
+        limit = len(json.dumps(records[:2], ensure_ascii=True).encode()) + context_bytes
+        with patch.object(r, "MAX_BATCH_BYTES", limit):
+            batches = r.review_batches(records, context_bytes)
+        self.assertEqual([item for batch in batches for item in batch], records)
+        self.assertGreater(len(batches), 1)
+        self.assertTrue(all(len(json.dumps(batch, ensure_ascii=True).encode()) + context_bytes <= limit
+                            for batch in batches))
+
+    def test_split_session_analysis_validates_all_ids_and_discloses_segmented_context(self):
+        records = [row(str(index), session="large") for index in range(4)]
+        prompts, reviewed = [], []
+        def review(prompt):
+            prompts.append(prompt)
+            rows = json.loads(prompt.split("\nUNTRUSTED_DATA:\n", 1)[1])
+            reviewed.extend(item["id"] for item in rows)
+            return {"reviewed_ids": [item["id"] for item in rows], "findings": []}
+        limit = len(json.dumps(records[:2], ensure_ascii=True).encode()) + 60
+        with patch.object(r, "MAX_BATCH_BYTES", limit):
+            report = r.analyze({**bundle(), "records": records}, "agent-behavior", review)
+        self.assertEqual(reviewed, [item["id"] for item in records])
+        self.assertEqual(report["reviewed_records"], len(records))
+        self.assertEqual(report["status"], "assessed")
+        self.assertGreater(report["batches"], 1)
+        self.assertTrue(all("record-complete segments" in prompt for prompt in prompts))
+        self.assertTrue(all("Each session is complete within this batch" not in prompt for prompt in prompts))
+
+    def test_too_many_complete_record_batches_fail_without_running_partial_analysis(self):
+        records = [row(str(index), session="large") for index in range(9)]
+        limit = len(json.dumps([records[0]], ensure_ascii=True).encode()) + 60
+        with patch.object(r, "MAX_BATCH_BYTES", limit), self.assertRaisesRegex(r.ReportError, "Too many"):
+            r.analyze({**bundle(), "records": records}, "agent-behavior",
+                      lambda _: self.fail("No partial analysis"))
 
     def test_incomplete_or_duplicate_coverage_rejected(self):
         for ids in ([], ["one", "one"], ["foreign"]):

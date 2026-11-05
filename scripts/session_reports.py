@@ -226,6 +226,7 @@ def collect(number, sha, request=api, reader=None):
                 "Captured records only; missing/local-only sessions are not assessed.",
                 "Child task transcripts are not included; parent delegation events are visible.",
                 "Overlapping prefix snapshots deduplicated; non-prefix histories remain separate.",
+                "Oversized sessions use ordered record-complete segments; cross-segment context is not assumed.",
                 "User-role messages can be AI-orchestrated; human authorship is not verified.",
             ]}
 
@@ -400,12 +401,15 @@ def review_batches(records, context_bytes=0):
         groups.setdefault(row["session_id"], []).append(row)
     batches, batch = [], []
     for group in groups.values():
-        require(len(json.dumps(group, ensure_ascii=True).encode()) + context_bytes <= MAX_BATCH_BYTES,
-                "A session exceeds the model batch budget; refusing partial-session analysis")
-        if batch and len(json.dumps([*batch, *group], ensure_ascii=True).encode()) + context_bytes > MAX_BATCH_BYTES:
-            batches.append(batch)
-            batch = []
-        batch.extend(group)
+        units = ([group] if len(json.dumps(group, ensure_ascii=True).encode()) + context_bytes <= MAX_BATCH_BYTES
+                 else [[row] for row in group])
+        for unit in units:
+            require(len(json.dumps(unit, ensure_ascii=True).encode()) + context_bytes <= MAX_BATCH_BYTES,
+                    "A record exceeds the model batch budget; refusing truncation")
+            if batch and len(json.dumps([*batch, *unit], ensure_ascii=True).encode()) + context_bytes > MAX_BATCH_BYTES:
+                batches.append(batch)
+                batch = []
+            batch.extend(unit)
     if batch:
         batches.append(batch)
     require(len(batches) <= 8, "Too many model batches; refusing partial analysis")
@@ -426,9 +430,12 @@ def analyze(bundle, kind, reviewer=copilot, previous=None):
         for index, action in enumerate(previous["discussions"], 1)]}
     context = json.dumps(model_previous, ensure_ascii=True)
     batches = review_batches(records, len(context.encode()))
-    for batch in batches:
+    for index, batch in enumerate(batches, 1):
         prompt = COMMON_PROMPT + (AGENT_PROMPT if kind == "agent-behavior" else HUMAN_PROMPT)
-        prompt += "\nEach session is complete within this batch; other sessions may be in other batches."
+        prompt += (f"\nBatch {index} of {len(batches)}. Small sessions stay together; oversized sessions "
+                   "are split into ordered, record-complete segments across batches. Every record "
+                   "is supplied exactly once across all batches. Do not infer missing earlier/later "
+                   "context or session-wide conclusions from a segment.")
         prompt += "\nUNTRUSTED_PREVIOUS_ARTIFACT:\n" + context
         prompt += "\nUNTRUSTED_DATA:\n" + json.dumps(batch, ensure_ascii=True)
         response = reviewer(prompt)

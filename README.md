@@ -189,9 +189,12 @@ assessed. A short scope note states this limitation without a separate technical
 coverage section. The publisher removes its old detached finding comments only
 after successfully retaining the new reports; old report versions are preserved.
 
-There is a 2 MiB / 10,000-record evidence budget. Each model batch preserves
-complete sessions, up to 300,000 serialized bytes, with at most eight batches per
-report. Oversized evidence fails explicitly, never silently truncates. Invalid
+There is a 2 MiB / 10,000-record evidence budget. Model batches keep small sessions
+together; oversized sessions use ordered, record-complete segments. Every record
+is reviewed exactly once, without inventing cross-segment context. Each batch
+allows up to 300,000 serialized bytes including previous-report context, with at
+most eight batches per report. An oversized individual record or excessive total
+evidence fails explicitly, never silently truncates. Invalid
 model responses log safe validation diagnostics and receive one fresh-response
 attempt with the schema requirements restated. A second invalid response blocks
 publication without replacing the existing reports. No eligible
