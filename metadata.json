@@ -1,0 +1,23 @@
+{
+  "branch": "demo/route-search-20261030",
+  "checkpoint_id": "01M6NY4QGZY2VNX06JF9R7BYWE",
+  "checkpoints_count": 1,
+  "cli_version": "0.2.0",
+  "files_touched": [],
+  "publication": {
+    "contribution_verified": false,
+    "kind": "session-snapshot",
+    "source_commit": "d5f5d78366c5710bf5a3de9cd8161ee0465a8588"
+  },
+  "sessions": [
+    {
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "evidence": "/0/evidence.json",
+      "metadata": "/0/metadata.json",
+      "prompt": "/0/prompt.txt",
+      "transcript": "/0/full.jsonl"
+    }
+  ],
+  "strategy": "session-snapshot"
+}
