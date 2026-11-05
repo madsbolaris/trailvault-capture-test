@@ -1,0 +1,22 @@
+{
+  "branch": "copilot/pr1-participants-20261105-copilot-cloud",
+  "checkpoint_id": "01M6NYC41QY5T430S6ZJEA1SNE",
+  "checkpoints_count": 1,
+  "cli_version": "0.2.0",
+  "files_touched": [],
+  "publication": {
+    "contribution_verified": false,
+    "kind": "session-snapshot",
+    "source_commit": "fad59c36f602c64db858b60c4a433f8c6be11464"
+  },
+  "sessions": [
+    {
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "metadata": "/0/metadata.json",
+      "prompt": "/0/prompt.txt",
+      "transcript": "/0/full.jsonl"
+    }
+  ],
+  "strategy": "session-snapshot"
+}
