@@ -2,6 +2,7 @@
   "enabled": true,
   "telemetry": false,
   "commit_linking": "always",
+  "capture_participants": [{"github_login": "madsbolaris"}],
   "strategy_options": {"push_sessions": true, "publish_on_tool_completion": true, "cloud_artifact": true},
   "checkpoints": {
     "primary": {
