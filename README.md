@@ -217,3 +217,31 @@ npm ci --prefix session-review-runtime --ignore-scripts --no-audit --no-fund
 COPILOT_GITHUB_TOKEN="$(gh auth token --hostname github.com)" \
   python3 scripts/session_reports.py preflight
 ```
+
+## Bounce Lab
+
+`site/` is **Bounce Lab**, a static bouncing-ball physics playground: drop,
+drag and throw balls under real planetary gravity (Moon by default), with
+bounciness, air resistance and ball-size controls, keyboard shortcuts, and
+shareable links that carry the settings in the URL hash.
+
+It is plain HTML, CSS and ES modules with no build step and no runtime
+dependencies, so `site/` can be served as-is by any static host.
+
+```sh
+npm start   # http://localhost:5173
+npm test    # physics, settings and palette unit tests (node --test)
+```
+
+| Path | What it is |
+| --- | --- |
+| `site/js/physics.js` | DOM-free fixed-timestep physics (walls, collisions, drag-and-throw) |
+| `site/js/renderer.js` | Canvas drawing: shading, shadows, squash on impact |
+| `site/js/settings.js` | Defaults, limits, gravity presets, URL hash encoding |
+| `site/js/palette.js` | 40 ball colors: 10 shades within ±5% of four base colors |
+| `site/js/main.js` | UI wiring, pointer and keyboard input, animation loop |
+| `tests/` | `node:test` unit tests |
+
+**Deploying:** `.github/workflows/bounce-lab.yml` runs the tests on PRs and,
+on pushes to `main`, publishes `site/` to GitHub Pages. Set **Settings →
+Pages → Source** to **GitHub Actions** once before the first deploy.
