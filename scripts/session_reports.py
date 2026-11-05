@@ -11,6 +11,7 @@ import signal
 import subprocess
 import tempfile
 from datetime import datetime, timezone
+from urllib.parse import urlencode
 
 REPOSITORY = "madsbolaris/trailvault-capture-test"
 REPORTS = {"agent-behavior": "Agent behavior", "human-decisions": "Human decisions"}
@@ -188,7 +189,7 @@ def collect(number, sha, request=api, reader=None):
                 and metadata["checkpoint_id"] == checkpoint, "Invalid captured session identity")
         text = blob(revision, f"{index}/transcript.jsonl")
         numbered = [(line_number, unique_json(line))
-                    for line_number, line in enumerate(text.splitlines(), 1) if line.strip()]
+                    for line_number, line in enumerate(text.split("\n"), 1) if line.strip()]
         rows = [row for _, row in numbered]
         require(rows and rows[0].get("type") == "header", "Unsupported compact transcript")
         require(all(isinstance(row, dict) for row in rows), "Invalid transcript record")
@@ -207,14 +208,17 @@ def collect(number, sha, request=api, reader=None):
             evidence.append({
                 "id": f"{session['checkpoint']}:{session['directory']}:{index}",
                 "session_id": session["session_id"],
-                "url": (f"https://github.com/{REPOSITORY}/blob/{session['checkpoint']}/"
-                        f"{session['directory']}/transcript.jsonl#L{index}"),
+                "url": (f"#/{REPOSITORY}/pull/{number}/artifacts?" + urlencode({
+                    "at": f"h_{session['session_id']}@L{index}",
+                    "checkpoint": session["checkpoint"],
+                })),
                 "record": record,
             })
     require(len(evidence) <= MAX_RECORDS
             and len(json.dumps(evidence).encode()) <= MAX_BYTES,
             "Session evidence exceeds review budget; refusing truncation")
     return {"sessions": sessions, "records": evidence, "slack": "excluded by request",
+            "follow_up_assignee": pr.get("user", {}).get("login"),
             "limitations": [
                 "Captured records only; missing/local-only sessions are not assessed.",
                 "Child task transcripts are not included; parent delegation events are visible.",
@@ -266,7 +270,8 @@ an action; lower-confidence candidates are deferred for review, not published as
 Every finding must contain all six fields, including verification and confidence.
 Title must be at most 112 characters, detail 1200, action 180, and verification 180.
 Actions plus verification must
-fit 240 characters including '; verify: '. No Markdown, links, HTML, mentions, or extra keys.
+fit 240 characters including '; verify: '. No Markdown, links, HTML, mentions, or extra keys except fields explicitly required by the
+report-specific instructions below.
 Only propose real, actionable problems; do not make busywork or style-only suggestions.
 """
 
@@ -279,6 +284,15 @@ Do not assert instruction violations when the capture mentions unseen higher-pri
 standing instructions that could explain the behavior. A requested addition does not
 implicitly prohibit other required additions. Cite both the user constraint and conflicting
 action when claiming a constraint violation.
+This is NOT a PR review. Exclude defects, missing tests, merge readiness, product requirements,
+and implementation changes in the PR itself. An agent discussing a PR defect is evidence of
+review work, not an agent-behavior failure. Omit a finding unless the capture demonstrates
+an agent workflow failure preventable by a reusable improvement to agent skills, instructions,
+or tooling. Every agent finding must additionally include "remediation_target", exactly one
+of "skills", "instructions", or "tooling". Its action must change that agent mechanism,
+not fix the PR, and verification must exercise the improved agent workflow on a future task.
+An unresolved PR defect alone does not establish a workflow failure. Prefer no findings
+over converting PR review observations into agent improvement tasks.
 """
 
 HUMAN_PROMPT = """Only user-role messages are eligible evidence for decisions. User-role does
@@ -304,9 +318,14 @@ def validate_analysis(value, records, kind):
     for index, finding in enumerate(findings, 1):
         require(isinstance(finding, dict), f"Invalid finding shape at {index}: expected object")
         fields = {"title", "detail", "evidence_ids", "action", "verification", "confidence"}
+        if kind == "agent-behavior":
+            fields.add("remediation_target")
         require(set(finding) == fields,
                 f"Invalid finding shape at {index}: missing {sorted(fields - set(finding))}; "
                 f"{len(set(finding) - fields)} unexpected fields")
+        if kind == "agent-behavior":
+            require(finding["remediation_target"] in ("skills", "instructions", "tooling"),
+                    "Agent findings require a skills, instructions, or tooling remediation")
         for key, size in (("title", 112), ("detail", 1200), ("action", 180), ("verification", 180)):
             text = finding[key]
             require(isinstance(text, str) and 0 < len(text.strip()) <= size
@@ -443,15 +462,18 @@ def serialize(artifact):
 
 
 def publication_plan(reports, bundle, sha, provenance, comments):
+    assignee = bundle.get("follow_up_assignee")
+    require(isinstance(assignee, str) and re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9-]{0,38}(?:\[bot\])?", assignee),
+            "Missing or invalid PR author for follow-up assignment")
     plans = []
     for report in reports:
         kind = report["kind"]
         artifact_id = f"session-review.{kind}"
         actions = [{"id": finding["id"],
                   "title": finding["action"] + "; verify: " + finding["verification"],
-                  "status": "todo", "quote": f"{index}. {finding['title']}",
-                  "sourceHeading": f"{index}. {finding['title']}"}
-                   for index, finding in enumerate(report["findings"], 1)]
+                  "status": "todo", "assignee": assignee,
+                  "quote": f"{'Proposed rule' if kind == 'human-decisions' else 'Recommended change'}: {finding['action']}"}
+                   for finding in report["findings"]]
         version = {**provenance, "headSha": sha, "body": render(report, bundle, sha), "actions": actions}
         previous = []
         for comment in comments:

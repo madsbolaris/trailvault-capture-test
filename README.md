@@ -15,6 +15,9 @@ The workflow publishes two CI-versioned PR comment artifacts, using the same
 
 - **Agent behavior**: evidence-backed mistakes, repeated unsuccessful queries,
   unnecessary tool use, and ignored constraints, considering subsequent recovery.
+  Findings must propose a reusable improvement to agent skills, instructions, or
+  tooling and declare that remediation target. PR defects, missing product tests,
+  merge readiness, and implementation requests are not agent-behavior findings.
 - **Human decisions**: explicit, durable repository-rule proposals from user-role
   messages only. This fixture includes AI-orchestrated prompts, so a user role is
   not proof of human authorship. Maintainers must confirm authorship, scope, and
@@ -27,10 +30,18 @@ remains in the version envelope rather than in the visible report body.
 Each actionable finding publishes one anchored `actions` record in its report's
 version metadata, with immutable transcript-line evidence. The prototype
 assembles this into the shared report highlight, native Comments thread, and
-todo with one identity. Clicking a finding heading opens its discussion and
-completion/ownership controls. There is no separate standalone finding comment
+todo with one identity. The recommended-change paragraph (or proposed rule in
+Human decisions), not the section heading or explanation, is the text anchor;
+activating the highlighted passage reveals its existing discussion and
+completion/ownership controls without changing the comment's presentation.
+Follow-ups are assigned to
+the PR author from trusted GitHub PR metadata, not an identity invented by the
+model. There is no separate standalone finding comment
 or independently editable duplicate task list. CI actions survive reload;
 local replies and task edits remain prototype-local.
+Evidence links are relative prototype routes with a captured session ID,
+checkpoint commit, and one-based compact-transcript record. They open the Chat
+pane at that immutable record without replacing the report with a GitHub blob.
 Findings below the 0.8 uncalibrated-confidence threshold appear as deferred
 candidates in the report without creating todos.
 Native GitHub displays the report and action text; the prototype additionally

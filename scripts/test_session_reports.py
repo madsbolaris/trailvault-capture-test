@@ -19,23 +19,28 @@ PROVENANCE = {"runId": "123", "runAttempt": 1, "evaluatorSha": OTHER,
 
 def pr(sha=SHA, repository=r.REPOSITORY, state="open"):
     return {"number": 1, "state": state, "commits": 0,
+            "user": {"login": "madsbolaris"},
             "head": {"sha": sha, "ref": "feature", "repo": {"full_name": repository}}}
 
 
 def row(key="one", role="user", session="session"):
     return {"id": key, "session_id": session,
-            "url": f"https://github.com/{r.REPOSITORY}/blob/{OTHER}/0/transcript.jsonl#L2",
+            "url": f"#/{r.REPOSITORY}/pull/1/artifacts?at=h_{session}%40L2&checkpoint={OTHER}",
             "record": {"type": "message", "role": role, "content": "Synthetic fixture only."}}
 
 
-def finding(key="one"):
-    return {"title": "Avoid a repeated failed query", "detail": "The captured operation failed twice.",
-            "evidence_ids": [key], "action": "Adapt the query after the first missing-file error",
-            "verification": "The next trace uses the discovered path", "confidence": 0.9}
+def finding(key="one", kind="agent-behavior"):
+    result = {"title": "Avoid a repeated failed query", "detail": "The captured operation failed twice.",
+              "evidence_ids": [key], "action": "Teach the agent skill to adapt after a missing-file error",
+              "verification": "The next trace uses the discovered path", "confidence": 0.9}
+    if kind == "agent-behavior":
+        result["remediation_target"] = "skills"
+    return result
 
 
 def bundle():
     return {"sessions": [{"checkpoint": OTHER, "session_id": "session", "coverage": False}],
+            "follow_up_assignee": "madsbolaris",
             "records": [row(), row("assistant", "assistant")],
             "limitations": ["Fixture coverage only."]}
 
@@ -44,7 +49,7 @@ def reports():
     b = bundle()
     return b, [r.analyze(b, kind, lambda prompt: {
         "reviewed_ids": [item["id"] for item in json.loads(prompt.split("UNTRUSTED_DATA:\n")[1])],
-        "findings": [finding()],
+        "findings": [finding(kind=kind)],
     }) for kind in r.REPORTS]
 
 
@@ -53,6 +58,20 @@ def bot(body, identity=10):
 
 
 class AnalysisTests(unittest.TestCase):
+    def test_agent_scope_requires_reusable_remediation_and_excludes_pr_review(self):
+        prompts = []
+        def review(prompt):
+            prompts.append(prompt)
+            return {"reviewed_ids": ["one", "assistant"], "findings": [finding()]}
+        result = r.analyze(bundle(), "agent-behavior", review)
+        self.assertEqual(result["findings"][0]["remediation_target"], "skills")
+        self.assertIn("This is NOT a PR review", prompts[0])
+        self.assertIn("not fix the PR", prompts[0])
+        for target in ("implementation", "missing-tests", None):
+            candidate = {**finding(), "remediation_target": target}
+            with self.subTest(target=target), self.assertRaisesRegex(r.ReportError, "remediation"):
+                r.validate_analysis({"reviewed_ids": ["one"], "findings": [candidate]}, [row()], "agent-behavior")
+
     def test_invalid_model_shape_gets_one_explicit_schema_repair(self):
         responses = [
             {"reviewed_ids": ["one", "assistant"],
@@ -144,7 +163,7 @@ class AnalysisTests(unittest.TestCase):
                                 [row()], "agent-behavior")
 
     def test_lower_confidence_candidates_are_visible_without_actionable_todos(self):
-        candidate = finding()
+        candidate = finding(kind="human-decisions")
         candidate["confidence"] = 0.7
         b = bundle()
         result = r.analyze(b, "human-decisions", lambda _: {
@@ -201,7 +220,8 @@ class CollectionTests(unittest.TestCase):
             r.snapshots_for_pr(1, [], related, refs=REFS)
 
     def test_collection_reads_git_blobs_without_checking_out_pr(self):
-        payload = "\n" + json.dumps({"type": "header"}) + "\n\n" + json.dumps(row()["record"]) + "\n"
+        record = {**row()["record"], "content": "Synthetic\u2028fixture only."}
+        payload = "\n" + json.dumps({"type": "header"}) + "\n\n" + json.dumps(record, ensure_ascii=False) + "\n"
         def read(revision, path):
             if path.endswith("metadata.json"):
                 return json.dumps({"session_id": "test", "checkpoint_id": CHECKPOINT})
@@ -212,7 +232,8 @@ class CollectionTests(unittest.TestCase):
                 patch.object(r, "snapshots_for_pr", return_value={(OTHER, 0): CHECKPOINT})), (
                 patch.object(r, "blob", side_effect=read)):
             result = r.collect(1, SHA)
-        self.assertTrue(result["records"][0]["url"].endswith("#L4"))
+        self.assertEqual(result["records"][0]["url"],
+                         f"#/{r.REPOSITORY}/pull/1/artifacts?at=h_test%40L4&checkpoint={OTHER}")
         self.assertEqual(result["records"][0]["id"], f"{OTHER}:0:4")
         self.assertFalse(any("checkout" in call.args for call in git.call_args_list))
 
@@ -227,6 +248,17 @@ class CollectionTests(unittest.TestCase):
 
 
 class PublicationTests(unittest.TestCase):
+    def test_assignment_comes_from_the_pr_author_and_missing_owner_blocks_publication(self):
+        b, values = reports()
+        b["follow_up_assignee"] = "another-author"
+        plan = r.publication_plan(values, b, SHA, PROVENANCE, [])
+        artifact = r.unique_json(plan[0][1].split("\n")[0][len(r.MARKER):-4])
+        self.assertEqual(artifact["versions"][0]["actions"][0]["assignee"], "another-author")
+        for owner in (None, "", "not a login"):
+            b["follow_up_assignee"] = owner
+            with self.assertRaisesRegex(r.ReportError, "PR author"):
+                r.publication_plan(values, b, SHA, PROVENANCE, [])
+
     def test_two_versioned_reports_and_single_todo_identity_per_finding(self):
         b, values = reports()
         plan = r.publication_plan(values, b, SHA, PROVENANCE, [])
@@ -242,8 +274,11 @@ class PublicationTests(unittest.TestCase):
             action = version["actions"][0]
             self.assertEqual(action["status"], "todo")
             self.assertIn("; verify: ", action["title"])
-            self.assertEqual(action["quote"], "1. Avoid a repeated failed query")
-            self.assertIn("## " + action["sourceHeading"], version["body"])
+            self.assertEqual(action["assignee"], "madsbolaris")
+            prefix = "Proposed rule" if artifact["id"].endswith("human-decisions") else "Recommended change"
+            self.assertEqual(action["quote"], f"{prefix}: {finding()['action']}")
+            self.assertNotIn("sourceHeading", action)
+            self.assertIn(f"**{prefix}:** {finding()['action']}", version["body"])
             self.assertNotIn("Coverage boundaries", version["body"])
             self.assertNotIn(f"Snapshot `{OTHER}`", version["body"])
             self.assertIn('<Inline id={"session-review-summary"}', version["body"])
