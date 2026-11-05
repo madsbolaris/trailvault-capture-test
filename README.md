@@ -13,9 +13,22 @@ to activate it. Fork PRs and PR-head execution remain excluded.
 Both scores are integers from 0 to 100, lower is better, with one short
 sentence explaining **Why**. They are review estimates, not measured
 probabilities. Risk evaluates correctness/regression exposure; Slop evaluates
-avoidable duplication, complexity, boilerplate, dead code, and inadequate tests,
+avoidable duplication, complexity, boilerplate, dead code, inadequate tests,
+and incomplete feature delivery,
 not whether AI wrote the code. Only the PR diff is scored: sessions and Slack
 are excluded.
+
+Rubric version 2 distinguishes a standalone demo from an integrated UI feature.
+When the main deliverable is only a directly opened demo file and the diff adds
+neither application entry-point integration nor feature tests, the delivery gap
+is substantial Slop (60-79), even if regression Risk is low. Mostly placeholder
+behavior or fake core functionality can be severe (80-100). Styling, working
+animation, and a dependency-free implementation do not substitute for integration.
+Supporting examples, test fixtures, and integrated static pages are not penalized
+just for being demos or HTML; static features do not require a backend.
+Only integration evidence visible in the diff is assessed, without inventing
+requirements or claiming unseen code is absent. Published assessments retain
+`rubricVersion` so rubric changes remain distinguishable in score history.
 
 The CI applies the simplified-English and repetition-removal principles from
 [aidr](https://github.com/JasonMore/ai-skills/blob/9960f13e2892b675787552ed867bb9f9728211bd/skills/aidr/SKILL.md)
