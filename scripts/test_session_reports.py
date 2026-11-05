@@ -46,12 +46,20 @@ def bundle():
             "limitations": ["Fixture coverage only."]}
 
 
+def reviewed(ids, findings=None):
+    return {"reviewed_ids": ids, "findings": findings or [], "assessment": [{
+        "category": "outcome", "title": "The captured request remains a one-off task",
+        "detail": "The supplied message requests a specific task rather than establishing a durable "
+                  "repository convention. The record does not support a reusable rule.",
+        "evidence_ids": ids[:1],
+    }]}
+
+
 def reports():
     b = bundle()
-    return b, [r.analyze(b, kind, lambda prompt: {
-        "reviewed_ids": [item["id"] for item in json.loads(prompt.split("UNTRUSTED_DATA:\n")[1])],
-        "findings": [finding(kind=kind)],
-    }) for kind in r.REPORTS]
+    return b, [r.analyze(b, kind, lambda prompt: reviewed(
+        [item["id"] for item in json.loads(prompt.split("UNTRUSTED_DATA:\n")[1])],
+        [finding(kind=kind)])) for kind in r.REPORTS]
 
 
 def bot(body, identity=10):
@@ -59,6 +67,78 @@ def bot(body, identity=10):
 
 
 class AnalysisTests(unittest.TestCase):
+    def test_zero_findings_requires_and_renders_evidence_backed_agent_analysis(self):
+        response = reviewed(["one", "assistant"])
+        report = r.analyze(bundle(), "agent-behavior", lambda _: copy.deepcopy(response))
+        text = r.render(report, bundle(), SHA)
+        self.assertIn("## Analysis", text)
+        self.assertIn(response["assessment"][0]["detail"], text)
+        self.assertIn(bundle()["records"][0]["url"], text)
+        self.assertIn("does not mean no problems occurred", text)
+        self.assertEqual(report["findings"], [])
+        self.assertEqual(report["assessment"], response["assessment"])
+
+    def test_missing_assessment_is_retried_then_blocks_a_success_shaped_empty_report(self):
+        calls = []
+        def review(prompt):
+            calls.append(prompt)
+            return {"reviewed_ids": ["one", "assistant"], "findings": []}
+        with patch("builtins.print"), self.assertRaisesRegex(r.ReportError, "assessment"):
+            r.analyze(bundle(), "agent-behavior", review)
+        self.assertEqual(len(calls), 2)
+        self.assertIn("Include a substantive assessment even without findings", calls[1])
+
+    def test_assessment_rejects_empty_generic_unsafe_or_untraceable_output(self):
+        base = reviewed(["one"])
+        invalid = [[], [{}], base["assessment"] * 9]
+        for key, value in (("category", "recommendation"), ("detail", "Nothing found."),
+                           ("detail", "ghp_" + "x" * 70), ("title", "@someone"),
+                           ("evidence_ids", []), ("evidence_ids", ["foreign"]),
+                           ("evidence_ids", ["one", "one"])):
+            invalid.append([{**base["assessment"][0], key: value}])
+        for assessment in invalid:
+            with self.subTest(assessment=assessment), self.assertRaises(r.ReportError):
+                r.validate_review({**base, "assessment": assessment}, [row()], "agent-behavior")
+
+    def test_synthesis_connects_batches_without_losing_problems_or_existing_followups(self):
+        records = [row("one", session="first"), row("two", session="second")]
+        first = reviewed(["one"], [finding()])
+        first["assessment"][0]["category"] = "problem"
+        second = reviewed(["two"])
+        synthesis = reviewed(["one", "two"])
+        synthesis["assessment"] = [*first["assessment"], *second["assessment"]]
+        responses = [first, second, synthesis]
+        prompts = []
+        def review(prompt):
+            prompts.append(prompt)
+            return copy.deepcopy(responses.pop(0))
+        with patch.object(r, "review_batches", return_value=[[records[0]], [records[1]]]):
+            report = r.analyze({**bundle(), "records": records}, "agent-behavior", review)
+        data = json.loads(prompts[-1].split("\nUNTRUSTED_DATA:\n")[1])
+        self.assertEqual([row["id"] for row in data["source_records"]], ["one", "two"])
+        self.assertEqual(len(data["batch_analyses"]), 2)
+        self.assertIn("not raw transcripts", prompts[-1])
+        self.assertEqual({entry["category"] for entry in report["assessment"]}, {"problem", "outcome"})
+        self.assertEqual(len(report["findings"]), 1)
+
+    def test_synthesis_cannot_hide_observed_problems(self):
+        records = [row("one"), row("two")]
+        first = reviewed(["one"])
+        first["assessment"][0]["category"] = "problem"
+        responses = [first, reviewed(["two"]), reviewed(["one", "two"])]
+        with patch.object(r, "review_batches", return_value=[[records[0]], [records[1]]]), (
+                self.assertRaisesRegex(r.ReportError, "omitted")):
+            r.analyze({**bundle(), "records": records}, "agent-behavior",
+                      lambda _: copy.deepcopy(responses.pop(0)))
+
+    def test_synthesis_budget_is_enforced_without_truncating_batch_evidence(self):
+        records = [row("one"), row("two")]
+        with patch.object(r, "review_batches", return_value=[[records[0]], [records[1]]]), (
+                patch.object(r, "MAX_BATCH_BYTES", 100)), (
+                self.assertRaisesRegex(r.ReportError, "synthesis exceeds")):
+            r.analyze({**bundle(), "records": records}, "agent-behavior", lambda prompt: reviewed(
+                [item["id"] for item in json.loads(prompt.split("\nUNTRUSTED_DATA:\n")[1])]))
+
     def test_previous_artifact_and_discussions_are_context_not_instructions(self):
         b, values = reports()
         comments = [bot(body, i + 1) for i, (_, body) in
@@ -70,7 +150,7 @@ class AnalysisTests(unittest.TestCase):
         prompts = []
         def review(prompt):
             prompts.append(prompt)
-            return {"reviewed_ids": ["one", "assistant"], "findings": [candidate]}
+            return reviewed(["one", "assistant"], [candidate])
         result = r.analyze(b, "agent-behavior", review, previous=previous)
         context = json.loads(prompts[0].split("UNTRUSTED_PREVIOUS_ARTIFACT:\n")[1]
                              .split("\nUNTRUSTED_DATA:\n")[0])
@@ -89,10 +169,9 @@ class AnalysisTests(unittest.TestCase):
         previous = {"artifact": None, "discussions": [{
             "id": "original", "title": finding()["action"] + "; verify: " + finding()["verification"]}]}
         responses = [
-            {"reviewed_ids": ["one", "assistant"],
-             "findings": [{**finding(), "existing_action_id": "invented-reference"}]},
-            {"reviewed_ids": ["one", "assistant"],
-             "findings": [{**finding(), "existing_action_id": "discussion-1"}]},
+            reviewed(["one", "assistant"],
+                     [{**finding(), "existing_action_id": "invented-reference"}]),
+            reviewed(["one", "assistant"], [{**finding(), "existing_action_id": "discussion-1"}]),
         ]
         prompts = []
         def review(prompt):
@@ -139,7 +218,7 @@ class AnalysisTests(unittest.TestCase):
         prompts = []
         def review(prompt):
             prompts.append(prompt)
-            return {"reviewed_ids": ["one", "assistant"], "findings": [finding()]}
+            return reviewed(["one", "assistant"], [finding()])
         result = r.analyze(bundle(), "agent-behavior", review)
         self.assertEqual(result["findings"][0]["remediation_target"], "skills")
         self.assertIn("This is NOT a PR review", prompts[0])
@@ -151,9 +230,8 @@ class AnalysisTests(unittest.TestCase):
 
     def test_invalid_model_shape_gets_one_explicit_schema_repair(self):
         responses = [
-            {"reviewed_ids": ["one", "assistant"],
-             "findings": [{**finding(), "unexpected": "must not be logged"}]},
-            {"reviewed_ids": ["one", "assistant"], "findings": [finding()]},
+            reviewed(["one", "assistant"], [{**finding(), "unexpected": "must not be logged"}]),
+            reviewed(["one", "assistant"], [finding()]),
         ]
         prompts = []
         def review(prompt):
@@ -166,7 +244,8 @@ class AnalysisTests(unittest.TestCase):
         self.assertIn("1 unexpected fields", prompts[1])
         self.assertNotIn("must not be logged", str(log.call_args_list))
         self.assertEqual(json.loads(prompts[1].split("UNTRUSTED_DATA:\n")[1]), bundle()["records"])
-        log.assert_called_once()
+        self.assertEqual(sum("response validation failed" in call.args[0]
+                             for call in log.call_args_list), 1)
 
     def test_invalid_model_response_still_blocks_after_one_repair(self):
         calls = []
@@ -182,7 +261,7 @@ class AnalysisTests(unittest.TestCase):
         prompts = []
         def review(prompt):
             prompts.append(prompt)
-            return {"reviewed_ids": ["one"], "findings": []}
+            return reviewed(["one"])
         result = r.analyze(bundle(), "human-decisions", review)
         records = json.loads(prompts[0].split("UNTRUSTED_DATA:\n")[1])
         self.assertEqual([item["id"] for item in records], ["one"])
@@ -221,20 +300,22 @@ class AnalysisTests(unittest.TestCase):
 
     def test_split_session_analysis_validates_all_ids_and_discloses_segmented_context(self):
         records = [row(str(index), session="large") for index in range(4)]
-        prompts, reviewed = [], []
+        prompts, reviewed_ids = [], []
         def review(prompt):
             prompts.append(prompt)
-            rows = json.loads(prompt.split("\nUNTRUSTED_DATA:\n", 1)[1])
-            reviewed.extend(item["id"] for item in rows)
-            return {"reviewed_ids": [item["id"] for item in rows], "findings": []}
-        limit = len(json.dumps(records[:2], ensure_ascii=True).encode()) + 60
-        with patch.object(r, "MAX_BATCH_BYTES", limit):
+            data = json.loads(prompt.split("\nUNTRUSTED_DATA:\n", 1)[1])
+            if isinstance(data, dict):
+                return reviewed([item["id"] for item in data["source_records"]])
+            reviewed_ids.extend(item["id"] for item in data)
+            return reviewed([item["id"] for item in data])
+        with patch.object(r, "review_batches", return_value=[records[:2], records[2:]]):
             report = r.analyze({**bundle(), "records": records}, "agent-behavior", review)
-        self.assertEqual(reviewed, [item["id"] for item in records])
+        self.assertEqual(reviewed_ids, [item["id"] for item in records])
         self.assertEqual(report["reviewed_records"], len(records))
         self.assertEqual(report["status"], "assessed")
         self.assertGreater(report["batches"], 1)
-        self.assertTrue(all("record-complete segments" in prompt for prompt in prompts))
+        self.assertTrue(all("record-complete segments" in prompt for prompt in prompts[:-1]))
+        self.assertIn("SYNTHESIS:", prompts[-1])
         self.assertTrue(all("Each session is complete within this batch" not in prompt for prompt in prompts))
 
     def test_too_many_complete_record_batches_fail_without_running_partial_analysis(self):
@@ -279,8 +360,7 @@ class AnalysisTests(unittest.TestCase):
         candidate = finding(kind="human-decisions")
         candidate["confidence"] = 0.7
         b = bundle()
-        result = r.analyze(b, "human-decisions", lambda _: {
-            "reviewed_ids": ["one"], "findings": [candidate]})
+        result = r.analyze(b, "human-decisions", lambda _: reviewed(["one"], [candidate]))
         self.assertEqual(result["findings"], [])
         self.assertEqual(len(result["observations"]), 1)
         self.assertIn("Deferred candidates", r.render(result, b, SHA))
@@ -288,6 +368,44 @@ class AnalysisTests(unittest.TestCase):
         self.assertEqual(len(plan), 1)
         artifact = r.unique_json(plan[0][1].split("\n")[0][len(r.MARKER):-4])
         self.assertEqual(artifact["versions"][0]["actions"], [])
+
+
+class CopilotTests(unittest.TestCase):
+    def test_non_gpt_configuration_is_rejected_before_invoking_copilot(self):
+        self.assertTrue(r.MODEL.startswith("gpt-"))
+        with patch.object(r, "MODEL", "claude-sonnet-5.5"), (
+                patch.object(r, "execute")) as execute, (
+                self.assertRaisesRegex(r.ReportError, "require a GPT model")):
+            r.copilot("Synthetic preflight")
+        execute.assert_not_called()
+
+    def events(self, provider="copilot", model=r.MODEL):
+        return "\n".join(json.dumps(event) for event in [
+            {"type": "assistant.message", "data": {
+                "providerId": provider, "model": model, "content": '{"preflight":true}'}},
+            {"type": "result", "exitCode": 0}])
+
+    def test_real_reviewer_requires_copilot_model_and_logs_verified_provenance(self):
+        with patch.dict(os.environ, {"COPILOT_GITHUB_TOKEN": "fixture"}), (
+                patch.object(r, "execute", side_effect=[r.CLI_VERSION, self.events()])) as execute, (
+                patch("builtins.print")) as log:
+            self.assertEqual(r.copilot("Synthetic preflight"), {"preflight": True})
+        command = execute.call_args_list[1].args[0]
+        self.assertIn("--available-tools=", command)
+        self.assertIn("--no-custom-instructions", command)
+        self.assertEqual(command[command.index("--model") + 1], r.MODEL)
+        self.assertIn("provider=copilot", log.call_args.args[0])
+        self.assertIn(r.MODEL, log.call_args.args[0])
+        self.assertNotIn("fixture", log.call_args.args[0])
+
+    def test_other_provider_or_model_is_rejected_not_silently_substituted(self):
+        for provider, model in (("other", r.MODEL), ("copilot", "other")):
+            with self.subTest(provider=provider, model=model), (
+                    patch.dict(os.environ, {"COPILOT_GITHUB_TOKEN": "fixture"})), (
+                    patch.object(r, "execute", side_effect=[
+                        r.CLI_VERSION, self.events(provider, model)])), (
+                    self.assertRaisesRegex(r.ReportError, "model/provider")):
+                r.copilot("Synthetic preflight")
 
 
 class CollectionTests(unittest.TestCase):
@@ -428,8 +546,8 @@ class PublicationTests(unittest.TestCase):
         previous = r.previous_report_context(comments, "agent-behavior")
         candidate = {**finding(), "existing_action_id": "discussion-1",
                      "action": "Reword this recommendation", "detail": "New supported context."}
-        revised = r.analyze(b, "agent-behavior", lambda _: {
-            "reviewed_ids": ["one", "assistant"], "findings": [candidate]}, previous)
+        revised = r.analyze(b, "agent-behavior", lambda _: reviewed(
+            ["one", "assistant"], [candidate]), previous)
         later = {**PROVENANCE, "runId": "124"}
         plan = r.publication_plan([revised], b, OTHER, later, comments)
         self.assertEqual(plan[0][0], 1)
@@ -514,15 +632,16 @@ class PublicationTests(unittest.TestCase):
         self.assertEqual([method for method, _ in writes], ["POST", "POST", "DELETE"])
         self.assertTrue(writes[-1][1].endswith("/99"))
 
-    def test_empty_human_report_is_concise_and_does_not_invent_decisions(self):
+    def test_zero_findings_still_explains_user_requests_without_inventing_decisions(self):
         b = bundle()
-        result = r.analyze(b, "human-decisions", lambda _: {
-            "reviewed_ids": ["one"], "findings": []})
+        result = r.analyze(b, "human-decisions", lambda _: reviewed(["one"]))
         text = r.render(result, b, SHA)
         self.assertIn("No reusable repository decisions identified", text)
         self.assertNotIn("Coverage boundaries", text)
         self.assertNotIn("Snapshot", text)
-        self.assertNotIn("## ", text)
+        self.assertIn("## Analysis", text)
+        self.assertIn("rather than establishing a durable", text)
+        self.assertIn("Evidence:", text)
         self.assertIn("no rules or memories are saved automatically", text)
 
     def test_head_is_rechecked_before_every_write(self):

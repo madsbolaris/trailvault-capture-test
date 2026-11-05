@@ -118,8 +118,14 @@ The workflow publishes two CI-versioned PR comment artifacts, using the same
   the proposal before adopting a rule. No memories or instructions are changed
   automatically.
 
-Reports lead with their conclusion, summary cards, and actionable findings,
-not workflow metadata or snapshot inventories. Immutable run/head provenance
+Reports include substantive, evidence-linked analysis even when there are no
+actionable findings. The analysis explains observed outcomes, strengths,
+problems, recovery, and uncertainty; corrected mistakes are not erased simply
+because no further action is warranted. Human-decisions analysis distinguishes
+one-off requests and clarifications from durable repository-rule proposals.
+No minimum finding count is imposed and no problems or rules are fabricated.
+Reports lead with their conclusion and summary cards, followed by analysis and
+any actionable findings, not workflow metadata or snapshot inventories. Immutable run/head provenance
 remains in the version envelope rather than in the visible report body.
 Each actionable finding publishes one anchored `actions` record in its report's
 version metadata, with immutable transcript-line evidence. The prototype
@@ -179,6 +185,11 @@ custom instructions, repository checkout, or inherited GitHub publisher token.
 Copilot CLI is integrity-locked in `session-review-runtime/package-lock.json`.
 Raw transcripts, model output and credential values are not logged or uploaded
 as Actions artifacts.
+Each successful model response is checked for provider `copilot` and the pinned
+GPT model `gpt-5.3-codex`. Non-GPT configurations and responses from a different
+model/provider are rejected; there is no Claude or other-model fallback.
+CI logs the verified provider/model/CLI version and
+batch progress without exposing transcript or response contents.
 
 Slack is deliberately excluded. Analysis reads only published checkpoint refs,
 using the trusted Trailvault `related` command for PR references and exact
@@ -190,8 +201,15 @@ coverage section. The publisher removes its old detached finding comments only
 after successfully retaining the new reports; old report versions are preserved.
 
 There is a 2 MiB / 10,000-record evidence budget. Model batches keep small sessions
-together; oversized sessions use ordered, record-complete segments. Every record
-is reviewed exactly once, without inventing cross-segment context. Each batch
+together; oversized sessions use ordered, record-complete segments. Every raw record
+is reviewed exactly once, without inventing cross-segment context. Multi-batch
+reports receive one additional Copilot synthesis of the validated batch analyses
+and their source-ID manifest, not another raw-transcript review. The synthesis
+connects supported cross-batch patterns while retaining observed problems,
+strengths, outcomes, limitations, and batch-level follow-ups. Its evidence must
+refer to the original cited records and it has the same 300,000-byte input budget.
+Missing or empty narrative analysis fails validation instead of publishing an
+empty success-shaped report. Each batch
 allows up to 300,000 serialized bytes including previous-report context, with at
 most eight batches per report. An oversized individual record or excessive total
 evidence fails explicitly, never silently truncates. Invalid
