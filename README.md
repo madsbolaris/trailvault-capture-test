@@ -2,6 +2,45 @@
 
 Fabricated test data only.
 
+## PR smart labels
+
+**Assess PR smart labels** uses the existing **Request session reports** push
+trigger and trusted default-branch workflow boundary to compute **Risk** and
+**Slop** with the integrity-pinned, tool-free Copilot runtime and existing
+`COPILOT_REVIEW_TOKEN`. Merge the workflow and scripts into the default branch
+to activate it. Fork PRs and PR-head execution remain excluded.
+
+Both scores are integers from 0 to 100, lower is better, with one plain-text
+sentence explaining **Why**. They are review estimates, not measured
+probabilities. Risk evaluates correctness/regression exposure; Slop evaluates
+avoidable duplication, complexity, boilerplate, dead code, and inadequate tests,
+not whether AI wrote the code. Only the PR diff is scored: sessions and Slack
+are excluded.
+
+The analyzer verifies all changed files and additions/deletions, rejects binary,
+truncated, or over-200,000-byte diffs, and rechecks the head and base before
+publication. Incomplete evidence is unassessed, never a zero score. Malformed
+model output gets one schema-guided retry, then fails explicitly. Scores appear
+in the head-bound **PR smart labels** check and one updated Actions-bot comment,
+using the `prototype-pr-scores` envelope. It retains the latest 40 assessments
+with immutable PR/head/base, run/attempt, evaluator SHA, model, and timestamp.
+The prototype renders current-head scores and their Why using the existing
+smart-label/history treatment in both PR headers and list rows. Native GitHub
+labels are not overwritten.
+
+Manual rerun:
+
+```sh
+gh workflow run pr-smart-labels.yml --repo madsbolaris/trailvault-capture-test \
+  -f pull_request=1
+```
+
+Local contract validation (no publication):
+
+```sh
+python3 -m unittest discover -s scripts -p 'test_pr_smart_labels.py' -v
+```
+
 ## PR session reports
 
 After each same-repository PR push (including draft PRs), **Request session
