@@ -1,5 +1,11 @@
 {
   "repository": "madsbolaris/trailvault",
   "source_commit": "f3e0073a5fe1b388efdd05e0851240eb6f6f2d57",
-  "capture_sha256": "9560acb942d36ed743c97f95ebd31d4c41496c05287117bb17d7e42e298d5957"
+  "capture_sha256": "9560acb942d36ed743c97f95ebd31d4c41496c05287117bb17d7e42e298d5957",
+  "patches": {
+    "src/relationships.rs": {
+      "sha256": "fe491cc2b6178d595818497c1e151705710e1a724ce92a712cb839890df1cebc",
+      "purpose": "Shared current PR evidence parser and immutable legacy activity compatibility; positive evidence remains strictly validated."
+    }
+  }
 }

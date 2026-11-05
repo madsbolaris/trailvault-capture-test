@@ -72,7 +72,9 @@ jobs:
           npm ci --prefix session-review-runtime --ignore-scripts --no-audit --no-fund
           printf '%s/session-review-runtime/node_modules/.bin\n' "$GITHUB_WORKSPACE" >> "$GITHUB_PATH"
       - name: Build trusted checkpoint reader
-        run: cargo build --locked --release --manifest-path .trailvault/cloud-runtime/Cargo.toml --bin trailvault
+        run: |
+          cargo test --locked --manifest-path .trailvault/cloud-runtime/Cargo.toml --test reader_compatibility
+          cargo build --locked --release --manifest-path .trailvault/cloud-runtime/Cargo.toml --bin trailvault
       - name: Analyze and publish
         env:
           GH_TOKEN: ${{ github.token }}
