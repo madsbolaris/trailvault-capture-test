@@ -1,0 +1,15 @@
+name: Request session reports
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, ready_for_review]
+
+permissions: {}
+
+jobs:
+  request:
+    if: github.event.pull_request.head.repo.id == github.repository_id
+    runs-on: ubuntu-24.04
+    timeout-minutes: 1
+    steps:
+      - run: echo "Session analysis requested. Trusted default-branch workflow will verify the PR head."

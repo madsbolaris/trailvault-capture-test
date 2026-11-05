@@ -19,15 +19,16 @@ jobs:
     if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
     runs-on: ubuntu-latest
     permissions:
-      actions: read
+      actions: write
       contents: write
+      pull-requests: read
     env:
       SOURCE_RUN: ${{ inputs.source_run }}
       SOURCE_ATTEMPT: ${{ inputs.source_attempt }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
-          ref: ${{ github.event.repository.default_branch }}
+          ref: ${{ github.workflow_sha }}
           persist-credentials: false
       - name: Verify completed hosted source run
         env:
@@ -63,7 +64,7 @@ jobs:
             [.artifacts[] | select(.name == $name)] |
             length == 1 and (.[0].expired == false) and (.[0].size_in_bytes <= 52428800)
           ' "$RUNNER_TEMP/trailvault-artifacts.json"
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: trailvault-checkpoints-${{ env.SOURCE_RUN }}-${{ env.SOURCE_ATTEMPT }}
           run-id: ${{ env.SOURCE_RUN }}
@@ -78,3 +79,8 @@ jobs:
           .trailvault/cloud-runtime/target/release/trailvault cloud publish \
             "$RUNNER_TEMP/trailvault-handoff/checkpoints.json" \
             "$GITHUB_REPOSITORY" "$SOURCE_RUN" "$SOURCE_ATTEMPT" "$SOURCE_BRANCH"
+      - name: Refresh reports with newly published sessions
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: python3 scripts/session_reports.py refresh-published
