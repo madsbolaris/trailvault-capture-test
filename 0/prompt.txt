@@ -1,0 +1,6 @@
+<pasted_content id="5cc4">
+Use the connected pull request app’s open_pr_workbench tool to show this PR as an interactive embedded card, not a text summary:
+http://127.0.0.1:5199/#/madsbolaris/trailvault-capture-test/pull/1/overview
+Repository: madsbolaris/trailvault-capture-test
+Pull request: 1
+</pasted_content id="5cc4">
