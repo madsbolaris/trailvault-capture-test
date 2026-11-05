@@ -1,0 +1,7 @@
+Please create a new PR in madsbolaris/trailvault-capture-test. I want you to create a PR that visualizes a bouncing ball
+
+Yes, new PR
+
+please make all the balls the microsoft colors and set the gravity to the value that's on the moon
+
+please show me the PR as an interactive embedded card
