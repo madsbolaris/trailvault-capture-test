@@ -1,0 +1,1064 @@
+{
+  "agent": "Claude Code",
+  "branch": "add-bouncing-ball-visualization",
+  "canonical_pr_relationships": {
+    "context_repository": "madsbolaris/trailvault-capture-test",
+    "relationships": [
+      {
+        "contribution_verified": false,
+        "evidence": [
+          {
+            "kind": "mention",
+            "record": 2,
+            "role": "tool_output",
+            "source": "native_hook:PostToolUse:6"
+          },
+          {
+            "kind": "mention",
+            "record": 6,
+            "role": "tool_output",
+            "source": "canonical_history"
+          },
+          {
+            "kind": "mention",
+            "record": 6,
+            "role": "tool_output",
+            "source": "native_transcript"
+          }
+        ],
+        "relationship": "mentioned",
+        "retrieval_verified": false,
+        "target": {
+          "host": "github.com",
+          "number": 27,
+          "repository": "madsbolaris/trailvault-capture-test"
+        },
+        "url": "https://github.com/madsbolaris/trailvault-capture-test/pull/27"
+      },
+      {
+        "contribution_verified": false,
+        "evidence": [
+          {
+            "kind": "mention",
+            "record": 2,
+            "role": "tool_output",
+            "source": "native_hook:PostToolUse:6"
+          },
+          {
+            "kind": "mention",
+            "record": 6,
+            "role": "tool_output",
+            "source": "canonical_history"
+          },
+          {
+            "kind": "mention",
+            "record": 6,
+            "role": "tool_output",
+            "source": "native_transcript"
+          }
+        ],
+        "relationship": "mentioned",
+        "retrieval_verified": false,
+        "target": {
+          "host": "github.com",
+          "number": 28,
+          "repository": "madsbolaris/trailvault-capture-test"
+        },
+        "url": "https://github.com/madsbolaris/trailvault-capture-test/pull/28"
+      },
+      {
+        "contribution_verified": false,
+        "evidence": [
+          {
+            "kind": "mention",
+            "record": 2,
+            "role": "tool_output",
+            "source": "native_hook:PostToolUse:6"
+          },
+          {
+            "kind": "mention",
+            "record": 6,
+            "role": "tool_output",
+            "source": "canonical_history"
+          },
+          {
+            "kind": "mention",
+            "record": 6,
+            "role": "tool_output",
+            "source": "native_transcript"
+          }
+        ],
+        "relationship": "mentioned",
+        "retrieval_verified": false,
+        "target": {
+          "host": "github.com",
+          "number": 29,
+          "repository": "madsbolaris/trailvault-capture-test"
+        },
+        "url": "https://github.com/madsbolaris/trailvault-capture-test/pull/29"
+      },
+      {
+        "contribution_verified": false,
+        "evidence": [
+          {
+            "kind": "mention",
+            "record": 2,
+            "role": "tool_output",
+            "source": "native_hook:PostToolUse:6"
+          },
+          {
+            "kind": "mention",
+            "record": 6,
+            "role": "tool_output",
+            "source": "canonical_history"
+          },
+          {
+            "kind": "mention",
+            "record": 6,
+            "role": "tool_output",
+            "source": "native_transcript"
+          }
+        ],
+        "relationship": "mentioned",
+        "retrieval_verified": false,
+        "target": {
+          "host": "github.com",
+          "number": 31,
+          "repository": "madsbolaris/trailvault-capture-test"
+        },
+        "url": "https://github.com/madsbolaris/trailvault-capture-test/pull/31"
+      },
+      {
+        "contribution_verified": false,
+        "evidence": [
+          {
+            "kind": "mention",
+            "record": 2,
+            "role": "tool_output",
+            "source": "native_hook:PostToolUse:6"
+          },
+          {
+            "kind": "mention",
+            "record": 6,
+            "role": "tool_output",
+            "source": "canonical_history"
+          },
+          {
+            "kind": "mention",
+            "record": 6,
+            "role": "tool_output",
+            "source": "native_transcript"
+          }
+        ],
+        "relationship": "mentioned",
+        "retrieval_verified": false,
+        "target": {
+          "host": "github.com",
+          "number": 32,
+          "repository": "madsbolaris/trailvault-capture-test"
+        },
+        "url": "https://github.com/madsbolaris/trailvault-capture-test/pull/32"
+      },
+      {
+        "contribution_verified": false,
+        "evidence": [
+          {
+            "kind": "mention",
+            "record": 2,
+            "role": "tool_output",
+            "source": "native_hook:PostToolUse:6"
+          },
+          {
+            "kind": "mention",
+            "record": 6,
+            "role": "tool_output",
+            "source": "canonical_history"
+          },
+          {
+            "kind": "mention",
+            "record": 6,
+            "role": "tool_output",
+            "source": "native_transcript"
+          }
+        ],
+        "relationship": "mentioned",
+        "retrieval_verified": false,
+        "target": {
+          "host": "github.com",
+          "number": 33,
+          "repository": "madsbolaris/trailvault-capture-test"
+        },
+        "url": "https://github.com/madsbolaris/trailvault-capture-test/pull/33"
+      },
+      {
+        "contribution_verified": false,
+        "evidence": [
+          {
+            "kind": "mention",
+            "record": 2,
+            "role": "tool_output",
+            "source": "native_hook:PostToolUse:6"
+          },
+          {
+            "kind": "mention",
+            "record": 6,
+            "role": "tool_output",
+            "source": "canonical_history"
+          },
+          {
+            "kind": "mention",
+            "record": 6,
+            "role": "tool_output",
+            "source": "native_transcript"
+          }
+        ],
+        "relationship": "mentioned",
+        "retrieval_verified": false,
+        "target": {
+          "host": "github.com",
+          "number": 34,
+          "repository": "madsbolaris/trailvault-capture-test"
+        },
+        "url": "https://github.com/madsbolaris/trailvault-capture-test/pull/34"
+      },
+      {
+        "contribution_verified": false,
+        "evidence": [
+          {
+            "kind": "mention",
+            "record": 2,
+            "role": "tool_output",
+            "source": "native_hook:PostToolUse:6"
+          },
+          {
+            "kind": "mention",
+            "record": 6,
+            "role": "tool_output",
+            "source": "canonical_history"
+          },
+          {
+            "kind": "mention",
+            "record": 6,
+            "role": "tool_output",
+            "source": "native_transcript"
+          }
+        ],
+        "relationship": "mentioned",
+        "retrieval_verified": false,
+        "target": {
+          "host": "github.com",
+          "number": 35,
+          "repository": "madsbolaris/trailvault-capture-test"
+        },
+        "url": "https://github.com/madsbolaris/trailvault-capture-test/pull/35"
+      },
+      {
+        "contribution_verified": false,
+        "evidence": [
+          {
+            "kind": "mention",
+            "record": 8,
+            "role": "tool_input",
+            "source": "canonical_history"
+          },
+          {
+            "kind": "mention",
+            "record": 8,
+            "role": "tool_input",
+            "source": "native_transcript"
+          },
+          {
+            "kind": "mention",
+            "record": 1,
+            "role": "tool_input",
+            "source": "native_hook:PreToolUse:7"
+          },
+          {
+            "kind": "mention",
+            "record": 1,
+            "role": "tool_input",
+            "source": "native_hook:PostToolUse:8"
+          },
+          {
+            "kind": "mention",
+            "record": 2,
+            "role": "tool_output",
+            "source": "native_hook:PostToolUse:8"
+          },
+          {
+            "kind": "mention",
+            "record": 9,
+            "role": "tool_output",
+            "source": "canonical_history"
+          },
+          {
+            "kind": "mention",
+            "record": 9,
+            "role": "tool_output",
+            "source": "native_transcript"
+          },
+          {
+            "kind": "mention",
+            "record": 10,
+            "role": "tool_input",
+            "source": "canonical_history"
+          },
+          {
+            "kind": "mention",
+            "record": 10,
+            "role": "tool_input",
+            "source": "native_transcript"
+          },
+          {
+            "kind": "mention",
+            "record": 1,
+            "role": "tool_input",
+            "source": "native_hook:PreToolUse:9"
+          },
+          {
+            "kind": "mention",
+            "record": 1,
+            "role": "tool_input",
+            "source": "native_hook:PostToolUse:10"
+          },
+          {
+            "kind": "mention",
+            "record": 12,
+            "role": "assistant",
+            "source": "canonical_history"
+          },
+          {
+            "kind": "mention",
+            "record": 12,
+            "role": "assistant",
+            "source": "native_transcript"
+          },
+          {
+            "kind": "mention",
+            "record": 1,
+            "role": "assistant",
+            "source": "native_hook:Stop:11"
+          }
+        ],
+        "relationship": "mentioned",
+        "retrieval_verified": false,
+        "target": {
+          "host": "github.com",
+          "number": 36,
+          "repository": "madsbolaris/trailvault-capture-test"
+        },
+        "url": "https://github.com/madsbolaris/trailvault-capture-test/pull/36"
+      }
+    ],
+    "version": 1
+  },
+  "canonical_session_version": 1,
+  "canonical_transcript_sha256": "8ce024a91057649eaa868a140c2d810b731442eb2509a34a2a4f0de6a6d601c2",
+  "capture_coverage": {
+    "count_unit": "observed_values_not_unique_events; native_and_compact_counts_are_not_percentages",
+    "fields": {
+      "agent_coordination": {
+        "native": {
+          "basis": "not_observed; absence_does_not_establish_provider_unavailability",
+          "observed_values": 0,
+          "status": "unverified"
+        },
+        "native_values_changed_by_redaction": 0,
+        "standardized": {
+          "basis": "not_observed; absence_does_not_establish_provider_unavailability",
+          "observed_values": 0,
+          "status": "unverified"
+        }
+      },
+      "assistant_messages": {
+        "native": {
+          "basis": "observed_in_this_snapshot; completeness_not_established",
+          "observed_values": 1,
+          "status": "captured"
+        },
+        "native_values_changed_by_redaction": 0,
+        "standardized": {
+          "basis": "observed_in_this_snapshot; completeness_not_established",
+          "observed_values": 1,
+          "status": "captured"
+        }
+      },
+      "attachment_payloads": {
+        "native": {
+          "basis": "not_observed; absence_does_not_establish_provider_unavailability",
+          "observed_values": 0,
+          "status": "unverified"
+        },
+        "native_values_changed_by_redaction": 0,
+        "standardized": {
+          "basis": "not_observed; absence_does_not_establish_provider_unavailability",
+          "observed_values": 0,
+          "status": "unverified"
+        }
+      },
+      "attachment_references": {
+        "native": {
+          "basis": "not_observed; absence_does_not_establish_provider_unavailability",
+          "observed_values": 0,
+          "status": "unverified"
+        },
+        "native_values_changed_by_redaction": 0,
+        "standardized": {
+          "basis": "not_observed; absence_does_not_establish_provider_unavailability",
+          "observed_values": 0,
+          "status": "unverified"
+        }
+      },
+      "compaction_events": {
+        "native": {
+          "basis": "not_observed; absence_does_not_establish_provider_unavailability",
+          "observed_values": 0,
+          "status": "unverified"
+        },
+        "native_values_changed_by_redaction": 0,
+        "standardized": {
+          "basis": "not_observed; absence_does_not_establish_provider_unavailability",
+          "observed_values": 0,
+          "status": "unverified"
+        }
+      },
+      "cost": {
+        "native": {
+          "basis": "not_observed; absence_does_not_establish_provider_unavailability",
+          "observed_values": 0,
+          "status": "unverified"
+        },
+        "native_values_changed_by_redaction": 0,
+        "standardized": {
+          "basis": "not_observed; absence_does_not_establish_provider_unavailability",
+          "observed_values": 0,
+          "status": "unverified"
+        }
+      },
+      "event_ids": {
+        "native": {
+          "basis": "observed_in_this_snapshot; completeness_not_established",
+          "observed_values": 27,
+          "status": "captured"
+        },
+        "native_values_changed_by_redaction": 0,
+        "standardized": {
+          "basis": "not_projected_into_compact_schema",
+          "observed_values": 0,
+          "status": "unavailable"
+        }
+      },
+      "instructions_memory": {
+        "native": {
+          "basis": "not_observed; absence_does_not_establish_provider_unavailability",
+          "observed_values": 0,
+          "status": "unverified"
+        },
+        "native_values_changed_by_redaction": 0,
+        "standardized": {
+          "basis": "not_observed; absence_does_not_establish_provider_unavailability",
+          "observed_values": 0,
+          "status": "unverified"
+        }
+      },
+      "model": {
+        "native": {
+          "basis": "observed_in_this_snapshot; completeness_not_established",
+          "observed_values": 7,
+          "status": "captured"
+        },
+        "native_values_changed_by_redaction": 0,
+        "standardized": {
+          "basis": "not_projected_into_compact_schema",
+          "observed_values": 0,
+          "status": "unavailable"
+        }
+      },
+      "native_records": {
+        "native": {
+          "basis": "source_field_redacted; projection_may_reduce_further",
+          "observed_values": 59,
+          "status": "redacted"
+        },
+        "native_values_changed_by_redaction": 8,
+        "standardized": {
+          "basis": "not_projected_into_compact_schema",
+          "observed_values": 0,
+          "status": "unavailable"
+        }
+      },
+      "parent_links": {
+        "native": {
+          "basis": "observed_in_this_snapshot; completeness_not_established",
+          "observed_values": 27,
+          "status": "captured"
+        },
+        "native_values_changed_by_redaction": 0,
+        "standardized": {
+          "basis": "not_projected_into_compact_schema",
+          "observed_values": 0,
+          "status": "unavailable"
+        }
+      },
+      "reasoning": {
+        "native": {
+          "basis": "not_observed; absence_does_not_establish_provider_unavailability",
+          "observed_values": 0,
+          "status": "unverified"
+        },
+        "native_values_changed_by_redaction": 0,
+        "standardized": {
+          "basis": "observed_in_this_snapshot; completeness_not_established",
+          "observed_values": 2,
+          "status": "captured"
+        }
+      },
+      "session_identity": {
+        "native": {
+          "basis": "observed_in_this_snapshot; completeness_not_established",
+          "observed_values": 58,
+          "status": "captured"
+        },
+        "native_values_changed_by_redaction": 0,
+        "standardized": {
+          "basis": "not_projected_into_compact_schema",
+          "observed_values": 0,
+          "status": "unavailable"
+        }
+      },
+      "skills_tools": {
+        "native": {
+          "basis": "not_observed; absence_does_not_establish_provider_unavailability",
+          "observed_values": 0,
+          "status": "unverified"
+        },
+        "native_values_changed_by_redaction": 0,
+        "standardized": {
+          "basis": "not_observed; absence_does_not_establish_provider_unavailability",
+          "observed_values": 0,
+          "status": "unverified"
+        }
+      },
+      "timestamps": {
+        "native": {
+          "basis": "observed_in_this_snapshot; completeness_not_established",
+          "observed_values": 34,
+          "status": "captured"
+        },
+        "native_values_changed_by_redaction": 0,
+        "standardized": {
+          "basis": "not_projected_into_compact_schema",
+          "observed_values": 0,
+          "status": "unavailable"
+        }
+      },
+      "tool_calls": {
+        "native": {
+          "basis": "observed_in_this_snapshot; completeness_not_established",
+          "observed_values": 4,
+          "status": "captured"
+        },
+        "native_values_changed_by_redaction": 0,
+        "standardized": {
+          "basis": "observed_in_this_snapshot; completeness_not_established",
+          "observed_values": 4,
+          "status": "captured"
+        }
+      },
+      "tool_results": {
+        "native": {
+          "basis": "observed_in_this_snapshot; completeness_not_established",
+          "observed_values": 4,
+          "status": "captured"
+        },
+        "native_values_changed_by_redaction": 0,
+        "standardized": {
+          "basis": "observed_in_this_snapshot; completeness_not_established",
+          "observed_values": 4,
+          "status": "captured"
+        }
+      },
+      "usage": {
+        "native": {
+          "basis": "observed_in_this_snapshot; completeness_not_established",
+          "observed_values": 7,
+          "status": "captured"
+        },
+        "native_values_changed_by_redaction": 0,
+        "standardized": {
+          "basis": "not_projected_into_compact_schema",
+          "observed_values": 0,
+          "status": "unavailable"
+        }
+      },
+      "user_messages": {
+        "native": {
+          "basis": "observed_in_this_snapshot; completeness_not_established",
+          "observed_values": 1,
+          "status": "captured"
+        },
+        "native_values_changed_by_redaction": 0,
+        "standardized": {
+          "basis": "observed_in_this_snapshot; completeness_not_established",
+          "observed_values": 1,
+          "status": "captured"
+        }
+      }
+    },
+    "guarantees": {
+      "attachments_complete": {
+        "basis": "inline_payloads_or_references_do_not_prove_all_attachment_bytes_collected",
+        "status": "unverified"
+      },
+      "background_jobs_complete": {
+        "basis": "background_processes_not_independently_observed",
+        "status": "unverified"
+      },
+      "child_transcripts_complete": {
+        "basis": "coordination_or_task_references_do_not_prove_child_transcript_collection",
+        "status": "unverified"
+      },
+      "continuous_collection": {
+        "basis": "one_snapshot_does_not_establish_gap_free_collection",
+        "status": "unverified"
+      },
+      "execution_origin_authenticated": {
+        "basis": "collector_or_provider_reported_not_per_event_attestation",
+        "status": "unverified"
+      },
+      "hidden_model_state": {
+        "basis": "not_exposed_by_capture_contract",
+        "status": "unavailable"
+      },
+      "live_presence": {
+        "basis": "snapshot_has_no_renewable_presence_lease",
+        "status": "unavailable"
+      },
+      "original_history_complete": {
+        "basis": "provider_compaction_or_output_limits_may_apply",
+        "status": "unverified"
+      },
+      "runtime_termination": {
+        "basis": "client_exit_or_completed_records_do_not_prove_runtime_termination",
+        "status": "unverified"
+      }
+    },
+    "native_sha256": "b60996de16bc9b67d03ff4cb4cfe129e7f3cb9b28f1087fcbed9b47c8a883edd",
+    "source": "claude_local",
+    "source_basis": "collector_context_not_runtime_attestation",
+    "standardized_scope": "compact_transcript_only; session_metadata_and_native_evidence_are_separate",
+    "standardized_sha256": "8ce024a91057649eaa868a140c2d810b731442eb2509a34a2a4f0de6a6d601c2",
+    "version": 1
+  },
+  "capture_health": {
+    "hook_failures": [],
+    "state": "no_observed_hook_failures"
+  },
+  "captured_at": "2026-11-05T21:11:23.948348+00:00",
+  "checkpoint_id": "01M6PRTNY5M4PMP54F94RQDY2C",
+  "checkpoints_count": 1,
+  "cli_version": "0.2.0",
+  "client": {
+    "app": "claude-code",
+    "environment": "local"
+  },
+  "compact_transcript_start": 0,
+  "created_at": "2026-11-05T21:11:23.948348+00:00",
+  "files_touched": [],
+  "last_activity_at": "2026-11-05T21:11:14.302Z",
+  "name": "Bouncing ball visualization",
+  "participant_identity_basis": "capture_input",
+  "participant_source": "capture_configuration",
+  "participants": [
+    {
+      "github_login": "madsbolaris"
+    }
+  ],
+  "pr_activities": {
+    "relationships": [
+      {
+        "activities": [],
+        "evidence": [],
+        "target": {
+          "host": "github.com",
+          "number": 27,
+          "repository": "madsbolaris/trailvault-capture-test"
+        }
+      },
+      {
+        "activities": [],
+        "evidence": [],
+        "target": {
+          "host": "github.com",
+          "number": 28,
+          "repository": "madsbolaris/trailvault-capture-test"
+        }
+      },
+      {
+        "activities": [],
+        "evidence": [],
+        "target": {
+          "host": "github.com",
+          "number": 29,
+          "repository": "madsbolaris/trailvault-capture-test"
+        }
+      },
+      {
+        "activities": [],
+        "evidence": [],
+        "target": {
+          "host": "github.com",
+          "number": 31,
+          "repository": "madsbolaris/trailvault-capture-test"
+        }
+      },
+      {
+        "activities": [],
+        "evidence": [],
+        "target": {
+          "host": "github.com",
+          "number": 32,
+          "repository": "madsbolaris/trailvault-capture-test"
+        }
+      },
+      {
+        "activities": [],
+        "evidence": [],
+        "target": {
+          "host": "github.com",
+          "number": 33,
+          "repository": "madsbolaris/trailvault-capture-test"
+        }
+      },
+      {
+        "activities": [],
+        "evidence": [],
+        "target": {
+          "host": "github.com",
+          "number": 34,
+          "repository": "madsbolaris/trailvault-capture-test"
+        }
+      },
+      {
+        "activities": [],
+        "evidence": [],
+        "target": {
+          "host": "github.com",
+          "number": 35,
+          "repository": "madsbolaris/trailvault-capture-test"
+        }
+      },
+      {
+        "activities": [
+          "read"
+        ],
+        "evidence": [
+          {
+            "activity": "read",
+            "kind": "successful_pr_retrieval",
+            "record": 9
+          }
+        ],
+        "target": {
+          "host": "github.com",
+          "number": 36,
+          "repository": "madsbolaris/trailvault-capture-test"
+        }
+      }
+    ],
+    "version": 1
+  },
+  "pr_relationships": {
+    "context_repository": "madsbolaris/trailvault-capture-test",
+    "relationships": [
+      {
+        "contribution_verified": false,
+        "evidence": [
+          {
+            "kind": "mention",
+            "record": 6,
+            "role": "tool_output"
+          }
+        ],
+        "relationship": "mentioned",
+        "retrieval_verified": false,
+        "target": {
+          "host": "github.com",
+          "number": 27,
+          "repository": "madsbolaris/trailvault-capture-test"
+        },
+        "url": "https://github.com/madsbolaris/trailvault-capture-test/pull/27"
+      },
+      {
+        "contribution_verified": false,
+        "evidence": [
+          {
+            "kind": "mention",
+            "record": 6,
+            "role": "tool_output"
+          }
+        ],
+        "relationship": "mentioned",
+        "retrieval_verified": false,
+        "target": {
+          "host": "github.com",
+          "number": 28,
+          "repository": "madsbolaris/trailvault-capture-test"
+        },
+        "url": "https://github.com/madsbolaris/trailvault-capture-test/pull/28"
+      },
+      {
+        "contribution_verified": false,
+        "evidence": [
+          {
+            "kind": "mention",
+            "record": 6,
+            "role": "tool_output"
+          }
+        ],
+        "relationship": "mentioned",
+        "retrieval_verified": false,
+        "target": {
+          "host": "github.com",
+          "number": 29,
+          "repository": "madsbolaris/trailvault-capture-test"
+        },
+        "url": "https://github.com/madsbolaris/trailvault-capture-test/pull/29"
+      },
+      {
+        "contribution_verified": false,
+        "evidence": [
+          {
+            "kind": "mention",
+            "record": 6,
+            "role": "tool_output"
+          }
+        ],
+        "relationship": "mentioned",
+        "retrieval_verified": false,
+        "target": {
+          "host": "github.com",
+          "number": 31,
+          "repository": "madsbolaris/trailvault-capture-test"
+        },
+        "url": "https://github.com/madsbolaris/trailvault-capture-test/pull/31"
+      },
+      {
+        "contribution_verified": false,
+        "evidence": [
+          {
+            "kind": "mention",
+            "record": 6,
+            "role": "tool_output"
+          }
+        ],
+        "relationship": "mentioned",
+        "retrieval_verified": false,
+        "target": {
+          "host": "github.com",
+          "number": 32,
+          "repository": "madsbolaris/trailvault-capture-test"
+        },
+        "url": "https://github.com/madsbolaris/trailvault-capture-test/pull/32"
+      },
+      {
+        "contribution_verified": false,
+        "evidence": [
+          {
+            "kind": "mention",
+            "record": 6,
+            "role": "tool_output"
+          }
+        ],
+        "relationship": "mentioned",
+        "retrieval_verified": false,
+        "target": {
+          "host": "github.com",
+          "number": 33,
+          "repository": "madsbolaris/trailvault-capture-test"
+        },
+        "url": "https://github.com/madsbolaris/trailvault-capture-test/pull/33"
+      },
+      {
+        "contribution_verified": false,
+        "evidence": [
+          {
+            "kind": "mention",
+            "record": 6,
+            "role": "tool_output"
+          }
+        ],
+        "relationship": "mentioned",
+        "retrieval_verified": false,
+        "target": {
+          "host": "github.com",
+          "number": 34,
+          "repository": "madsbolaris/trailvault-capture-test"
+        },
+        "url": "https://github.com/madsbolaris/trailvault-capture-test/pull/34"
+      },
+      {
+        "contribution_verified": false,
+        "evidence": [
+          {
+            "kind": "mention",
+            "record": 6,
+            "role": "tool_output"
+          }
+        ],
+        "relationship": "mentioned",
+        "retrieval_verified": false,
+        "target": {
+          "host": "github.com",
+          "number": 35,
+          "repository": "madsbolaris/trailvault-capture-test"
+        },
+        "url": "https://github.com/madsbolaris/trailvault-capture-test/pull/35"
+      },
+      {
+        "contribution_verified": false,
+        "evidence": [
+          {
+            "kind": "mention",
+            "record": 8,
+            "role": "tool_input"
+          },
+          {
+            "kind": "mention",
+            "record": 9,
+            "role": "tool_output"
+          },
+          {
+            "kind": "mention",
+            "record": 10,
+            "role": "tool_input"
+          },
+          {
+            "kind": "mention",
+            "record": 12,
+            "role": "assistant"
+          }
+        ],
+        "relationship": "mentioned",
+        "retrieval_verified": false,
+        "target": {
+          "host": "github.com",
+          "number": 36,
+          "repository": "madsbolaris/trailvault-capture-test"
+        },
+        "url": "https://github.com/madsbolaris/trailvault-capture-test/pull/36"
+      }
+    ],
+    "version": 1
+  },
+  "processing": {
+    "classification_version": 2,
+    "measurement_version": 1,
+    "normalization_version": 2,
+    "tokenizer_version": "tiktoken-rs-0.7.0/o200k_base"
+  },
+  "publication": {
+    "contribution_verified": false,
+    "kind": "session-snapshot",
+    "source_commit": "24671b2d8088a49168eaaefca786748b30a02603"
+  },
+  "redaction": {
+    "replacements": 25
+  },
+  "save_step_count": 1,
+  "session_id": "6f4d64e4-c7c4-40ce-a1a8-448535f9c766",
+  "session_metadata": {
+    "agent_name": {
+      "record": 17,
+      "source": "claude.agent-name",
+      "timestamp": null,
+      "value": "Bouncing ball visualization"
+    },
+    "capture_health": {
+      "hook_failures": [],
+      "state": "no_observed_hook_failures"
+    },
+    "last_activity_at": "2026-11-05T21:11:14.302Z",
+    "model": {
+      "record": 27,
+      "source": "claude.assistant.model",
+      "timestamp": "2026-11-05T21:11:14.302Z",
+      "value": "claude-opus-5-5"
+    },
+    "name": "Bouncing ball visualization",
+    "name_source": "claude.custom-title",
+    "partial_history": false,
+    "participant_identity_basis": "capture_input",
+    "participant_source": "capture_configuration",
+    "participants": [
+      {
+        "github_login": "madsbolaris"
+      }
+    ],
+    "session_started_at": "2026-11-05T21:10:21.377742Z",
+    "version": 1
+  },
+  "session_started_at": "2026-11-05T21:10:21.377742Z",
+  "strategy": "session-snapshot",
+  "token_breakdown": {
+    "activity": [
+      {
+        "category": "implementation",
+        "percentage": 18.153117600631415,
+        "tokens": 230
+      },
+      {
+        "category": "unknown",
+        "percentage": 81.8468823993686,
+        "tokens": 1037
+      }
+    ],
+    "classificationVersion": 2,
+    "classified": true,
+    "measurement_version": 1,
+    "provenance": [
+      {
+        "activities": [
+          {
+            "category": "implementation",
+            "percentage": 100.0,
+            "tokens": 30
+          }
+        ],
+        "category": "user_prompts",
+        "percentage": 2.367797947908445,
+        "tokens": 30
+      },
+      {
+        "activities": [
+          {
+            "category": "implementation",
+            "percentage": 100.0,
+            "tokens": 200
+          }
+        ],
+        "category": "assistant_responses",
+        "percentage": 15.785319652722968,
+        "tokens": 200
+      },
+      {
+        "activities": [
+          {
+            "category": "unknown",
+            "percentage": 100.0,
+            "tokens": 1037
+          }
+        ],
+        "category": "tool_interactions",
+        "percentage": 81.8468823993686,
+        "tokens": 1037
+      }
+    ],
+    "scope": "captured_transcript_text_not_provider_billing_or_context_usage",
+    "state": "ready",
+    "tokenizer": "o200k_base",
+    "tokenizer_version": "tiktoken-rs-0.7.0/o200k_base",
+    "totalTokens": 1267,
+    "transcript_sha256": "8ce024a91057649eaa868a140c2d810b731442eb2509a34a2a4f0de6a6d601c2"
+  }
+}
