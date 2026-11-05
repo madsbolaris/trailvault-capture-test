@@ -1,0 +1,25 @@
+{
+  "branch": "add-bouncing-ball-visualization",
+  "checkpoint_id": "01M6PSF58ZAN2Z65YVM6CJ9FPJ",
+  "checkpoints_count": 1,
+  "cli_version": "0.2.0",
+  "files_touched": [
+    "visualizations/bouncing-balls.html"
+  ],
+  "publication": {
+    "contribution_verified": false,
+    "kind": "manual-commit",
+    "source_commit": "4292b559662a4cb0036488ba521804b192aff5e7"
+  },
+  "sessions": [
+    {
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "evidence": "/0/evidence.json",
+      "metadata": "/0/metadata.json",
+      "prompt": "/0/prompt.txt",
+      "transcript": "/0/full.jsonl"
+    }
+  ],
+  "strategy": "manual-commit"
+}
