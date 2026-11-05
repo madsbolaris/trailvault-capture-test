@@ -126,7 +126,7 @@ class AnalysisTests(unittest.TestCase):
         plan = r.publication_plan([result], b, SHA, PROVENANCE, [])
         self.assertEqual(len(plan), 1)
         artifact = r.unique_json(plan[0][1].split("\n")[0][len(r.MARKER):-4])
-        self.assertEqual(artifact["versions"][0]["tasks"], [])
+        self.assertEqual(artifact["versions"][0]["actions"], [])
 
 
 class CollectionTests(unittest.TestCase):
@@ -201,7 +201,7 @@ class PublicationTests(unittest.TestCase):
     def test_two_versioned_reports_and_single_todo_identity_per_finding(self):
         b, values = reports()
         plan = r.publication_plan(values, b, SHA, PROVENANCE, [])
-        self.assertEqual(len(plan), 4)
+        self.assertEqual(len(plan), 2)
         artifacts = [r.unique_json(body.split("\n")[0][len(r.MARKER):-4])
                      for _, body in plan if body.startswith(r.MARKER)]
         self.assertEqual({artifact["title"] for artifact in artifacts}, set(r.REPORTS.values()))
@@ -209,12 +209,17 @@ class PublicationTests(unittest.TestCase):
             version = artifact["versions"][0]
             self.assertEqual(version["headSha"], SHA)
             self.assertEqual(version["evaluatorSha"], OTHER)
-            self.assertEqual(version["tasks"][0]["status"], "todo")
-            self.assertIn("; verify: ", version["tasks"][0]["title"])
-            discussion = next(body for _, body in plan if r.FINDING_MARKER in body
-                              and artifact["id"] in body)
-            self.assertIn(version["tasks"][0]["id"], discussion)
-            self.assertNotIn("- [ ]", discussion)
+            self.assertNotIn("tasks", version)
+            action = version["actions"][0]
+            self.assertEqual(action["status"], "todo")
+            self.assertIn("; verify: ", action["title"])
+            self.assertEqual(action["quote"], "1. Avoid a repeated failed query")
+            self.assertIn("## " + action["sourceHeading"], version["body"])
+            self.assertNotIn("Coverage boundaries", version["body"])
+            self.assertNotIn(f"Snapshot `{OTHER}`", version["body"])
+            self.assertIn('<Inline id={"session-review-summary"}', version["body"])
+            self.assertIn('<Stat id={"follow-ups"}', version["body"])
+        self.assertFalse(any(r.FINDING_MARKER in body for _, body in plan))
 
     def test_retries_do_not_duplicate_versions_or_discussions(self):
         b, values = reports()
@@ -243,7 +248,33 @@ class PublicationTests(unittest.TestCase):
         comments = [bot(body) for _, body in initial]
         for comment in comments:
             comment["user"] = {"login": "someone", "type": "User"}
-        self.assertEqual(len(r.publication_plan(values, b, SHA, PROVENANCE, comments)), 4)
+        self.assertEqual(len(r.publication_plan(values, b, SHA, PROVENANCE, comments)), 2)
+
+    def test_detached_legacy_discussions_are_removed_only_after_reports_publish(self):
+        b, values = reports()
+        marker = {"headSha": SHA, "artifactId": "session-review.agent-behavior", "taskId": "old"}
+        legacy = bot(r.FINDING_MARKER + json.dumps(marker) + " -->", 99)
+        writes = []
+        def request(path, method="GET", body=None):
+            if "comments?" in path:
+                return [legacy]
+            if method == "GET":
+                return pr()
+            writes.append((method, path))
+        r.publish(1, SHA, values, b, PROVENANCE, request)
+        self.assertEqual([method for method, _ in writes], ["POST", "POST", "DELETE"])
+        self.assertTrue(writes[-1][1].endswith("/99"))
+
+    def test_empty_human_report_is_concise_and_does_not_invent_decisions(self):
+        b = bundle()
+        result = r.analyze(b, "human-decisions", lambda _: {
+            "reviewed_ids": ["one"], "findings": []})
+        text = r.render(result, b, SHA)
+        self.assertIn("No reusable repository decisions identified", text)
+        self.assertNotIn("Coverage boundaries", text)
+        self.assertNotIn("Snapshot", text)
+        self.assertNotIn("## ", text)
+        self.assertIn("no rules or memories are saved automatically", text)
 
     def test_head_is_rechecked_before_every_write(self):
         b, values = reports()
