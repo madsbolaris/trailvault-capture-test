@@ -1,0 +1,22 @@
+{
+  "branch": "bouncing-ball-visualization-v2",
+  "checkpoint_id": "01M6Q4ACGKTM86HQT6YDXN61KK",
+  "checkpoints_count": 1,
+  "cli_version": "0.2.0",
+  "files_touched": [],
+  "publication": {
+    "contribution_verified": false,
+    "kind": "session-snapshot",
+    "source_commit": "66b2d9b5d9ded24dbdeff4d2a439d6b15e11bef2"
+  },
+  "sessions": [
+    {
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "metadata": "/0/metadata.json",
+      "prompt": "/0/prompt.txt",
+      "transcript": "/0/full.jsonl"
+    }
+  ],
+  "strategy": "session-snapshot"
+}
