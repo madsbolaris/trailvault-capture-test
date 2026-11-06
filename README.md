@@ -113,8 +113,12 @@ The workflow publishes two CI-versioned PR comment artifacts, using the same
   they do not have to justify a new skill or tooling mechanism. PR defects, missing product tests,
   merge readiness, and implementation requests are not agent-behavior findings.
 - **Human decisions**: useful preferences, corrections, and decisions to remember,
-  with their proposed scope, from user-role messages only. This fixture includes
-  AI-orchestrated prompts, so a user role is
+  with their proposed scope, from user requests plus assistant implementation
+  explanations. User messages establish intent; assistant explanations supply
+  context, not human approval. Captured reusable hex-color shade logic is a
+  candidate repository memory, grounded in the actual tolerance and validation
+  described in the captures and requiring maintainer confirmation.
+  This fixture includes AI-orchestrated prompts, so a user role is
   not proof of human authorship. Maintainers must confirm authorship, scope, and
   the proposal before adopting a rule. No memories or instructions are changed
   automatically.

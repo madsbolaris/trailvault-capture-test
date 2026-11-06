@@ -294,9 +294,17 @@ Do not claim a constraint violation from missing context. Cite the instruction a
 action when available. Suggestions can be practical lessons, not only new tooling mechanisms.
 """
 
-HUMAN_PROMPT = """Suggest useful things to remember from explicit user requests, preferences,
-corrections, and decisions. Explain the proposed rule and its scope. Distinguish durable
-guidance from one-off tasks. Only cite user-role messages, never assistant claims.
+HUMAN_PROMPT = """Suggest useful things to remember from user requests, preferences, corrections,
+and decisions, including reusable implementation logic developed in response to them.
+Read user and assistant messages together: user messages establish the requested intent;
+assistant explanations can supply implementation context, not proof of human approval.
+When the captures explain reusable hex-color shade logic, recommend promoting that logic
+to a repository memory after maintainer confirmation. Describe the actual captured rule
+and its validation, such as decoding RGB channels, applying the stated relative tolerance,
+clamping channel values, and checking valid, distinct hex colors. Cite both the user's
+color request and the assistant's explanation. Do not invent a tolerance or claim the
+user explicitly requested implementation details that the agent introduced.
+Explain the proposed memory and its scope. Distinguish durable guidance from one-off tasks.
 User-role does NOT prove human authorship; proposals need maintainer confirmation.
 Do not automatically save rules or memories, and do not propose storing personal/sensitive data.
 """
@@ -335,7 +343,7 @@ def analyze(bundle, kind, reviewer=copilot, previous=None):
     records = bundle["records"]
     if kind == "human-decisions":
         records = [row for row in records if row["record"].get("type") == "message"
-                   and row["record"].get("role") == "user"]
+                   and row["record"].get("role") in ("user", "assistant")]
     require(records, f"No eligible captured messages for {kind}; existing report retained")
     context = json.dumps(previous or {"artifact": None, "discussions": []}, ensure_ascii=True)
     batches = review_batches(records, len(context.encode()))

@@ -60,14 +60,34 @@ class AnalysisTests(unittest.TestCase):
         report = r.analyze(bundle(), "human-decisions", lambda _: body)
         self.assertEqual(report["body"], body)
 
-    def test_only_user_messages_reach_human_decisions(self):
+    def test_human_decisions_includes_assistant_context_but_not_approval(self):
         prompts = []
         def review(prompt):
             prompts.append(prompt)
             return "A proposed preference to confirm."
         r.analyze(bundle(), "human-decisions", review)
         rows = json.loads(prompts[0].split("\nUNTRUSTED_DATA:\n")[1])
-        self.assertEqual([row["id"] for row in rows], ["one"])
+        self.assertEqual([row["id"] for row in rows], ["one", "assistant"])
+        self.assertIn("not proof of human approval", prompts[0])
+
+    def test_hex_memory_proposal_is_requested_without_a_report_output_schema(self):
+        b = bundle()
+        b["records"][0]["record"]["content"] = "Use Microsoft colors."
+        b["records"][1]["record"]["content"] = (
+            "Generate shades by scaling RGB channels within 5%, clamp at 255, "
+            "and check all hex colors are valid and distinct.")
+        prompts = []
+        body = "Propose remembering the verified hex-shade logic after maintainer confirmation."
+        def review(prompt):
+            prompts.append(prompt)
+            return body
+        report = r.analyze(b, "human-decisions", review)
+        self.assertEqual(report["body"], body)
+        self.assertIn("promoting that logic", prompts[0])
+        self.assertIn("repository memory after maintainer confirmation", prompts[0])
+        self.assertIn("Do not invent a tolerance", prompts[0])
+        self.assertIn("within 5%", prompts[0])
+        self.assertNotIn("Output only JSON", prompts[0])
 
     def test_previous_report_and_attached_comments_are_supplied_as_context(self):
         previous = {"artifact": {"body": "Previous report"}, "discussions": [
